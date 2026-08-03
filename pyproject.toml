@@ -1,16 +1,35 @@
+[build-system]
+requires = ["uv_build>=0.11.32,<0.12"]
+build-backend = "uv_build"
+
 [project]
 name = "python-addons"
 version = "0.1.0"
-description = "Add your description here"
+description = "Foundational Python value types with explicit algebraic contracts"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = [
-    "rich",
-]
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+dependencies = []
 
 [dependency-groups]
 dev = [
-	"pytest",
     "pylint",
     "pyright",
+    "pytest",
+]
+
+[tool.uv.build-backend]
+module-name = "addons"
+module-root = "src"
+
+[tool.pyright]
+include = [
+    "src",
+    "tests",
+]
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
 ]
