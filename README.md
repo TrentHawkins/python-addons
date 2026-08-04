@@ -18,7 +18,7 @@ dependencies = ["python-addons>=0.1"]
 The Python import package is named `addons`:
 
 ```python
-from addons import Float, Int
+from addons import Float, Int, algebra
 ```
 
 Keeping these names distinct lets the distribution retain the descriptive
@@ -96,6 +96,34 @@ and provides `Float.nan()` and `Float.inf()`. NaN is not reflexively equal and
 floating-point arithmetic is not mathematically associative, so `Float` is an
 operational monoid-like carrier rather than a law-perfect mathematical monoid.
 
+## Algebraic protocols
+
+`addons.algebra` provides operator-oriented structural protocols for relations,
+lattices, one-operation structures, rings, fields, Euclidean domains, and their
+ordered variants:
+
+```python
+from addons.algebra import AdditiveMonoid, Semiring
+
+
+def starts_at_zero[T: AdditiveMonoid](value_type: type[T]) -> T:
+    return value_type.zero()
+
+
+def double[T: Semiring](value: T) -> T:
+    return value + value
+```
+
+The method signatures express closure and identity construction. Algebraic laws
+such as associativity, commutativity, distributivity, and totality remain
+semantic contracts: a static type checker can verify the operations but cannot
+prove those laws. Semantic refinements can therefore have the same structural
+shape while documenting different requirements.
+
+The protocols intentionally distinguish a field from a multiplicative group.
+A field exposes division for nonzero divisors, but its full carrier is not a
+multiplicative group because zero has no inverse.
+
 ### Mutability status
 
 Instances are intended to be treated as immutable value objects, but that
@@ -109,6 +137,7 @@ dictionary key or set member.
 src/
 └── addons/
     ├── __init__.py
+    ├── algebra.py
     ├── base.py
     └── py.typed
 tests/                  # reserved for the test suite
