@@ -59,14 +59,7 @@ class AddSemigroup(typing.Protocol):
 		...
 
 
-class AddMonoid(AddSemigroup, typing.Protocol):
-
-	@classmethod
-	def zero(cls) -> typing.Self:
-		...
-
-
-class AddGroup(AddMonoid, typing.Protocol):
+class AddGroup(AddSemigroup, typing.Protocol):
 
 	def __sub__(self, other: typing.Self, /) -> typing.Self:
 		...
@@ -81,22 +74,15 @@ class MulSemigroup(typing.Protocol):
 		...
 
 
-class MulMonoid(MulSemigroup, typing.Protocol):
-
-	@classmethod
-	def unit(cls) -> typing.Self:
-		...
-
-
-class MulGroup(MulMonoid, typing.Protocol):
+class MulGroup(MulSemigroup, typing.Protocol):
 
 	def __truediv__(self, other: typing.Self, /) -> typing.Self:
 		...
 
 
 class Semiring(
-	AddMonoid,
-	MulMonoid, typing.Protocol
+	AddSemigroup,
+	MulSemigroup, typing.Protocol
 ):
 
 	...
@@ -121,7 +107,7 @@ class Field(
 	...
 
 
-class Semimodule[Scalar: Semiring](AddMonoid, typing.Protocol):
+class Semimodule[Scalar: Semiring](AddSemigroup, typing.Protocol):
 
 	def __mul__(self, scalar: Scalar, /) -> typing.Self:
 		...
@@ -184,17 +170,13 @@ class Matrix[Scalar: Field](Vector[Scalar], Involutive, typing.Protocol):
 #	def __rmatmul__(self, other: typing.Self | Vector[Scalar], /) -> typing.Self | Vector[Scalar]:
 #		...
 
-	@classmethod
-	def identity(cls) -> typing.Self:
-		...
-
 
 class Numeric(
 	typing.SupportsInt,
 	typing.SupportsFloat,
 #	typing.SupportsComplex,
-#	typing.SupportsAbs,
-	typing.SupportsRound,
+	typing.SupportsAbs,
+#	typing.SupportsRound,
 	typing.Hashable,
 	typing.Protocol,
 ):
