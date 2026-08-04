@@ -5,12 +5,12 @@ import math
 import operator
 import typing
 
-from . import algebra
+from . import protocols
 
 
 class Base(
-	algebra.Numeric,
-	algebra.Magnitude, typing.Protocol
+	protocols.Numeric,
+	protocols.Magnitude, typing.Protocol
 ):
 
 	...

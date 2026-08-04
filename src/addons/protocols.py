@@ -49,6 +49,12 @@ class Boolean(Lattice, typing.Protocol):
 	def __invert__(self, /) -> typing.Self:
 		...
 
+	def __sub__(self, other: typing.Self, /) -> typing.Self:
+		...
+
+	def __xor__(self, other: typing.Self, /) -> typing.Self:
+		...
+
 
 class AddSemigroup(typing.Protocol):
 
@@ -112,8 +118,8 @@ class Semimodule[Scalar: Semiring](AddSemigroup, typing.Protocol):
 	def __mul__(self, scalar: Scalar, /) -> typing.Self:
 		...
 
-#	def __rmul__(self, scalar: Scalar, /) -> typing.Self:
-#		...
+	def __rmul__(self, scalar: Scalar, /) -> typing.Self:
+		...
 
 
 class Module[Scalar: Ring](Semimodule[Scalar], AddGroup, typing.Protocol):
@@ -134,13 +140,13 @@ class Magnitude(Semiring, TotalOrdering, typing.Protocol):
 
 class Involutive(typing.Protocol):
 
-#	@property
-#	def real(self) -> typing.Self:
-#		...
+	@property
+	def real(self) -> typing.Self:
+		...
 
-#	@property
-#	def imag(self) -> typing.Self:
-#		...
+	@property
+	def imag(self) -> typing.Self:
+		...
 
 	def conjugate(self) -> typing.Self:
 		...
@@ -159,16 +165,16 @@ class Matrix[Scalar: Field](Vector[Scalar], Involutive, typing.Protocol):
 	def __matmul__(self, other: typing.Self | Vector[Scalar], /) -> typing.Self | Vector[Scalar]:
 		...
 
-#	@typing.overload
-#	def __rmatmul__(self, other: typing.Self, /) -> typing.Self:
-#		...
+	@typing.overload
+	def __rmatmul__(self, other: typing.Self, /) -> typing.Self:
+		...
 
-#	@typing.overload
-#	def __rmatmul__(self, other: Vector[Scalar], /) -> Vector[Scalar]:
-#		...
+	@typing.overload
+	def __rmatmul__(self, other: Vector[Scalar], /) -> Vector[Scalar]:
+		...
 
-#	def __rmatmul__(self, other: typing.Self | Vector[Scalar], /) -> typing.Self | Vector[Scalar]:
-#		...
+	def __rmatmul__(self, other: typing.Self | Vector[Scalar], /) -> typing.Self | Vector[Scalar]:
+		...
 
 
 class Numeric(

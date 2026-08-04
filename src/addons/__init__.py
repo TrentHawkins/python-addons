@@ -1,4 +1,4 @@
-from .numeric import Float, Int, Number, Base
+from .base import Float, Int, Number, Base
 
 
 __all__ = [
