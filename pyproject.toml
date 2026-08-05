@@ -24,6 +24,7 @@ module-name = "addons"
 module-root = "src"
 
 [tool.pyright]
+reportIncompatibleMethodOverride = "none"
 include = [
     "src",
     "tests",
