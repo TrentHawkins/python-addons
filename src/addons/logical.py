@@ -197,3 +197,67 @@ class prob(base):
 
 
 logical: typing.TypeAlias = real | dist | prob
+
+
+class indexset[T: typing.Hashable](dict[T, bool]):
+
+	default: bool
+
+	def __init__(self, iterable: typing.Iterable[T] | typing.Mapping[T, bool] = (), /, *, default: bool = False):
+		super().__init__(iterable if isinstance(iterable, typing.Mapping) else ((key, True) for key in iterable))
+
+		self.default = default
+
+	def __repr__(self, /) -> str:
+		return f"{self.__class__.__name__}({super().__repr__()}, default={self.default!r})"
+
+	def __missing__(self, _: T, /) -> bool:
+		return self.default
+
+	def __contains__(self, key: T, /) -> bool:
+		return self.get(key, self.default)
+
+	def __iter__(self, /) -> typing.Iterator[T]:
+		if self.default:
+			raise TypeError(f"cannot iterate an {self.__class__.__name__} with implicit members")
+
+		return (key for key, value in self.items() if value)
+
+	def __len__(self, /) -> int:
+		if self.default:
+			raise TypeError(f"an {self.__class__.__name__} with implicit members has no finite length")
+
+		return sum(self.values())
+
+	def __bool__(self, /) -> bool:
+		return self.default or any(self.values())
+
+	def __invert__(self, /) -> typing.Self:
+		return self.__class__({key: not value for key, value in self.items()}, default = not self.default)
+
+	@property
+	def indices(self, /) -> typing.KeysView[T]:
+		return self.keys()
+
+	@classmethod
+	def fromkeys(cls, iterable: typing.Iterable[T], value: bool = True, /) -> typing.Self:
+		return cls(dict.fromkeys(iterable, value))
+
+	def copy(self, /) -> typing.Self:
+		return self.__class__(self, default = self.default)
+
+	def add(self, key: T, /) -> None:
+		self[key] = True
+
+	def remove(self, key: T, /) -> None:
+		if key not in self:
+			raise KeyError(key)
+
+		self.discard(key)
+
+	def discard(self, key: T, /) -> None:
+		self[key] = False
+
+	def clear(self, /) -> None:
+		self.default = False
+		self.update(dict.fromkeys(self.indices, False))
