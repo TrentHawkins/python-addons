@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 
+import functools
 import math
 import typing
 
@@ -28,47 +29,59 @@ class real(float):
 
 		return self
 
-	def     __add__(self, value: float, /) -> typing.Self: return self.__class__(self.dist + self.__class__(value).dist)
-	def     __mul__(self, value: float, /) -> typing.Self: return self.__class__(self.prob * self.__class__(value).prob)
-	def __truediv__(self, value: float, /) -> typing.Self: return self.__class__(self.prob - self.__class__(value).prob)
-	def     __and__(self, value: float, /) -> typing.Self: return self.__class__(self.prob * self.__class__(value).prob)
+	def     __add__(self, value: float, /) -> typing.Self: cls = self.__class__; return cls(self.dist + cls(value).dist)
+	def     __mul__(self, value: float, /) -> typing.Self: cls = self.__class__; return cls(self.prob * cls(value).prob)
+	def __truediv__(self, value: float, /) -> typing.Self: cls = self.__class__; return cls(self.prob - cls(value).prob)
+	def     __and__(self, value: float, /) -> typing.Self: cls = self.__class__; return cls(self.prob * cls(value).prob)
 
 #	def __pow__(self, value: float, mod: None = None, /) -> typing.Self:
-#		return self.__class__(super().__pow__(value, mod))
+#		cls = self.__class__
+#
+#		return cls(super().__pow__(value, mod))
 
 	def __or__(self, value: float, /) -> typing.Self:
-		value = self.__class__(value)
+		cls = self.__class__
+
+		value = cls(value)
 
 		return ~(~self & ~value)
 
 	def __sub__(self, value: float, /) -> typing.Self:
-		value = self.__class__(value)
+		cls = self.__class__
+
+		value = cls(value)
 
 		return self & ~value
 
 	def __xor__(self, value: float, /) -> typing.Self:
-		value = self.__class__(value)
+		cls = self.__class__
+
+		value = cls(value)
 
 		return (self - value) | (value - self)
 	#	return (self | value) - (value & self)
 
-	def      __radd__(self, value: float, /) -> typing.Self: return self.__class__(value) + self
-	def      __rsub__(self, value: float, /) -> typing.Self: return self.__class__(value) - self
-	def      __rmul__(self, value: float, /) -> typing.Self: return self.__class__(value) * self
-	def  __rtruediv__(self, value: float, /) -> typing.Self: return self.__class__(value) / self
-	def      __rand__(self, value: float, /) -> typing.Self: return self.__class__(value) & self
-	def       __ror__(self, value: float, /) -> typing.Self: return self.__class__(value) | self
-	def      __rxor__(self, value: float, /) -> typing.Self: return self.__class__(value) ^ self
+	def      __radd__(self, value: float, /) -> typing.Self: cls = self.__class__; return cls(value) + self
+	def      __rsub__(self, value: float, /) -> typing.Self: cls = self.__class__; return cls(value) - self
+	def      __rmul__(self, value: float, /) -> typing.Self: cls = self.__class__; return cls(value) * self
+	def  __rtruediv__(self, value: float, /) -> typing.Self: cls = self.__class__; return cls(value) / self
+	def      __rand__(self, value: float, /) -> typing.Self: cls = self.__class__; return cls(value) & self
+	def       __ror__(self, value: float, /) -> typing.Self: cls = self.__class__; return cls(value) | self
+	def      __rxor__(self, value: float, /) -> typing.Self: cls = self.__class__; return cls(value) ^ self
 
 #	def __rpow__(self, value: float, mod: None = None, /) -> typing.Self:
-#		return self.__class__(value).__pow__(self, mod)
+#		cls = self.__class__
+#
+#		return cls(value).__pow__(self, mod)
 
 	def __neg__(self, /) -> typing.Self: return ~self
 	def __pos__(self, /) -> typing.Self: return  self
 	def	__abs__(self, /) -> typing.Self: return  self
 
 	def __invert__(self, /) -> typing.Self:
-		return self.__class__(~self.prob)
+		cls = self.__class__
+
+		return cls(~self.prob)
 
 	def __eq__(self, value: float, /) -> prob:
 		meet = float((self & value).prob)
@@ -97,7 +110,9 @@ class real(float):
 	def prob(self, /) -> prob: return self.dist.prob
 	@property
 	def imag(self, /) -> real:
-		return self.__class__(self.midimum).real
+		cls = self.__class__
+
+		return cls(self.midimum).real
 
 	def conjugate(self, /) -> typing.Self:
 		return self
@@ -112,18 +127,24 @@ class dist(real):
 	maximum: float = +math.inf
 
 	def __add__(self, value: float, /) -> typing.Self:
-		value = self.__class__(value)
+		cls = self.__class__
 
-		return self.__class__(float(self) + float(value))
+		value = cls(value)
+
+		return cls(float(self) + float(value))
 
 	def __mul__(self, value: float, /) -> typing.Self:
-		value = self.__class__(value)
+		cls = self.__class__
+
+		value = cls(value)
 		isinf = math.isinf(self) or math.isinf(value)
 
-		return self.__class__(self.maximum if isinf else float(self) + float(value) + float(self) * float(value))
+		return cls(self.maximum if isinf else float(self) + float(value) + float(self) * float(value))
 
 	def __invert__(self, /) -> typing.Self:
-		return self.__class__(1 / float(self) if self else dist.maximum)
+		cls = self.__class__
+
+		return cls(1 / float(self) if self else dist.maximum)
 
 	@property
 	def real(self, /) -> real:
@@ -147,19 +168,24 @@ class prob(real):
 	maximum: float =     0.0
 
 	def __add__(self, value: float, /) -> typing.Self:
-		value = self.__class__(value)
+		cls = self.__class__
 
+		value = cls(value)
 		self, value = min(self, value), max(self, value)
 
-		return self.__class__(float(self) / (1 + float(self) / float(value) - float(self)) if value else prob.maximum)
+		return cls(float(self) / (1 + float(self) / float(value) - float(self)) if value else prob.maximum)
 
 	def __mul__(self, value: float, /) -> typing.Self:
-		value = self.__class__(value)
+		cls = self.__class__
 
-		return self.__class__(float(self) * float(value))
+		value = cls(value)
+
+		return cls(float(self) * float(value))
 
 	def __invert__(self, /) -> typing.Self:
-		return self.__class__(self.minimum - float(self))
+		cls = self.__class__
+
+		return cls(self.minimum - float(self))
 
 	@property
 	def real(self, /) -> real:
@@ -187,18 +213,20 @@ class boolean(int):
 	def __repr__(self, /) -> str: return repr(bool(self))
 	def  __str__(self, /) -> str: return  str(bool(self))
 
-	def __and__(self, value: object, /) -> typing.Self: return self.__class__(bool(self)     and bool(value))
-	def  __or__(self, value: object, /) -> typing.Self: return self.__class__(bool(self)      or bool(value))
-	def __sub__(self, value: object, /) -> typing.Self: return self.__class__(bool(self) and not bool(value))
-	def __xor__(self, value: object, /) -> typing.Self: return self.__class__(bool(self)  is not bool(value))
+	def __and__(self, value: object, /) -> typing.Self: cls = self.__class__; return cls(bool(self)     and bool(value))
+	def  __or__(self, value: object, /) -> typing.Self: cls = self.__class__; return cls(bool(self)      or bool(value))
+	def __sub__(self, value: object, /) -> typing.Self: cls = self.__class__; return cls(bool(self) and not bool(value))
+	def __xor__(self, value: object, /) -> typing.Self: cls = self.__class__; return cls(bool(self)  is not bool(value))
 
-	def __rand__(self, value: object, /) -> typing.Self: return self.__class__(value) & self
-	def  __ror__(self, value: object, /) -> typing.Self: return self.__class__(value) | self
-	def __rsub__(self, value: object, /) -> typing.Self: return self.__class__(value) - self
-	def __rxor__(self, value: object, /) -> typing.Self: return self.__class__(value) ^ self
+	def __rand__(self, value: object, /) -> typing.Self: cls = self.__class__; return cls(value) & self
+	def  __ror__(self, value: object, /) -> typing.Self: cls = self.__class__; return cls(value) | self
+	def __rsub__(self, value: object, /) -> typing.Self: cls = self.__class__; return cls(value) - self
+	def __rxor__(self, value: object, /) -> typing.Self: cls = self.__class__; return cls(value) ^ self
 
 	def __invert__(self, /) -> typing.Self:
-		return self.__class__(not self)
+		cls = self.__class__
+
+		return cls(not self)
 
 
 class indexset[T: typing.Hashable](dict[T, bool]):
@@ -220,14 +248,18 @@ class indexset[T: typing.Hashable](dict[T, bool]):
 		return self.get(key, self.default)
 
 	def __iter__(self, /) -> typing.Iterator[T]:
+		cls = self.__class__
+
 		if self.default:
-			raise TypeError(f"cannot iterate an {self.__class__.__name__} with implicit members")
+			raise TypeError(f"cannot iterate an {cls.__name__} with implicit members")
 
 		return (key for key, value in self.items() if value)
 
 	def __len__(self, /) -> int:
+		cls = self.__class__
+
 		if self.default:
-			raise TypeError(f"an {self.__class__.__name__} with implicit members has no finite length")
+			raise TypeError(f"an {cls.__name__} with implicit members has no finite length")
 
 		return self.size
 
@@ -235,7 +267,9 @@ class indexset[T: typing.Hashable](dict[T, bool]):
 		return self.default or any(self.values())
 
 	def __invert__(self, /) -> typing.Self:
-		return self.__class__({key: not value for key, value in self.items()}, default = not self.default)
+		cls = self.__class__
+
+		return cls({key: not value for key, value in self.items()}, default = not self.default)
 
 	@property
 	def indices(self, /) -> typing.KeysView[T]:
@@ -252,7 +286,9 @@ class indexset[T: typing.Hashable](dict[T, bool]):
 		return cls(dict.fromkeys(iterable, value))
 
 	def copy(self, /) -> typing.Self:
-		return self.__class__(self, default = self.default)
+		cls = self.__class__
+
+		return cls(self, default = self.default)
 
 	def add(self, key: T, /) -> None:
 		self[key] = True
