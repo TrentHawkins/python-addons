@@ -10,11 +10,11 @@ numeric: typing.TypeAlias = int | float
 type pair[T: numeric] = tuple[T, T]
 
 
-class base(float):
+class real(float):
 
-	minimum: float
-	midimum: float
-	maximum: float
+	minimum: float = +math.inf
+	midimum: float =     0.0
+	maximum: float = -math.inf
 
 	def __new__(cls, value: numeric | logical, /) -> typing.Self:
 		self = super().__new__(cls, getattr(value, cls.__name__.lower(), value))
@@ -26,20 +26,18 @@ class base(float):
 
 		return self
 
-	def     __add__(self, value: float, /) -> typing.Self: return self.__class__(super().    __add__(value))
-#	def     __sub__(self, value: float, /) -> typing.Self: return self.__class__(super().    __sub__(value))
-	def     __mul__(self, value: float, /) -> typing.Self: return self.__class__(super().    __mul__(value))
-	def __truediv__(self, value: float, /) -> typing.Self: return self.__class__(super().__truediv__(value))
-#	def     __mod__(self, value: float, /) -> typing.Self: return self.__class__(super().    __mod__(value))
+	def     __add__(self, value: float, /) -> typing.Self: return self.__class__(self.dist + self.__class__(value).dist)
+	def     __mul__(self, value: float, /) -> typing.Self: return self.__class__(self.prob * self.__class__(value).prob)
+	def __truediv__(self, value: float, /) -> typing.Self: return self.__class__(self.prob - self.__class__(value).prob)
+	def     __and__(self, value: float, /) -> typing.Self: return self.__class__(self.prob * self.__class__(value).prob)
 
-#	def __floordiv__(self, value: float, /) -> typing.Self:
-#		return self.__class__(super().__floordiv__(value))
+#	def __pow__(self, value: float, mod: None = None, /) -> typing.Self:
+#		return self.__class__(super().__pow__(value, mod))
 
-	def __and__(self, value: float, /) -> typing.Self: return self.__class__(self.prob.meet(self.__class__(value).prob))
-	def  __or__(self, value: float, /) -> typing.Self: return self.__class__(self.prob.join(self.__class__(value).prob))
+	def __or__(self, value: float, /) -> typing.Self:
+		value = self.__class__(value)
 
-	def __pow__(self, value: float, mod: None = None, /) -> typing.Self:
-		return self.__class__(super().__pow__(value, mod))
+		return ~(~self & ~value)
 
 	def __sub__(self, value: float, /) -> typing.Self:
 		value = self.__class__(value)
@@ -50,31 +48,29 @@ class base(float):
 		value = self.__class__(value)
 
 		return (self - value) | (value - self)
-		return (self | value) - (value & self)
+	#	return (self | value) - (value & self)
 
-	def      __radd__(self, value: float, /) -> typing.Self: return self.__class__(value) +  self
-	def      __rsub__(self, value: float, /) -> typing.Self: return self.__class__(value) -  self
-	def      __rmul__(self, value: float, /) -> typing.Self: return self.__class__(value) *  self
-	def  __rtruediv__(self, value: float, /) -> typing.Self: return self.__class__(value) /  self
-#	def      __rmod__(self, value: float, /) -> typing.Self: return self.__class__(value) %  self
-#	def __rfloordiv__(self, value: float, /) -> typing.Self: return self.__class__(value) // self
-	def      __rand__(self, value: float, /) -> typing.Self: return self.__class__(value) &  self
-	def       __ror__(self, value: float, /) -> typing.Self: return self.__class__(value) |  self
-	def      __rxor__(self, value: float, /) -> typing.Self: return self.__class__(value) ^  self
+	def      __radd__(self, value: float, /) -> typing.Self: return self.__class__(value) + self
+	def      __rsub__(self, value: float, /) -> typing.Self: return self.__class__(value) - self
+	def      __rmul__(self, value: float, /) -> typing.Self: return self.__class__(value) * self
+	def  __rtruediv__(self, value: float, /) -> typing.Self: return self.__class__(value) / self
+	def      __rand__(self, value: float, /) -> typing.Self: return self.__class__(value) & self
+	def       __ror__(self, value: float, /) -> typing.Self: return self.__class__(value) | self
+	def      __rxor__(self, value: float, /) -> typing.Self: return self.__class__(value) ^ self
 
 #	def __rpow__(self, value: float, mod: None = None, /) -> typing.Self:
 #		return self.__class__(value).__pow__(self, mod)
 
-	def __neg__(self, /) -> typing.Self: return self.__class__(super().__neg__())
-	def __pos__(self, /) -> typing.Self: return self.__class__(super().__pos__())
-	def	__abs__(self, /) -> typing.Self: return self.__class__(super().__abs__())
+	def __neg__(self, /) -> typing.Self: return ~self
+	def __pos__(self, /) -> typing.Self: return  self
+	def	__abs__(self, /) -> typing.Self: return  self
 
 	def __invert__(self, /) -> typing.Self:
-		return self.__class__(self.prob.complement())
+		return self.__class__(~self.prob)
 
 	def __eq__(self, value: float, /) -> prob:
-		meet = (self & value).prob
-		join = (self | value).prob
+		meet = float((self & value).prob)
+		join = float((self | value).prob)
 
 		return prob(meet / join if join else prob.minimum)
 
@@ -92,49 +88,42 @@ class base(float):
 		)
 
 	@property
-	def real(self, /) -> real: return real(self)
+	def real(self, /) -> real: return self
 	@property
-	def dist(self, /) -> dist: return dist(self)
+	def dist(self, /) -> dist: return dist(math.exp(-float(self)))
 	@property
-	def prob(self, /) -> prob: return prob(self)
+	def prob(self, /) -> prob: return self.dist.prob
 	@property
-	def imag(self, /) -> real: return self.__class__(self.midimum).real
+	def imag(self, /) -> real:
+		return self.__class__(self.midimum).real
 
 	def conjugate(self, /) -> typing.Self:
 		return self
 
 
-class real(base):
+class dist(real):
 
-	minimum: float = +math.inf
-	midimum: float =     0.
-	maximum: float = -math.inf
-
-	@property
-	def real(self, /) -> real:
-		return self
-
-	@property
-	def dist(self, /) -> dist:
-		return dist(math.exp(-self))
-
-	@property
-	def prob(self, /) -> prob:
-		return self.dist.prob
-
-
-class dist(base):
-
-	minimum: float =     0.
-	midimum: float =     1.
+	minimum: float =     0.0
+	midimum: float =     1.0
 	maximum: float = +math.inf
 
+	def __add__(self, value: float, /) -> typing.Self:
+		value = self.__class__(value)
+
+		return self.__class__(float(self) + float(value))
+
 	def __mul__(self, value: float, /) -> typing.Self:
-		return self.__class__(self.prob * self.__class__(value).prob)
+		value = self.__class__(value)
+		isinf = math.isinf(self) or math.isinf(value)
+
+		return self.__class__(self.maximum if isinf else float(self) + float(value) + float(self) * float(value))
+
+	def __invert__(self, /) -> typing.Self:
+		return self.__class__(1 / float(self) if self else dist.maximum)
 
 	@property
 	def real(self, /) -> real:
-		return real(-math.log(float(self)) if self else real.minimum)
+		return real(-math.log(self) if self else real.minimum)
 
 	@property
 	def dist(self, /) -> dist:
@@ -142,19 +131,29 @@ class dist(base):
 
 	@property
 	def prob(self, /) -> prob:
-		return prob(math.exp(-float(self)))
-		return prob( 1 / (1 + float(self)))
+		return prob(1 / (1 + float(self)))
 
 
-class prob(base):
+class prob(real):
 
-	minimum: float =    1.
-	midimum: float = math.exp(-1)
-#	midimum: float =     .5
-	maximum: float =    0.
+	minimum: float =     1.0
+	midimum: float =     0.5
+	maximum: float =     0.0
 
 	def __add__(self, value: float, /) -> typing.Self:
-		return self.__class__(self.dist + self.__class__(value).dist)
+		value = self.__class__(value)
+
+		self, value = min(self, value), max(self, value)
+
+		return self.__class__(float(self) / (1 + float(self) / float(value) - float(self)) if value else prob.maximum)
+
+	def __mul__(self, value: float, /) -> typing.Self:
+		value = self.__class__(value)
+
+		return self.__class__(float(self) * float(value))
+
+	def __invert__(self, /) -> typing.Self:
+		return self.__class__(self.minimum - float(self))
 
 	@property
 	def real(self, /) -> real:
@@ -162,23 +161,11 @@ class prob(base):
 
 	@property
 	def dist(self, /) -> dist:
-		return dist(-math.log(float(self))    if self else dist.maximum)
-		return dist(      1 / float(self) - 1 if self else dist.maximum)
+		return dist((1 - float(self)) / float(self) if self else dist.maximum)
 
 	@property
 	def prob(self, /) -> prob:
 		return self
-
-	def meet(self, value: float, /) -> typing.Self:
-		return self * self.__class__(value)
-
-	def join(self, value: float, /) -> typing.Self:
-		other = self.__class__(value)
-
-		return self.complement().meet(other.complement()).complement()
-
-	def complement(self, /) -> typing.Self:
-		return self.__class__(self.minimum - float(self))
 
 
 logical: typing.TypeAlias = real | dist | prob
@@ -212,7 +199,7 @@ class indexset[T: typing.Hashable](dict[T, bool]):
 		if self.default:
 			raise TypeError(f"an {self.__class__.__name__} with implicit members has no finite length")
 
-		return sum(self.values())
+		return self.size
 
 	def __bool__(self, /) -> bool:
 		return self.default or any(self.values())
@@ -223,6 +210,12 @@ class indexset[T: typing.Hashable](dict[T, bool]):
 	@property
 	def indices(self, /) -> typing.KeysView[T]:
 		return self.keys()
+
+	@property
+	def size(self, /) -> int:
+		exceptions = sum(membership != self.default for membership in self.values())
+
+		return ~exceptions if self.default else exceptions
 
 	@classmethod
 	def fromkeys(cls, iterable: typing.Iterable[T], value: bool = True, /) -> typing.Self:
