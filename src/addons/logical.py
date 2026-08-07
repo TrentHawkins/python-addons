@@ -12,6 +12,8 @@ type pair[T: numeric] = tuple[T, T]
 
 class real(float):
 
+	__slots__ = ()
+
 	minimum: float = +math.inf
 	midimum: float =     0.0
 	maximum: float = -math.inf
@@ -103,6 +105,8 @@ class real(float):
 
 class dist(real):
 
+	__slots__ = ()
+
 	minimum: float =     0.0
 	midimum: float =     1.0
 	maximum: float = +math.inf
@@ -135,6 +139,8 @@ class dist(real):
 
 
 class prob(real):
+
+	__slots__ = ()
 
 	minimum: float =     1.0
 	midimum: float =     0.5
