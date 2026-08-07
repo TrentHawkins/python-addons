@@ -171,6 +171,30 @@ class prob(real):
 logical: typing.TypeAlias = real | dist | prob
 
 
+class boolean(int):
+
+	__slots__ = ()
+
+	def __new__(cls, value: object = False, /) -> typing.Self:
+		return super().__new__(cls, bool(value))
+
+	def __repr__(self, /) -> str: return repr(bool(self))
+	def  __str__(self, /) -> str: return  str(bool(self))
+
+	def __and__(self, value: object, /) -> typing.Self: return self.__class__(bool(self)     and bool(value))
+	def  __or__(self, value: object, /) -> typing.Self: return self.__class__(bool(self)      or bool(value))
+	def __sub__(self, value: object, /) -> typing.Self: return self.__class__(bool(self) and not bool(value))
+	def __xor__(self, value: object, /) -> typing.Self: return self.__class__(bool(self)  is not bool(value))
+
+	def __rand__(self, value: object, /) -> typing.Self: return self.__class__(value) & self
+	def  __ror__(self, value: object, /) -> typing.Self: return self.__class__(value) | self
+	def __rsub__(self, value: object, /) -> typing.Self: return self.__class__(value) - self
+	def __rxor__(self, value: object, /) -> typing.Self: return self.__class__(value) ^ self
+
+	def __invert__(self, /) -> typing.Self:
+		return self.__class__(not self)
+
+
 class indexset[T: typing.Hashable](dict[T, bool]):
 
 	default: bool
