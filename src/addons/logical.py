@@ -2,24 +2,27 @@ from __future__ import annotations
 
 
 from functools import reduce
-from math import inf, exp, isinf, log
+from math import inf, exp, isinf, log, isfinite
 from typing import Hashable, Iterable, Iterator, KeysView, Mapping, Self, TypeAlias
 
 
-numeric: TypeAlias = int | float
+number: TypeAlias = int | float
 
-type pair[T: numeric] = tuple[T, T]
+type pair[T_co: number] = tuple[
+	T_co,
+	T_co,
+]
 
 
-class real(float):
+class Real(float):
 
 	__slots__ = ()
 
-	minimum: float = +inf
-	midimum: float =  0.0
-	maximum: float = -inf
+	minimum: number = +inf
+	midimum: number =  0.0
+	maximum: number = -inf
 
-	def __new__(cls, value: numeric | logical, /) -> Self:
+	def __new__(cls, value: number , /) -> Self:
 		self = super().__new__(cls, getattr(value, cls.__name__.lower(), value))
 
 		lower, upper = sorted(cls.range())
@@ -29,31 +32,31 @@ class real(float):
 
 		return self
 
-	def     __add__(self, value: float, /) -> Self: cls = self.__class__; return cls(self.dist + cls(value).dist)
-	def     __mul__(self, value: float, /) -> Self: cls = self.__class__; return cls(self.prob * cls(value).prob)
-	def __truediv__(self, value: float, /) -> Self: cls = self.__class__; return cls(self.prob - cls(value).prob)
-	def     __and__(self, value: float, /) -> Self: cls = self.__class__; return cls(self.prob * cls(value).prob)
+	def     __add__(self, value: number, /) -> Self: cls = self.__class__; return cls(self.dist + cls(value).dist)
+	def     __mul__(self, value: number, /) -> Self: cls = self.__class__; return cls(self.prob * cls(value).prob)
+	def __truediv__(self, value: number, /) -> Self: cls = self.__class__; return cls(self.prob - cls(value).prob)
+	def     __and__(self, value: number, /) -> Self: cls = self.__class__; return cls(self.prob * cls(value).prob)
 
-#	def __pow__(self, value: float, mod: None = None, /) -> Self:
+#	def __pow__(self, value: numeric, mod: None = None, /) -> Self:
 #		cls = self.__class__
 #
 #		return cls(super().__pow__(value, mod))
 
-	def __or__(self, value: float, /) -> Self:
+	def __or__(self, value: number, /) -> Self:
 		cls = self.__class__
 
 		value = cls(value)
 
 		return ~(~self & ~value)
 
-	def __sub__(self, value: float, /) -> Self:
+	def __sub__(self, value: number, /) -> Self:
 		cls = self.__class__
 
 		value = cls(value)
 
 		return self & ~value
 
-	def __xor__(self, value: float, /) -> Self:
+	def __xor__(self, value: number, /) -> Self:
 		cls = self.__class__
 
 		value = cls(value)
@@ -61,15 +64,15 @@ class real(float):
 		return (self - value) | (value - self)
 	#	return (self | value) - (value & self)
 
-	def      __radd__(self, value: float, /) -> Self: cls = self.__class__; return cls(value) + self
-	def      __rsub__(self, value: float, /) -> Self: cls = self.__class__; return cls(value) - self
-	def      __rmul__(self, value: float, /) -> Self: cls = self.__class__; return cls(value) * self
-	def  __rtruediv__(self, value: float, /) -> Self: cls = self.__class__; return cls(value) / self
-	def      __rand__(self, value: float, /) -> Self: cls = self.__class__; return cls(value) & self
-	def       __ror__(self, value: float, /) -> Self: cls = self.__class__; return cls(value) | self
-	def      __rxor__(self, value: float, /) -> Self: cls = self.__class__; return cls(value) ^ self
+	def     __radd__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) + self
+	def     __rsub__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) - self
+	def     __rmul__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) * self
+	def __rtruediv__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) / self
+	def     __rand__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) & self
+	def      __ror__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) | self
+	def     __rxor__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) ^ self
 
-#	def __rpow__(self, value: float, mod: None = None, /) -> Self:
+#	def __rpow__(self, value: numeric, mod: None = None, /) -> Self:
 #		cls = self.__class__
 #
 #		return cls(value).__pow__(self, mod)
@@ -83,14 +86,14 @@ class real(float):
 
 		return cls(~self.prob)
 
-	def __eq__(self, value: float, /) -> prob:
+	def __eq__(self, value: number, /) -> Prob:
 		meet = float((self & value).prob)
 		join = float((self | value).prob)
 
-		return prob(meet / join if join else prob.minimum)
+		return Prob(meet / join if join else Prob.minimum)
 
 	@classmethod
-	def range(cls, /) -> pair[float]:
+	def range(cls, /) -> pair[number]:
 		return (
 			min(
 				cls.minimum,
@@ -103,13 +106,13 @@ class real(float):
 		)
 
 	@property
-	def real(self, /) -> real: return self
+	def real(self, /) -> Real: return self
 	@property
-	def dist(self, /) -> dist: return dist(exp(-float(self)))
+	def dist(self, /) -> Dist: return Dist(exp(-float(self)))
 	@property
-	def prob(self, /) -> prob: return self.dist.prob
+	def prob(self, /) -> Prob: return self.dist.prob
 	@property
-	def imag(self, /) -> real:
+	def imag(self, /) -> Real:
 		cls = self.__class__
 
 		return cls(self.midimum).real
@@ -117,71 +120,71 @@ class real(float):
 	def conjugate(self, /) -> Self:
 		return self
 
-	def union       (self, iterable: Iterable[float], /) -> Self: cls = self.__class__; return reduce(cls. __or__, iterable, self)
-	def intersection(self, iterable: Iterable[float], /) -> Self: cls = self.__class__; return reduce(cls.__and__, iterable, self)
-	def difference  (self, iterable: Iterable[float], /) -> Self: cls = self.__class__; return reduce(cls.__sub__, iterable, self)
+	def union       (self, iterable: Iterable[number], /) -> Self: cls = self.__class__; return reduce(cls. __or__, iterable, self)
+	def intersection(self, iterable: Iterable[number], /) -> Self: cls = self.__class__; return reduce(cls.__and__, iterable, self)
+	def difference  (self, iterable: Iterable[number], /) -> Self: cls = self.__class__; return reduce(cls.__sub__, iterable, self)
 
-	def symmetric_difference(self, value: float, /) -> Self:
+	def symmetric_difference(self, value: number, /) -> Self:
 		return self ^ value
 
 
-class dist(real):
+class Dist(Real):
 
 	__slots__ = ()
 
-	minimum: float =  0.0
-	midimum: float =  1.0
-	maximum: float = +inf
+	minimum: number =  0.0
+	midimum: number =  1.0
+	maximum: number = +inf
 
-	def __add__(self, value: float, /) -> Self:
+	def __add__(self, value: number, /) -> Self:
 		cls = self.__class__
 
 		value = cls(value)
 
 		return cls(float(self) + float(value))
 
-	def __mul__(self, value: float, /) -> Self:
+	def __mul__(self, value: number, /) -> Self:
 		cls = self.__class__
 
 		value = cls(value)
 
-		return cls(self.maximum if isinf(self) or isinf(value) else float(self) + float(value) + float(self) * float(value))
+		return cls(float(self) + float(value) + float(self) * float(value) if isfinite(self) and isfinite(value) else self.maximum)
 
 	def __invert__(self, /) -> Self:
 		cls = self.__class__
 
-		return cls(1 / float(self) if self else dist.maximum)
+		return cls(1 / float(self) if self else self.maximum)
 
 	@property
-	def real(self, /) -> real:
-		return real(-log(self) if self else real.minimum)
+	def real(self, /) -> Real:
+		return Real(-log(self) if self else Real.minimum)
 
 	@property
-	def dist(self, /) -> dist:
+	def dist(self, /) -> Dist:
 		return self
 
 	@property
-	def prob(self, /) -> prob:
-		return prob(1 / (1 + float(self)))
+	def prob(self, /) -> Prob:
+		return Prob(1 / (1 + float(self)))
 
 
-class prob(real):
+class Prob(Real):
 
 	__slots__ = ()
 
-	minimum: float =  1.0
-	midimum: float =  0.5
-	maximum: float =  0.0
+	minimum: number =  1.0
+	midimum: number =  0.5
+	maximum: number =  0.0
 
-	def __add__(self, value: float, /) -> Self:
+	def __add__(self, value: number, /) -> Self:
 		cls = self.__class__
 
 		value = cls(value)
 		self, value = min(self, value), max(self, value)
 
-		return cls(float(self) / (1 + float(self) / float(value) - float(self)) if value else prob.maximum)
+		return cls(float(self) / (1 + float(self) / float(value) - float(self)) if value else self.maximum)
 
-	def __mul__(self, value: float, /) -> Self:
+	def __mul__(self, value: number, /) -> Self:
 		cls = self.__class__
 
 		value = cls(value)
@@ -194,22 +197,19 @@ class prob(real):
 		return cls(self.minimum - float(self))
 
 	@property
-	def real(self, /) -> real:
+	def real(self, /) -> Real:
 		return self.dist.real
 
 	@property
-	def dist(self, /) -> dist:
-		return dist((1 - float(self)) / float(self) if self else dist.maximum)
+	def dist(self, /) -> Dist:
+		return Dist((1 - float(self)) / float(self) if self else Dist.maximum)
 
 	@property
-	def prob(self, /) -> prob:
+	def prob(self, /) -> Prob:
 		return self
 
 
-logical: TypeAlias = real | dist | prob
-
-
-class boolean(int):
+class Bool(int):
 
 	__slots__ = ()
 
@@ -219,11 +219,15 @@ class boolean(int):
 	def __repr__(self, /) -> str: return repr(bool(self))
 	def  __str__(self, /) -> str: return  str(bool(self))
 
+	def __add__(self, value: object, /) -> Self: cls = self.__class__; return cls(bool(self)     and bool(value))
+	def __mul__(self, value: object, /) -> Self: cls = self.__class__; return cls(bool(self)     and bool(value))
 	def __and__(self, value: object, /) -> Self: cls = self.__class__; return cls(bool(self)     and bool(value))
 	def  __or__(self, value: object, /) -> Self: cls = self.__class__; return cls(bool(self)      or bool(value))
 	def __sub__(self, value: object, /) -> Self: cls = self.__class__; return cls(bool(self) and not bool(value))
 	def __xor__(self, value: object, /) -> Self: cls = self.__class__; return cls(bool(self)  is not bool(value))
 
+	def __radd__(self, value: object, /) -> Self: cls = self.__class__; return cls(value) + self
+	def __rmul__(self, value: object, /) -> Self: cls = self.__class__; return cls(value) * self
 	def __rand__(self, value: object, /) -> Self: cls = self.__class__; return cls(value) & self
 	def  __ror__(self, value: object, /) -> Self: cls = self.__class__; return cls(value) | self
 	def __rsub__(self, value: object, /) -> Self: cls = self.__class__; return cls(value) - self
@@ -247,22 +251,25 @@ class boolean(int):
 		return self ^ value
 
 
-class indexset[T: Hashable](dict[T, boolean]):
+class IndexSet[T: Hashable](dict[T, Bool]):
 
-	default: boolean
+	default: Bool
 
-	def __init__(self, iterable: Iterable[T] | Mapping[T, boolean] = (), /, *, default: boolean = boolean.max()):
-		super().__init__(iterable if isinstance(iterable, Mapping) else ((key, boolean.min()) for key in iterable))
+	def __init__(self, iterable: Iterable[T] | Mapping[T, Bool] | None = None, /, *, default: Bool = Bool.max()):
+		if iterable is None:
+			iterable = ()
+
+		super().__init__(iterable if isinstance(iterable, Mapping) else ((key, Bool.min()) for key in iterable))
 
 		self.default = default
 
 	def __repr__(self, /) -> str:
 		return repr(set(self)) if not self.default else "~" + repr(set(~self))
 
-	def __missing__(self, _: T, /) -> boolean:
+	def __missing__(self, _: T, /) -> Bool:
 		return self.default
 
-	def __contains__(self, key: T, /) -> boolean:
+	def __contains__(self, key: T, /) -> Bool:
 		return self.get(key, self.default)
 
 	def __iter__(self, /) -> Iterator[T]:
@@ -300,7 +307,7 @@ class indexset[T: Hashable](dict[T, boolean]):
 		return ~exceptions if self.default else exceptions
 
 	@classmethod
-	def fromkeys(cls, iterable: Iterable[T], value: boolean = boolean.min(), /) -> Self:
+	def fromkeys(cls, iterable: Iterable[T], value: Bool = Bool.min(), /) -> Self:
 		return cls(dict.fromkeys(iterable, value))
 
 	def copy(self, /) -> Self:
@@ -309,7 +316,7 @@ class indexset[T: Hashable](dict[T, boolean]):
 		return cls(self, default = self.default)
 
 	def add(self, key: T, /) -> None:
-		self[key] = boolean.min()
+		self[key] = Bool.min()
 
 	def remove(self, key: T, /) -> None:
 		if key not in self:
@@ -318,8 +325,8 @@ class indexset[T: Hashable](dict[T, boolean]):
 		self.discard(key)
 
 	def discard(self, key: T, /) -> None:
-		self[key] = boolean.max()
+		self[key] = Bool.max()
 
 	def clear(self, /) -> None:
-		self.default = boolean.max()
-		self.update(dict.fromkeys(self.indices, boolean.max()))
+		self.default = Bool.max()
+		self.update(dict.fromkeys(self.indices, Bool.max()))
