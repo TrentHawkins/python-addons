@@ -1,8 +1,24 @@
+"""
+------------------------------------------------------------------------------------------------------------------------------------
+L − ~
+0 1 1
+1 0 0
+------------------------------------------------------------------------------------------------------------------------------------
+L R + × ∧ ∨ − Δ ≠ > < = ≤ ≥
+0 0 0 0 0 0 0 0 0 0 0 1 1 1
+0 1 0 0 0 1 1 1 1 0 1 0 1 0
+1 0 0 0 0 1 0 1 1 1 0 0 0 1
+1 1 1 1 1 1 0 0 0 0 0 1 1 1
+------------------------------------------------------------------------------------------------------------------------------------
+"""
+
+
+
 from __future__ import annotations
 
 
+from math import inf, exp, log, isfinite
 from functools import reduce
-from math import inf, exp, isinf, log, isfinite
 from typing import Hashable, Iterable, Iterator, KeysView, Mapping, Self, TypeAlias
 
 
@@ -86,11 +102,13 @@ class Real(float):
 
 		return cls(~self.prob)
 
-	def __eq__(self, value: number, /) -> Prob:
-		meet = float((self & value).prob)
-		join = float((self | value).prob)
+	def __eq__(self, value: number, /) -> Prob: return ~(self != value)
+	def __le__(self, value: number, /) -> Prob: return ~(self >  value)
+	def __ge__(self, value: number, /) -> Prob: return ~(self <  value)
 
-		return Prob(meet / join if join else Prob.minimum)
+	def __ne__(self, value: number, /) -> Prob: cls = self.__class__; return self.prob ^ cls(value).prob
+	def __lt__(self, value: number, /) -> Prob: cls = self.__class__; return cls(value).prob - self.prob
+	def __gt__(self, value: number, /) -> Prob: cls = self.__class__; return self.prob - cls(value).prob
 
 	@classmethod
 	def range(cls, /) -> pair[number]:
@@ -120,12 +138,16 @@ class Real(float):
 	def conjugate(self, /) -> Self:
 		return self
 
-	def union       (self, iterable: Iterable[number], /) -> Self: cls = self.__class__; return reduce(cls. __or__, iterable, self)
-	def intersection(self, iterable: Iterable[number], /) -> Self: cls = self.__class__; return reduce(cls.__and__, iterable, self)
-	def difference  (self, iterable: Iterable[number], /) -> Self: cls = self.__class__; return reduce(cls.__sub__, iterable, self)
+	def union       (self, *values: number) -> Self: cls = self.__class__; return reduce(cls.__or__, values, self)
+	def intersection(self, *values: number) -> Self: cls = self.__class__; return reduce(cls.__and__, values, self)
+	def difference  (self, *values: number) -> Self: cls = self.__class__; return reduce(cls.__sub__, values, self)
 
 	def symmetric_difference(self, value: number, /) -> Self:
 		return self ^ value
+
+	def issubset  (self, value: number, /) -> Prob: return self <= value
+	def issuperset(self, value: number, /) -> Prob: return self >= value
+	def isdisjoint(self, value: number, /) -> Prob: return self != value
 
 
 class Dist(Real):
@@ -180,9 +202,10 @@ class Prob(Real):
 		cls = self.__class__
 
 		value = cls(value)
-		self, value = min(self, value), max(self, value)
+		lower = min(float(self), float(value))
+		upper = max(float(self), float(value))
 
-		return cls(float(self) / (1 + float(self) / float(value) - float(self)) if value else self.maximum)
+		return cls(lower / (1 + lower / upper - lower) if upper else self.maximum)
 
 	def __mul__(self, value: number, /) -> Self:
 		cls = self.__class__
@@ -219,36 +242,47 @@ class Bool(int):
 	def __repr__(self, /) -> str: return repr(bool(self))
 	def  __str__(self, /) -> str: return  str(bool(self))
 
-	def __add__(self, value: object, /) -> Self: cls = self.__class__; return cls(bool(self)     and bool(value))
-	def __mul__(self, value: object, /) -> Self: cls = self.__class__; return cls(bool(self)     and bool(value))
-	def __and__(self, value: object, /) -> Self: cls = self.__class__; return cls(bool(self)     and bool(value))
-	def  __or__(self, value: object, /) -> Self: cls = self.__class__; return cls(bool(self)      or bool(value))
-	def __sub__(self, value: object, /) -> Self: cls = self.__class__; return cls(bool(self) and not bool(value))
-	def __xor__(self, value: object, /) -> Self: cls = self.__class__; return cls(bool(self)  is not bool(value))
+	def __add__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self) and     bool(value))
+	def __mul__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self) and     bool(value))
+	def __and__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self) and     bool(value))
+	def  __or__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self)  or     bool(value))
+	def __sub__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self) and not bool(value))
+	def __xor__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self)  is not bool(value))
 
-	def __radd__(self, value: object, /) -> Self: cls = self.__class__; return cls(value) + self
-	def __rmul__(self, value: object, /) -> Self: cls = self.__class__; return cls(value) * self
-	def __rand__(self, value: object, /) -> Self: cls = self.__class__; return cls(value) & self
-	def  __ror__(self, value: object, /) -> Self: cls = self.__class__; return cls(value) | self
-	def __rsub__(self, value: object, /) -> Self: cls = self.__class__; return cls(value) - self
-	def __rxor__(self, value: object, /) -> Self: cls = self.__class__; return cls(value) ^ self
+	def __radd__(self, value: int, /) -> Self: cls = self.__class__; return cls(value) + self
+	def __rmul__(self, value: int, /) -> Self: cls = self.__class__; return cls(value) * self
+	def __rand__(self, value: int, /) -> Self: cls = self.__class__; return cls(value) & self
+	def  __ror__(self, value: int, /) -> Self: cls = self.__class__; return cls(value) | self
+	def __rsub__(self, value: int, /) -> Self: cls = self.__class__; return cls(value) - self
+	def __rxor__(self, value: int, /) -> Self: cls = self.__class__; return cls(value) ^ self
 
 	def __invert__(self, /) -> Self:
 		cls = self.__class__
 
 		return cls(not self)
 
+	def __eq__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self)  is     bool(value))
+	def __ne__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self)  is not bool(value))
+	def __lt__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(value) and not bool(self))
+	def __le__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(value)  or not bool(self))
+	def __gt__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self) and not bool(value))
+	def __ge__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self)  or not bool(value))
+
 	@classmethod
 	def min(cls, /) -> Self: return cls(1)
 	@classmethod
 	def max(cls, /) -> Self: return cls(0)
 
-	def union       (self, iterable: Iterable[object], /) -> Self: cls = self.__class__; return reduce(cls. __or__, iterable, self)
-	def intersection(self, iterable: Iterable[object], /) -> Self: cls = self.__class__; return reduce(cls.__and__, iterable, self)
-	def difference  (self, iterable: Iterable[object], /) -> Self: cls = self.__class__; return reduce(cls.__sub__, iterable, self)
+	def union       (self, *values: int) -> Self: cls = self.__class__; return reduce(cls. __or__, values, self)
+	def intersection(self, *values: int) -> Self: cls = self.__class__; return reduce(cls.__and__, values, self)
+	def difference  (self, *values: int) -> Self: cls = self.__class__; return reduce(cls.__sub__, values, self)
 
-	def symmetric_difference(self, value: object, /) -> Self:
+	def symmetric_difference(self, value: int, /) -> Self:
 		return self ^ value
+
+	def issubset  (self, value: int, /) -> Self: return self <= value
+	def issuperset(self, value: int, /) -> Self: return self >= value
+	def isdisjoint(self, value: int, /) -> Self: return self != value
 
 
 class IndexSet[T: Hashable](dict[T, Bool]):
