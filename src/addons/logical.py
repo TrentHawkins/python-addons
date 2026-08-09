@@ -6,8 +6,8 @@ L − ~
 ------------------------------------------------------------------------------------------------------------------------------------
 L R + × ∧ ∨ − Δ ≠ > < = ≤ ≥
 0 0 0 0 0 0 0 0 0 0 0 1 1 1
-0 1 0 0 0 1 1 1 1 0 1 0 1 0
-1 0 0 0 0 1 0 1 1 1 0 0 0 1
+0 1 0 0 0 1 0 1 1 0 1 0 1 0
+1 0 0 0 0 1 1 1 1 1 0 0 0 1
 1 1 1 1 1 1 0 0 0 0 0 1 1 1
 ------------------------------------------------------------------------------------------------------------------------------------
 """
@@ -289,13 +289,15 @@ class IndexSet[T: Hashable](dict[T, Bool]):
 
 	default: Bool
 
-	def __init__(self, iterable: Iterable[T] | Mapping[T, Bool] | None = None, /, *, default: Bool = Bool.max()):
+	def __init__(self, iterable: Iterable[T] | Mapping[T, Bool] | None = None, /, *,
+		default: Bool = Bool.max(),
+	):
 		if iterable is None:
 			iterable = ()
 
 		super().__init__(iterable if isinstance(iterable, Mapping) else ((key, Bool.min()) for key in iterable))
 
-		self.default = default
+		self.default = iterable.default if isinstance(iterable, IndexSet) else default
 
 	def __repr__(self, /) -> str:
 		return repr(set(self)) if not self.default else "~" + repr(set(~self))
@@ -325,10 +327,44 @@ class IndexSet[T: Hashable](dict[T, Bool]):
 	def __bool__(self, /) -> bool:
 		return bool(self.default) or any(self.values())
 
+	def __and__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Self:
+		cls = self.__class__
+		other = cls(other)
+
+		return cls({key: self[key] & other[key] for key in self.keys() | other.keys()},
+			default = self.default & other.default,
+		)
+
+	def __or__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Self:
+		cls = self.__class__
+		other = cls(other)
+
+		return cls({key: self[key] | other[key] for key in self.keys() | other.keys()},
+			default = self.default | other.default,
+		)
+
+	def __sub__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Self:
+		cls = self.__class__
+		other = cls(other)
+
+		return cls({key: self[key] - other[key] for key in self.keys() | other.keys()},
+			default = self.default - other.default,
+		)
+
+	def __xor__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Self:
+		cls = self.__class__
+		other = cls(other)
+
+		return cls({key: self[key] ^ other[key] for key in self.keys() | other.keys()},
+			default = self.default ^ other.default,
+		)
+
 	def __invert__(self, /) -> Self:
 		cls = self.__class__
 
-		return cls({key: ~value for key, value in self.items()}, default = ~self.default)
+		return cls({key: ~value for key, value in self.items()},
+			default = ~self.default,
+		)
 
 	@property
 	def indices(self, /) -> KeysView[T]:
@@ -364,3 +400,7 @@ class IndexSet[T: Hashable](dict[T, Bool]):
 	def clear(self, /) -> None:
 		self.default = Bool.max()
 		self.update(dict.fromkeys(self.indices, Bool.max()))
+
+	def union	    (self, *iterables: Iterable[T]) -> Self: cls = self.__class__; return reduce(cls. __or__, iterables, self)
+#	def intersection(self, *iterables: Iterable[T]) -> Self: cls = self.__class__; return reduce(cls.__and__, iterables, self)
+#	def difference  (self, *iterables: Iterable[T]) -> Self: cls = self.__class__; return reduce(cls.__sub__, iterables, self)
