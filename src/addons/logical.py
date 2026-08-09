@@ -366,6 +366,28 @@ class IndexSet[T: Hashable](dict[T, Bool]):
 			default = ~self.default,
 		)
 
+	def __eq__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Bool:
+		cls = self.__class__
+		other = cls(other)
+
+		return Bool(self.default == other.default and all(self[key] == other[key] for key in self.keys() | other.keys()))
+
+	def __le__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Bool:
+		cls = self.__class__
+		other = cls(other)
+
+		return Bool(self.default <= other.default and all(self[key] <= other[key] for key in self.keys() | other.keys()))
+
+	def __ge__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Bool:
+		cls = self.__class__
+		other = cls(other)
+
+		return Bool(self.default >= other.default and all(self[key] >= other[key] for key in self.keys() | other.keys()))
+
+	def __ne__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Bool: return ~(self == other)
+	def __lt__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Bool: return ~(self >= other)
+	def __gt__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Bool: return ~(self <= other)
+
 	@property
 	def indices(self, /) -> KeysView[T]:
 		return self.keys()
@@ -402,5 +424,14 @@ class IndexSet[T: Hashable](dict[T, Bool]):
 		self.update(dict.fromkeys(self.indices, Bool.max()))
 
 	def union	    (self, *iterables: Iterable[T]) -> Self: cls = self.__class__; return reduce(cls. __or__, iterables, self)
-#	def intersection(self, *iterables: Iterable[T]) -> Self: cls = self.__class__; return reduce(cls.__and__, iterables, self)
-#	def difference  (self, *iterables: Iterable[T]) -> Self: cls = self.__class__; return reduce(cls.__sub__, iterables, self)
+	def intersection(self, *iterables: Iterable[T]) -> Self: cls = self.__class__; return reduce(cls.__and__, iterables, self)
+	def difference  (self, *iterables: Iterable[T]) -> Self: cls = self.__class__; return reduce(cls.__sub__, iterables, self)
+
+	def symmetric_difference(self, iterable: Iterable[T], /) -> Self:
+		cls = self.__class__
+
+		return cls(iterable) ^ self
+
+	def issubset  (self, iterable: Iterable[T] | Mapping[T, Bool], /) -> Bool: cls = self.__class__; return self <= cls(iterable)
+	def issuperset(self, iterable: Iterable[T] | Mapping[T, Bool], /) -> Bool: cls = self.__class__; return self >= cls(iterable)
+	def isdisjoint(self, iterable: Iterable[T] | Mapping[T, Bool], /) -> Bool: cls = self.__class__; return self != cls(iterable)
