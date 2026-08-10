@@ -17,7 +17,7 @@ L R + × ∧ ∨ − Δ ≠ > < = ≤ ≥
 from __future__ import annotations
 
 
-from math import inf, exp, log, isfinite
+from math import inf, exp, log, isnan
 from functools import reduce
 from typing import Hashable, Iterable, Iterator, KeysView, Mapping, Self, TypeAlias
 
@@ -38,10 +38,14 @@ class Real(float):
 	midimum: number =  0.0
 	maximum: number = -inf
 
-	def __new__(cls, value: number , /) -> Self:
-		self = super().__new__(cls, getattr(value, cls.__name__.lower(), value))
+	def __new__(cls, value: number, /) -> Self:
+		value = getattr(value, cls.__name__.lower(), value)
+		value = cls.maximum if isnan(value) else value
 
-		lower, upper = sorted(cls.range())
+		self = super().__new__(cls, value)
+
+		lower = min(cls.minimum, cls.maximum)
+		upper = max(cls.minimum, cls.maximum)
 
 		if not lower <= float(self) <= upper:
 			raise ValueError(f"not {lower} <= {self} <= {upper} for {cls.__name__}")
@@ -49,7 +53,7 @@ class Real(float):
 		return self
 
 	def     __add__(self, value: number, /) -> Self: cls = self.__class__; return cls(self.dist + cls(value).dist)
-	def     __mul__(self, value: number, /) -> Self: cls = self.__class__; return cls(self.prob * cls(value).prob)
+	def     __mul__(self, value: number, /) -> Self: cls = self.__class__; return cls(self.dist * cls(value).dist)
 	def __truediv__(self, value: number, /) -> Self: cls = self.__class__; return cls(self.prob - cls(value).prob)
 	def     __and__(self, value: number, /) -> Self: cls = self.__class__; return cls(self.prob * cls(value).prob)
 
@@ -138,7 +142,7 @@ class Real(float):
 	def conjugate(self, /) -> Self:
 		return self
 
-	def union       (self, *values: number) -> Self: cls = self.__class__; return reduce(cls.__or__, values, self)
+	def union       (self, *values: number) -> Self: cls = self.__class__; return reduce(cls. __or__, values, self)
 	def intersection(self, *values: number) -> Self: cls = self.__class__; return reduce(cls.__and__, values, self)
 	def difference  (self, *values: number) -> Self: cls = self.__class__; return reduce(cls.__sub__, values, self)
 
@@ -158,19 +162,8 @@ class Dist(Real):
 	midimum: number =  1.0
 	maximum: number = +inf
 
-	def __add__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		value = cls(value)
-
-		return cls(float(self) + float(value))
-
-	def __mul__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		value = cls(value)
-
-		return cls(float(self) + float(value) + float(self) * float(value) if isfinite(self) and isfinite(value) else self.maximum)
+	def __add__(self, value: number, /) -> Self: cls = self.__class__; return cls(float(self) + float(cls(value)))
+	def __mul__(self, value: number, /) -> Self: cls = self.__class__; return cls(float(self) * float(cls(value)))
 
 	def __invert__(self, /) -> Self:
 		cls = self.__class__
@@ -202,17 +195,40 @@ class Prob(Real):
 		cls = self.__class__
 
 		value = cls(value)
+
 		lower = min(float(self), float(value))
 		upper = max(float(self), float(value))
 
-		return cls(lower / (1 + lower / upper - lower) if upper else self.maximum)
+		if lower == self.maximum: return cls(lower)
+
+		ratio = lower / upper
+		complement = 1 - upper
+
+		return cls(lower / (1 + ratio * complement))
+	#	return cls(float(self & value) / float(self | value))
 
 	def __mul__(self, value: number, /) -> Self:
 		cls = self.__class__
 
 		value = cls(value)
 
-		return cls(float(self) * float(value))
+		lower = min(float(self), float(value))
+		upper = max(float(self), float(value))
+
+		if lower == self.maximum or upper == self.midimum: return cls(lower)
+		if upper == self.minimum or lower == self.midimum: return cls(upper)
+
+		if lower <= 1 - upper:
+			product = lower / (1 - lower) * (upper / (1 - upper))
+
+			return cls(product / (1 + product))
+
+		else:
+			product = (1 - lower) / lower * ((1 - upper) / upper)
+
+			return cls(1 / (1 + product))
+
+	#	return cls(float(self & value) / float(self == value))
 
 	def __invert__(self, /) -> Self:
 		cls = self.__class__
@@ -236,18 +252,65 @@ class Bool(int):
 
 	__slots__ = ()
 
-	def __new__(cls, value: object = False, /) -> Self:
+	minimum: int = 1
+	maximum: int = 0
+
+	def __new__(cls, value: int = False, /) -> Self:
+		if value is not cls.minimum and value is not cls.maximum:
+			raise TypeError(f"expected a boolean value, got {value!r}")
+
 		return super().__new__(cls, bool(value))
 
 	def __repr__(self, /) -> str: return repr(bool(self))
 	def  __str__(self, /) -> str: return  str(bool(self))
 
-	def __add__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self) and     bool(value))
-	def __mul__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self) and     bool(value))
-	def __and__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self) and     bool(value))
-	def  __or__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self)  or     bool(value))
-	def __sub__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self) and not bool(value))
-	def __xor__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self)  is not bool(value))
+	def __add__(self, value: number, /) -> Self:
+		cls = self.__class__
+
+		if isinstance(value, float):
+			return NotImplemented
+
+		return cls(bool(self) and bool(value))
+
+	def __mul__(self, value: number, /) -> Self:
+		cls = self.__class__
+
+		if isinstance(value, float):
+			return NotImplemented
+
+		return cls(bool(self) and bool(value))
+
+	def __and__(self, value: number, /) -> Self:
+		cls = self.__class__
+
+		if isinstance(value, float):
+			return NotImplemented
+
+		return cls(bool(self) and bool(value))
+
+	def  __or__(self, value: number, /) -> Self:
+		cls = self.__class__
+
+		if isinstance(value, float):
+			return NotImplemented
+
+		return cls(bool(self) or bool(value))
+
+	def __sub__(self, value: number, /) -> Self:
+		cls = self.__class__
+
+		if isinstance(value, float):
+			return NotImplemented
+
+		return cls(bool(self) and not bool(value))
+
+	def __xor__(self, value: number, /) -> Self:
+		cls = self.__class__
+
+		if isinstance(value, float):
+			return NotImplemented
+
+		return cls(bool(self) is not bool(value))
 
 	def __radd__(self, value: int, /) -> Self: cls = self.__class__; return cls(value) + self
 	def __rmul__(self, value: int, /) -> Self: cls = self.__class__; return cls(value) * self
@@ -261,17 +324,58 @@ class Bool(int):
 
 		return cls(not self)
 
-	def __eq__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self)  is     bool(value))
-	def __ne__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self)  is not bool(value))
-	def __lt__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(value) and not bool(self))
-	def __le__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(value)  or not bool(self))
-	def __gt__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self) and not bool(value))
-	def __ge__(self, value: int, /) -> Self: cls = self.__class__; return cls(bool(self)  or not bool(value))
+	def __eq__(self, value: number, /) -> Self:
+		cls = self.__class__
+
+		if isinstance(value, float):
+			return NotImplemented
+
+		return cls(bool(self) is bool(value))
+
+	def __ne__(self, value: number, /) -> Self:
+		cls = self.__class__
+
+		if isinstance(value, float):
+			return NotImplemented
+
+		return cls(bool(self) is not bool(value))
+
+	def __lt__(self, value: number, /) -> Self:
+		cls = self.__class__
+
+		if isinstance(value, float):
+			return NotImplemented
+
+		return cls(bool(value) and not bool(self))
+
+	def __le__(self, value: number, /) -> Self:
+		cls = self.__class__
+
+		if isinstance(value, float):
+			return NotImplemented
+
+		return cls(bool(value) or not bool(self))
+
+	def __gt__(self, value: number, /) -> Self:
+		cls = self.__class__
+
+		if isinstance(value, float):
+			return NotImplemented
+
+		return cls(bool(self) and not bool(value))
+
+	def __ge__(self, value: number, /) -> Self:
+		cls = self.__class__
+
+		if isinstance(value, float):
+			return NotImplemented
+
+		return cls(bool(self) or not bool(value))
 
 	@classmethod
-	def min(cls, /) -> Self: return cls(1)
+	def min(cls, /) -> Self: return cls(cls.minimum)
 	@classmethod
-	def max(cls, /) -> Self: return cls(0)
+	def max(cls, /) -> Self: return cls(cls.maximum)
 
 	def union       (self, *values: int) -> Self: cls = self.__class__; return reduce(cls. __or__, values, self)
 	def intersection(self, *values: int) -> Self: cls = self.__class__; return reduce(cls.__and__, values, self)
@@ -432,6 +536,6 @@ class IndexSet[T: Hashable](dict[T, Bool]):
 
 		return cls(iterable) ^ self
 
-	def issubset  (self, iterable: Iterable[T] | Mapping[T, Bool], /) -> Bool: cls = self.__class__; return self <= cls(iterable)
-	def issuperset(self, iterable: Iterable[T] | Mapping[T, Bool], /) -> Bool: cls = self.__class__; return self >= cls(iterable)
-	def isdisjoint(self, iterable: Iterable[T] | Mapping[T, Bool], /) -> Bool: cls = self.__class__; return self != cls(iterable)
+	def issubset  (self, iterable: Iterable[T] | Mapping[T, Bool], /) -> Bool: cls = self.__class__; return self <= iterable
+	def issuperset(self, iterable: Iterable[T] | Mapping[T, Bool], /) -> Bool: cls = self.__class__; return self >= iterable
+	def isdisjoint(self, iterable: Iterable[T] | Mapping[T, Bool], /) -> Bool: cls = self.__class__; return self != iterable
