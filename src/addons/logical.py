@@ -256,7 +256,7 @@ class Bool(int):
 	maximum: int = 0
 
 	def __new__(cls, value: int = False, /) -> Self:
-		if value is not cls.minimum and value is not cls.maximum:
+		if not isinstance(value, int) or value not in (cls.minimum, cls.maximum):
 			raise TypeError(f"expected a boolean value, got {value!r}")
 
 		return super().__new__(cls, bool(value))
@@ -389,33 +389,50 @@ class Bool(int):
 	def isdisjoint(self, value: int, /) -> Self: return self != value
 
 
-class IndexSet[T: Hashable](dict[T, Bool]):
+class Set[K: Hashable, V: (Bool, Prob)](dict[K, V]):
 
-	default: Bool
+	truth: type[V]
+	complement: bool
 
-	def __init__(self, iterable: Iterable[T] | Mapping[T, Bool] | None = None, /, *,
-		default: Bool = Bool.max(),
+	def __init_subclass__(cls, /, *args,
+		truth: type[V] | None = None,
+	**kwargs) -> None:
+		super().__init_subclass__(*args, **kwargs)
+
+		if truth is not None:
+			cls.truth = truth
+
+		if not hasattr(cls, "truth"):
+			raise TypeError("missing required keyword-only argument: 'truth'")
+
+	def __init__(self, iterable: Iterable[K] | Mapping[K, V] | None = None, /, *,
+		complement: bool | None = None,
 	):
 		if iterable is None:
 			iterable = ()
 
-		super().__init__(iterable if isinstance(iterable, Mapping) else ((key, Bool.min()) for key in iterable))
+		if complement is None:
+			complement = iterable.complement if isinstance(iterable, Set) else False
 
-		self.default = iterable.default if isinstance(iterable, IndexSet) else default
+		self.complement = complement
+
+		super().__init__(
+			iterable.items() if isinstance(iterable, Mapping) else ((key, self.truth(not self.complement)) for key in iterable),
+		)
 
 	def __repr__(self, /) -> str:
-		return repr(set(self)) if not self.default else "~" + repr(set(~self))
+		return repr(set(self)) if not self.complement else "~" + repr(set(~self))
 
-	def __missing__(self, _: T, /) -> Bool:
+	def __missing__(self, _: K, /) -> V:
 		return self.default
 
-	def __contains__(self, key: T, /) -> Bool:
-		return self.get(key, self.default)
+	def __contains__(self, key: K, /) -> V:
+		return self[key]
 
-	def __iter__(self, /) -> Iterator[T]:
+	def __iter__(self, /) -> Iterator[K]:
 		cls = self.__class__
 
-		if self.default:
+		if self.complement:
 			raise TypeError(f"cannot iterate an {cls.__name__} with implicit members")
 
 		return (key for key, value in self.items() if value)
@@ -423,119 +440,146 @@ class IndexSet[T: Hashable](dict[T, Bool]):
 	def __len__(self, /) -> int:
 		cls = self.__class__
 
-		if self.default:
+		if self.complement:
 			raise TypeError(f"an {cls.__name__} with implicit members has no finite length")
 
 		return self.size
 
 	def __bool__(self, /) -> bool:
-		return bool(self.default) or any(self.values())
+		return self.complement or any(self.values())
 
-	def __and__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Self:
+	def __and__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
 		cls = self.__class__
 		other = cls(other)
+		default = self.default & other.default
 
 		return cls({key: self[key] & other[key] for key in self.keys() | other.keys()},
-			default = self.default & other.default,
+			complement = bool(default),
 		)
 
-	def __or__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Self:
+	def __or__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
 		cls = self.__class__
 		other = cls(other)
+		default = self.default | other.default
 
 		return cls({key: self[key] | other[key] for key in self.keys() | other.keys()},
-			default = self.default | other.default,
+			complement = bool(default),
 		)
 
-	def __sub__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Self:
+	def __sub__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
 		cls = self.__class__
 		other = cls(other)
+		default = self.default - other.default
 
 		return cls({key: self[key] - other[key] for key in self.keys() | other.keys()},
-			default = self.default - other.default,
+			complement = bool(default),
 		)
 
-	def __xor__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Self:
+	def __xor__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
 		cls = self.__class__
 		other = cls(other)
+		default = self.default ^ other.default
 
 		return cls({key: self[key] ^ other[key] for key in self.keys() | other.keys()},
-			default = self.default ^ other.default,
+			complement = bool(default),
 		)
 
 	def __invert__(self, /) -> Self:
 		cls = self.__class__
 
 		return cls({key: ~value for key, value in self.items()},
-			default = ~self.default,
+			complement = not self.complement,
 		)
 
-	def __eq__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Bool:
+	def __eq__(self, other: Iterable[K] | Mapping[K, V], /) -> V:
 		cls = self.__class__
 		other = cls(other)
 
-		return Bool(self.default == other.default and all(self[key] == other[key] for key in self.keys() | other.keys()))
+		return reduce(lambda result, value: result & value,
+			(self[key] == other[key] for key in self.keys() | other.keys()),
+			self.default == other.default,
+		)
 
-	def __le__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Bool:
+	def __le__(self, other: Iterable[K] | Mapping[K, V], /) -> V:
 		cls = self.__class__
 		other = cls(other)
 
-		return Bool(self.default <= other.default and all(self[key] <= other[key] for key in self.keys() | other.keys()))
+		return reduce(lambda result, value: result & value,
+			(self[key] <= other[key] for key in self.keys() | other.keys()),
+			self.default <= other.default,
+		)
 
-	def __ge__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Bool:
+	def __ge__(self, other: Iterable[K] | Mapping[K, V], /) -> V:
 		cls = self.__class__
 		other = cls(other)
 
-		return Bool(self.default >= other.default and all(self[key] >= other[key] for key in self.keys() | other.keys()))
+		return reduce(lambda result, value: result & value,
+			(self[key] >= other[key] for key in self.keys() | other.keys()),
+			self.default >= other.default,
+		)
 
-	def __ne__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Bool: return ~(self == other)
-	def __lt__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Bool: return ~(self >= other)
-	def __gt__(self, other: Iterable[T] | Mapping[T, Bool], /) -> Bool: return ~(self <= other)
+	def __ne__(self, other: Iterable[K] | Mapping[K, V], /) -> V: return ~(self == other)
+	def __lt__(self, other: Iterable[K] | Mapping[K, V], /) -> V: return ~(self >= other)
+	def __gt__(self, other: Iterable[K] | Mapping[K, V], /) -> V: return ~(self <= other)
 
 	@property
-	def indices(self, /) -> KeysView[T]:
+	def indices(self, /) -> KeysView[K]:
 		return self.keys()
 
 	@property
 	def size(self, /) -> int:
-		exceptions = sum(membership != self.default for membership in self.values())
+		exceptions = sum(float(membership) != float(self.default) for membership in self.values())
 
 		return ~exceptions if self.default else exceptions
 
+	@property
+	def default(self, /) -> V:
+		return self.truth(self.complement)
+
 	@classmethod
-	def fromkeys(cls, iterable: Iterable[T], value: Bool = Bool.min(), /) -> Self:
-		return cls(dict.fromkeys(iterable, value))
+	def fromkeys(cls, iterable: Iterable[K], value: V | None = None, /) -> Self:
+		return cls(dict.fromkeys(iterable, cls.truth(1) if value is None else value))
 
 	def copy(self, /) -> Self:
 		cls = self.__class__
 
-		return cls(self, default = self.default)
+		return cls(self, complement = self.complement)
 
-	def add(self, key: T, /) -> None:
-		self[key] = Bool.min()
+	def add(self, key: K, /) -> None:
+		self[key] = self.truth(1)
 
-	def remove(self, key: T, /) -> None:
+	def remove(self, key: K, /) -> None:
 		if key not in self:
 			raise KeyError(key)
 
 		self.discard(key)
 
-	def discard(self, key: T, /) -> None:
-		self[key] = Bool.max()
+	def discard(self, key: K, /) -> None:
+		self[key] = self.truth(0)
 
 	def clear(self, /) -> None:
-		self.default = Bool.max()
-		self.update(dict.fromkeys(self.indices, Bool.max()))
+		excluded = self.truth(0)
 
-	def union	    (self, *iterables: Iterable[T]) -> Self: cls = self.__class__; return reduce(cls. __or__, iterables, self)
-	def intersection(self, *iterables: Iterable[T]) -> Self: cls = self.__class__; return reduce(cls.__and__, iterables, self)
-	def difference  (self, *iterables: Iterable[T]) -> Self: cls = self.__class__; return reduce(cls.__sub__, iterables, self)
+		self.complement = False
+		self.update(dict.fromkeys(self.indices, excluded))
 
-	def symmetric_difference(self, iterable: Iterable[T], /) -> Self:
+	def union	    (self, *iterables: Iterable[K]) -> Self: cls = self.__class__; return reduce(cls. __or__, iterables, self)
+	def intersection(self, *iterables: Iterable[K]) -> Self: cls = self.__class__; return reduce(cls.__and__, iterables, self)
+	def difference  (self, *iterables: Iterable[K]) -> Self: cls = self.__class__; return reduce(cls.__sub__, iterables, self)
+
+	def symmetric_difference(self, iterable: Iterable[K], /) -> Self:
 		cls = self.__class__
 
 		return cls(iterable) ^ self
 
-	def issubset  (self, iterable: Iterable[T] | Mapping[T, Bool], /) -> Bool: cls = self.__class__; return self <= iterable
-	def issuperset(self, iterable: Iterable[T] | Mapping[T, Bool], /) -> Bool: cls = self.__class__; return self >= iterable
-	def isdisjoint(self, iterable: Iterable[T] | Mapping[T, Bool], /) -> Bool: cls = self.__class__; return self != iterable
+	def issubset  (self, iterable: Iterable[K] | Mapping[K, V], /) -> V: cls = self.__class__; return self <= iterable
+	def issuperset(self, iterable: Iterable[K] | Mapping[K, V], /) -> V: cls = self.__class__; return self >= iterable
+	def isdisjoint(self, iterable: Iterable[K] | Mapping[K, V], /) -> V: cls = self.__class__; return self != iterable
+
+
+class IndexSet[K: Hashable](Set[K, Bool], truth = Bool):
+	pass
+
+
+class FuzzySet[K: Hashable](Set[K, Prob], truth = Prob):
+	pass
