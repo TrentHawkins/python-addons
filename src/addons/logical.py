@@ -19,7 +19,21 @@ from __future__ import annotations
 
 from math import inf, exp, log, isnan
 from functools import reduce
-from typing import Hashable, Iterable, Iterator, KeysView, Mapping, Self, TypeAlias
+from typing import (
+	Hashable,
+	Iterable,
+	Iterator,
+	KeysView,
+	Mapping,
+	Protocol,
+	Self,
+	SupportsAbs,
+	SupportsComplex,
+	SupportsFloat,
+	SupportsInt,
+	SupportsRound,
+	TypeAlias,
+)
 
 
 number: TypeAlias = int | float
@@ -151,7 +165,8 @@ class Real(float):
 
 	def issubset  (self, value: number, /) -> Prob: return self <= value
 	def issuperset(self, value: number, /) -> Prob: return self >= value
-	def isdisjoint(self, value: number, /) -> Prob: return self != value
+
+	def isdisjoint(self, value: number, /) -> Self: cls = self.__class__; return ~abs(self & cls(value))
 
 
 class Dist(Real):
@@ -255,7 +270,7 @@ class Bool(int):
 	minimum: int = 1
 	maximum: int = 0
 
-	def __new__(cls, value: int = False, /) -> Self:
+	def __new__(cls, value: number = False, /) -> Self:
 		if not isinstance(value, int) or value not in (cls.minimum, cls.maximum):
 			raise TypeError(f"expected a boolean value, got {value!r}")
 
@@ -324,6 +339,10 @@ class Bool(int):
 
 		return cls(not self)
 
+	def __pos__(self, /) -> Self: return  self
+	def __neg__(self, /) -> Self: return ~self
+	def __abs__(self, /) -> Self: return  self
+
 	def __eq__(self, value: number, /) -> Self:
 		cls = self.__class__
 
@@ -377,16 +396,17 @@ class Bool(int):
 	@classmethod
 	def max(cls, /) -> Self: return cls(cls.maximum)
 
-	def union       (self, *values: int) -> Self: cls = self.__class__; return reduce(cls. __or__, values, self)
-	def intersection(self, *values: int) -> Self: cls = self.__class__; return reduce(cls.__and__, values, self)
-	def difference  (self, *values: int) -> Self: cls = self.__class__; return reduce(cls.__sub__, values, self)
+	def union       (self, *values: number) -> Self: cls = self.__class__; return reduce(cls. __or__, values, self)
+	def intersection(self, *values: number) -> Self: cls = self.__class__; return reduce(cls.__and__, values, self)
+	def difference  (self, *values: number) -> Self: cls = self.__class__; return reduce(cls.__sub__, values, self)
 
 	def symmetric_difference(self, value: int, /) -> Self:
 		return self ^ value
 
-	def issubset  (self, value: int, /) -> Self: return self <= value
-	def issuperset(self, value: int, /) -> Self: return self >= value
-	def isdisjoint(self, value: int, /) -> Self: return self != value
+	def issubset  (self, value: number, /) -> Self: return self <= value
+	def issuperset(self, value: number, /) -> Self: return self >= value
+
+	def isdisjoint(self, value: number, /) -> Self: cls = self.__class__; return ~abs(self & cls(value))
 
 
 class Set[K: Hashable, V: (Bool, Prob)](dict[K, V]):
@@ -448,40 +468,58 @@ class Set[K: Hashable, V: (Bool, Prob)](dict[K, V]):
 	def __bool__(self, /) -> bool:
 		return self.complement or any(self.values())
 
+	def __add__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
+		cls = self.__class__
+
+		other = cls(other)
+
+		return cls({key: self[key] + other[key] for key in self.keys() | other.keys()},
+			complement = bool(self.default + other.default),
+		)
+
+	def __mul__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
+		cls = self.__class__
+
+		other = cls(other)
+
+		return cls({key: self[key] * other[key] for key in self.keys() | other.keys()},
+			complement = bool(self.default * other.default),
+		)
+
 	def __and__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
 		cls = self.__class__
+
 		other = cls(other)
-		default = self.default & other.default
 
 		return cls({key: self[key] & other[key] for key in self.keys() | other.keys()},
-			complement = bool(default),
+			complement = bool(self.default & other.default),
 		)
 
 	def __or__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
 		cls = self.__class__
+
 		other = cls(other)
-		default = self.default | other.default
 
 		return cls({key: self[key] | other[key] for key in self.keys() | other.keys()},
-			complement = bool(default),
+			complement = bool(self.default | other.default),
 		)
 
 	def __sub__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
 		cls = self.__class__
+
 		other = cls(other)
-		default = self.default - other.default
 
 		return cls({key: self[key] - other[key] for key in self.keys() | other.keys()},
-			complement = bool(default),
+			complement = bool(self.default - other.default),
 		)
 
 	def __xor__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
 		cls = self.__class__
+
 		other = cls(other)
-		default = self.default ^ other.default
 
 		return cls({key: self[key] ^ other[key] for key in self.keys() | other.keys()},
-			complement = bool(default),
+			complement = bool(self.default ^ other.default),
 		)
 
 	def __invert__(self, /) -> Self:
@@ -491,36 +529,54 @@ class Set[K: Hashable, V: (Bool, Prob)](dict[K, V]):
 			complement = not self.complement,
 		)
 
+	def __pos__(self, /) -> Self:
+		cls = self.__class__
+
+		return cls(self,
+			complement = self.complement,
+		)
+
+	def __neg__(self, /) -> Self:
+		return ~self
+
+	def __abs__(self, /) -> V:
+		cls = self.__class__
+
+		result = sum((value if self.complement else ~value for value in self.values()), cls.truth(cls.truth.minimum))
+
+		return result if self.complement else ~result
+
 	def __eq__(self, other: Iterable[K] | Mapping[K, V], /) -> V:
 		cls = self.__class__
+
 		other = cls(other)
 
-		return reduce(lambda result, value: result & value,
-			(self[key] == other[key] for key in self.keys() | other.keys()),
-			self.default == other.default,
+		return cls.truth(self.default == other.default).intersection(
+			*(self[key] == other[key] for key in self.keys() | other.keys())
 		)
 
 	def __le__(self, other: Iterable[K] | Mapping[K, V], /) -> V:
 		cls = self.__class__
+
 		other = cls(other)
 
-		return reduce(lambda result, value: result & value,
-			(self[key] <= other[key] for key in self.keys() | other.keys()),
-			self.default <= other.default,
+		return cls.truth(self.default <= other.default).intersection(
+			*(self[key] <= other[key] for key in self.keys() | other.keys())
 		)
+
 
 	def __ge__(self, other: Iterable[K] | Mapping[K, V], /) -> V:
 		cls = self.__class__
+
 		other = cls(other)
 
-		return reduce(lambda result, value: result & value,
-			(self[key] >= other[key] for key in self.keys() | other.keys()),
-			self.default >= other.default,
+		return cls.truth(self.default >= other.default).intersection(
+			*(self[key] >= other[key] for key in self.keys() | other.keys())
 		)
 
 	def __ne__(self, other: Iterable[K] | Mapping[K, V], /) -> V: return ~(self == other)
-	def __lt__(self, other: Iterable[K] | Mapping[K, V], /) -> V: return ~(self >= other)
-	def __gt__(self, other: Iterable[K] | Mapping[K, V], /) -> V: return ~(self <= other)
+	def __lt__(self, other: Iterable[K] | Mapping[K, V], /) -> V: return  (self <= other) & (self != other)
+	def __gt__(self, other: Iterable[K] | Mapping[K, V], /) -> V: return  (self >= other) & (self != other)
 
 	@property
 	def indices(self, /) -> KeysView[K]:
@@ -572,14 +628,61 @@ class Set[K: Hashable, V: (Bool, Prob)](dict[K, V]):
 
 		return cls(iterable) ^ self
 
-	def issubset  (self, iterable: Iterable[K] | Mapping[K, V], /) -> V: cls = self.__class__; return self <= iterable
-	def issuperset(self, iterable: Iterable[K] | Mapping[K, V], /) -> V: cls = self.__class__; return self >= iterable
-	def isdisjoint(self, iterable: Iterable[K] | Mapping[K, V], /) -> V: cls = self.__class__; return self != iterable
+	def issubset  (self, iterable: Iterable[K] | Mapping[K, V], /) -> V: return self <= iterable
+	def issuperset(self, iterable: Iterable[K] | Mapping[K, V], /) -> V: return self >= iterable
+	
+	def isdisjoint(self, iterable: Iterable[K] | Mapping[K, V], /) -> V: return ~abs(self & iterable)
 
 
-class IndexSet[K: Hashable](Set[K, Bool], truth = Bool):
-	pass
+class IndexSet[K: Hashable](Set[K, Bool],
+	truth = Bool,
+):
+	...
 
 
-class FuzzySet[K: Hashable](Set[K, Prob], truth = Prob):
-	pass
+class FuzzySet[K: Hashable](Set[K, Prob],
+	truth = Prob,
+):
+	...
+
+
+class Boolean(Protocol):
+
+	def __bool__(self, /) -> bool: ...
+
+	def __add__(self, value: Self, /) -> Self: ...
+	def __mul__(self, value: Self, /) -> Self: ...
+	def __and__(self, value: Self, /) -> Self: ...
+	def  __or__(self, value: Self, /) -> Self: ...
+	def __sub__(self, value: Self, /) -> Self: ...
+	def __xor__(self, value: Self, /) -> Self: ...
+
+	def __radd__(self, value: Self, /) -> Self: ...
+	def __rmul__(self, value: Self, /) -> Self: ...
+	def __rand__(self, value: Self, /) -> Self: ...
+	def  __ror__(self, value: Self, /) -> Self: ...
+	def __rsub__(self, value: Self, /) -> Self: ...
+	def __rxor__(self, value: Self, /) -> Self: ...
+
+	def  __neg__(self, /) -> number: ...
+	def  __pos__(self, /) -> number: ...
+	def  __abs__(self, /) -> number: ...
+
+	def __invert__(self, /) -> Self: ...
+
+	def __eq__(self, value: Self, /) -> Self: ...
+	def __ne__(self, value: Self, /) -> Self: ...
+	def __lt__(self, value: Self, /) -> Self: ...
+	def __le__(self, value: Self, /) -> Self: ...
+	def __gt__(self, value: Self, /) -> Self: ...
+	def __ge__(self, value: Self, /) -> Self: ...
+
+	def union       (self, *values: Self) -> Self: ...
+	def intersection(self, *values: Self) -> Self: ...
+	def difference  (self, *values: Self) -> Self: ...
+
+	def symmetric_difference(self, value: Self, /) -> Self: ...
+
+	def issubset  (self, value: Self, /) -> Self: ...
+	def issuperset(self, value: Self, /) -> Self: ...
+	def isdisjoint(self, value: Self, /) -> Self: ...
