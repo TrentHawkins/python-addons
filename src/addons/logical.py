@@ -17,6 +17,7 @@ L R + × ∧ ∨ − Δ ≠ > < = ≤ ≥
 from __future__ import annotations
 
 
+from abc import ABC, abstractmethod
 from math import inf, exp, log, isnan
 from functools import reduce
 from typing import (
@@ -25,9 +26,8 @@ from typing import (
 	Iterator,
 	KeysView,
 	Mapping,
-	Protocol,
+	Never,
 	Self,
-	SupportsAbs,
 	TypeAlias,
 )
 from typing import cast
@@ -36,7 +36,184 @@ from typing import cast
 number: TypeAlias = int | float
 
 
-class Real(float):
+
+class Complementable(ABC):
+
+	@abstractmethod
+	def __invert__(self, /) -> Self:
+		...
+
+
+class Truth(Complementable):
+
+	def __and__(self, value: Self, /) -> Self: return ~(~self | ~value)
+	def  __or__(self, value: Self, /) -> Self: return ~(~self & ~value)
+
+
+class Operable[O](ABC):
+
+	@abstractmethod
+	def __and__(self, value: O, /) -> Self:
+		...
+
+	@abstractmethod
+	def __or__(self, value: O, /) -> Self:
+		...
+
+	@abstractmethod
+	def __sub__(self, value: O, /) -> Self:
+		...
+
+	def __xor__(self, value: O, /) -> Self:
+		return (self | value) - cast(O, self & value)
+
+
+class Boolean[O: Complementable](Complementable, Operable[O]):
+
+	def __and__(self, value: O, /) -> Self: return ~(self | ~value)
+	def  __or__(self, value: O, /) -> Self: return ~(self & ~value)
+	def __sub__(self, value: O, /) -> Self: return   self & ~value
+
+
+class Arithmetic[O](ABC):
+
+	...
+
+
+class Measurable[T: Complementable](ABC):
+
+	@abstractmethod
+	def __abs__(self, /) -> T:
+		...
+
+
+class Order[O, T: Truth](ABC):
+
+	@abstractmethod
+	def __le__(self, value: O, /) -> T:
+		...
+
+	@abstractmethod
+	def __ge__(self, value: O, /) -> T:
+		...
+
+	def __eq__(self, value: O, /) -> T: return ~(self != value)
+	def __ne__(self, value: O, /) -> T: return ~(self == value)
+
+	def __lt__(self, value: O, /) -> T: return (self <= value) & (self != value)
+	def __gt__(self, value: O, /) -> T: return (self >= value) & (self != value)
+
+
+class Partial[O, T: Truth](Order[O, T]):
+
+	def __le__(self, value: O, /) -> T: return (self < value) | (self == value)
+	def __ge__(self, value: O, /) -> T: return (self > value) | (self == value)
+
+
+class Total[O, T: Truth](Order[O, T]):
+
+	def __le__(self, value: O, /) -> T: return ~(self > value)
+	def __ge__(self, value: O, /) -> T: return ~(self < value)
+
+
+class SomeBase[T: Truth](Truth, Measurable[T]):
+
+	@abstractmethod
+	def __bool__(self, /) -> bool:
+		...
+
+	@abstractmethod
+	def __add__(self, value: Self, /) -> Self:
+		...
+
+	@abstractmethod
+	def __mul__(self, value: Self, /) -> Self:
+		...
+
+	def __sub__(self, value: Self, /) -> Self:
+		return self & ~value
+
+	def __xor__(self, value: Self, /) -> Self:
+		return (self | value) - (self & value)
+
+	def __neg__(self, /) -> Self:
+		return ~self
+
+	def __pos__(self, /) -> Self:
+		return self
+
+	@abstractmethod
+	def __eq__(self, value: Self, /) -> T:
+		...
+
+	def __ne__(self, value: Self, /) -> T:
+		return ~(self == value)
+
+	@abstractmethod
+	def __le__(self, value: Self, /) -> T:
+		...
+
+	@abstractmethod
+	def __ge__(self, value: Self, /) -> T:
+		...
+
+	def __lt__(self, value: Self, /) -> T:
+		return (self <= value) & (self != value)
+
+	def __gt__(self, value: Self, /) -> T:
+		return (self >= value) & (self != value)
+
+	@classmethod
+	@abstractmethod
+	def minimum(cls, /) -> Self:
+		...
+
+	@classmethod
+	@abstractmethod
+	def maximum(cls, /) -> Self:
+		...
+
+	def        union(self, *values: Self) -> Self: cls = self.__class__; return reduce(cls. __or__, values, self)
+	def intersection(self, *values: Self) -> Self: cls = self.__class__; return reduce(cls.__and__, values, self)
+	def   difference(self, *values: Self) -> Self: cls = self.__class__; return reduce(cls.__sub__, values, self)
+
+	def symmetric_difference(self, value: Self, /) -> Self:
+		return self ^ value
+
+	def issubset(self, value: Self, /) -> T:
+		return self <= value
+
+	def issuperset(self, value: Self, /) -> T:
+		return self >= value
+
+	def isdisjoint(self, value: Self, /) -> T:
+		return ~abs(self & value)
+
+
+class SetLike[O, T: Truth](Operable[O], Partial[O, T]):
+
+	def        union(self, *values: O) -> Self: cls = self.__class__; return reduce(cls. __or__, values, self)
+	def intersection(self, *values: O) -> Self: cls = self.__class__; return reduce(cls.__and__, values, self)
+	def   difference(self, *values: O) -> Self: cls = self.__class__; return reduce(cls.__sub__, values, self)
+
+	def symmetric_difference(self, value: O, /) -> Self:
+		return self ^ value
+
+	def issubset  (self, value: O, /) -> T: return self <= value
+	def issuperset(self, value: O, /) -> T: return self >= value
+
+	@abstractmethod
+	def isdisjoint(self, value: O, /) -> T:
+		...
+
+
+class MeasuredSetLike[O, T: Truth](SetLike[O, T], Measurable[T]):
+
+	def isdisjoint(self, value: O, /) -> T:
+		return ~abs(self & value)
+
+
+class Real(SetLike[number, "Prob"], float):
 
 	__slots__ = ()
 
@@ -94,6 +271,9 @@ class Real(float):
 	def      __ror__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) | self
 	def     __rxor__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) ^ self
 
+	def __bool__(self, /) -> bool:
+		return float.__bool__(self)
+
 #	def __rpow__(self, value: numeric, mod: None = None, /) -> Self:
 #		cls = self.__class__
 #
@@ -138,17 +318,8 @@ class Real(float):
 	def conjugate(self, /) -> Self:
 		return self
 
-	def union       (self, *values: number) -> Self: cls = self.__class__; return reduce(cls. __or__, values, self)
-	def intersection(self, *values: number) -> Self: cls = self.__class__; return reduce(cls.__and__, values, self)
-	def difference  (self, *values: number) -> Self: cls = self.__class__; return reduce(cls.__sub__, values, self)
-
-	def symmetric_difference(self, value: number, /) -> Self:
-		return self ^ value
-
-	def issubset  (self, value: number, /) -> Prob: return self <= value
-	def issuperset(self, value: number, /) -> Prob: return self >= value
-
-	def isdisjoint(self, value: number, /) -> Self: cls = self.__class__; return ~abs(self & cls(value))
+	def isdisjoint(self, value: number, /) -> Prob:
+		return ~abs(self & value).prob
 
 
 class Dist(Real):
@@ -178,7 +349,7 @@ class Dist(Real):
 	def prob(self, /) -> Prob: return Prob(1 / (1 + float(self)))
 
 
-class Prob(Real):
+class Prob(Real, SomeBase["Prob"]):
 
 	__slots__ = ()
 
@@ -241,7 +412,7 @@ class Prob(Real):
 	def prob(self, /) -> Prob: return self
 
 
-class Bool(int):
+class Bool(MeasuredSetLike[number, "Bool"], int, SomeBase["Bool"]):
 
 	__slots__ = ()
 
@@ -371,60 +542,12 @@ class Bool(int):
 	@classmethod
 	def maximum(cls, /) -> Self: return int.__new__(cls, False)
 
-	def        union(self, *values: number) -> Self: cls = self.__class__; return reduce(cls. __or__, values, self)
-	def intersection(self, *values: number) -> Self: cls = self.__class__; return reduce(cls.__and__, values, self)
-	def   difference(self, *values: number) -> Self: cls = self.__class__; return reduce(cls.__sub__, values, self)
 
-	def symmetric_difference(self, value: int, /) -> Self:
-		return self ^ value
-
-	def issubset  (self, value: number, /) -> Self: return self <= value
-	def issuperset(self, value: number, /) -> Self: return self >= value
-
-	def isdisjoint(self, value: number, /) -> Self: cls = self.__class__; return ~abs(self & cls(value))
-
-
-class Boolean[T](Protocol):
-
-	def __bool__(self, /) -> bool: ...
-
-	def __add__(self, value: Self, /) -> Self: ...
-	def __mul__(self, value: Self, /) -> Self: ...
-	def __and__(self, value: Self, /) -> Self: ...
-	def  __or__(self, value: Self, /) -> Self: ...
-	def __sub__(self, value: Self, /) -> Self: ...
-	def __xor__(self, value: Self, /) -> Self: ...
-
-	def __neg__(self, /) -> Self: ...
-	def __pos__(self, /) -> Self: ...
-	def __abs__(self, /) -> T   : ...
-
-	def __invert__(self, /) -> Self: ...
-
-	def __eq__(self, value: Self, /) -> T: ...
-	def __ne__(self, value: Self, /) -> T: ...
-	def __lt__(self, value: Self, /) -> T: ...
-	def __le__(self, value: Self, /) -> T: ...
-	def __gt__(self, value: Self, /) -> T: ...
-	def __ge__(self, value: Self, /) -> T: ...
-
-	@classmethod
-	def minimum(cls, /) -> Self: ...
-	@classmethod
-	def maximum(cls, /) -> Self: ...
-
-	def        union(self, *values: Self) -> Self: ...
-	def intersection(self, *values: Self) -> Self: ...
-	def   difference(self, *values: Self) -> Self: ...
-
-	def symmetric_difference(self, value: Self, /) -> Self: ...
-
-	def issubset  (self, value: Self, /) -> T: ...
-	def issuperset(self, value: Self, /) -> T: ...
-	def isdisjoint(self, value: Self, /) -> T: ...
-
-
-class Set[K: Hashable, T: Boolean, V: Boolean = T](dict[K, V]):
+class Set[K: Hashable, T: SomeBase, V: SomeBase = T](
+	MeasuredSetLike[Iterable[K] | Mapping[K, V], T],
+	SomeBase[T],
+	dict[K, V],
+):
 
 	truth: type[V]
 	complement: bool
@@ -638,26 +761,12 @@ class Set[K: Hashable, T: Boolean, V: Boolean = T](dict[K, V]):
 		self.complement = False
 		dict.update(self, {key: self.truth.maximum() for key in self.indices})
 
-	def 	   union(self, *iterables: Iterable[K]) -> Self: cls = self.__class__; return reduce(cls. __or__, iterables, self)
-	def intersection(self, *iterables: Iterable[K]) -> Self: cls = self.__class__; return reduce(cls.__and__, iterables, self)
-	def   difference(self, *iterables: Iterable[K]) -> Self: cls = self.__class__; return reduce(cls.__sub__, iterables, self)
-
-	def symmetric_difference(self, iterable: Iterable[K], /) -> Self:
-		cls = self.__class__
-
-		return cls(iterable) ^ self
-
 	def              update(self, *iterables: Iterable[K]): self.become(self.       union(*iterables))
 	def intersection_update(self, *iterables: Iterable[K]): self.become(self.intersection(*iterables))
 	def   difference_update(self, *iterables: Iterable[K]): self.become(self.  difference(*iterables))
 
 	def symmetric_difference_update(self, iterable : Iterable[K], /):
 		self.become(self.symmetric_difference(iterable))
-
-	def issubset  (self, iterable: Iterable[K] | Mapping[K, V], /) -> T: return self <= iterable
-	def issuperset(self, iterable: Iterable[K] | Mapping[K, V], /) -> T: return self >= iterable
-
-	def isdisjoint(self, iterable: Iterable[K] | Mapping[K, V], /) -> T: return ~abs(self & iterable)
 
 
 class IndexSet[I: Hashable](Set[I, Bool],
