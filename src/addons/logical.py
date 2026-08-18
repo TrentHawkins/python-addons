@@ -18,17 +18,19 @@ from __future__ import annotations
 
 
 from abc import ABC, abstractmethod
+import operator
 from math import inf, exp, log, isnan
 from functools import reduce
 from typing import (
 	Hashable,
+	Callable,
 	Iterable,
 	Iterator,
 	KeysView,
 	Mapping,
-	Never,
 	Protocol,
 	Self,
+	SupportsAbs,
 	TypeAlias,
 )
 from typing import cast
@@ -59,6 +61,74 @@ class SupportsTruth(SupportsComplement, Protocol):
 		...
 
 
+class SupportsOperable[O](Protocol):
+
+	def __and__(self, value: O, /) -> Self:
+		...
+
+	def __or__(self, value: O, /) -> Self:
+		...
+
+	def __sub__(self, value: O, /) -> Self:
+		...
+
+	def __xor__(self, value: O, /) -> Self:
+		...
+
+
+class SupportsOrder[O, T: SupportsTruth](Protocol):
+
+	def __eq__(self, value: O, /) -> T:
+		...
+
+	def __ne__(self, value: O, /) -> T:
+		...
+
+	def __lt__(self, value: O, /) -> T:
+		...
+
+	def __le__(self, value: O, /) -> T:
+		...
+
+	def __gt__(self, value: O, /) -> T:
+		...
+
+	def __ge__(self, value: O, /) -> T:
+		...
+
+
+class SupportsSemi[O](Protocol):
+
+	def __add__(self, value: O, /) -> Self:
+		...
+
+	def __mul__(self, value: O, /) -> Self:
+		...
+
+
+class SupportsBounded(Protocol):
+
+	@classmethod
+	def minimum(cls, /) -> Self:
+		...
+
+	@classmethod
+	def maximum(cls, /) -> Self:
+		...
+
+
+class SupportsIntersection[O](Protocol):
+
+	def intersection(self, *values: O) -> Self:
+		...
+
+
+class SupportsBool(Protocol):
+
+	def __bool__(self, /) -> bool:
+		...
+
+
 class Complementable(ABC):
 
 	@abstractmethod
@@ -75,6 +145,9 @@ class Truth(Complementable):
 	def __xor__(self, value: Self, /) -> Self:
 		return (self | value) - (self & value)
 	#	return (self - value) | (self - value)
+
+	def __pos__(self, /) -> Self: return  self
+	def __neg__(self, /) -> Self: return ~self
 
 class Operable[O](ABC):
 
@@ -99,6 +172,12 @@ class Measurable[T: SupportsComplement](ABC):
 	@abstractmethod
 	def __abs__(self, /) -> T:
 		...
+
+
+class SelfMeasured:
+
+	def __abs__(self, /) -> Self:
+		return self
 
 
 class Order[O, T: SupportsTruth](ABC):
@@ -151,6 +230,12 @@ class Semi[O](ABC):
 		...
 
 
+class ConjunctiveSemi[O](Semi[O], Operable[O]):
+
+	def __add__(self, value: O, /) -> Self: return self.__and__(value)
+	def __mul__(self, value: O, /) -> Self: return self.__and__(value)
+
+
 class Full[O](Semi[O]):
 
 	@abstractmethod
@@ -158,7 +243,31 @@ class Full[O](Semi[O]):
 		...
 
 
-class SetLike[O, T: SupportsTruth](Operable[O], Partial[O, T]):
+class Coercible[O](ABC):
+
+	@classmethod
+	def coerce(cls, value: O, /) -> Self:
+		constructor = cast(Callable[[O], Self], cls)
+
+		return constructor(value)
+
+
+class Reflected[O](Semi[O], Operable[O], Coercible[O]):
+
+	def __radd__(self, value: O, /) -> Self: return self.coerce(value) + cast(O, self)
+	def __rmul__(self, value: O, /) -> Self: return self.coerce(value) * cast(O, self)
+	def __rand__(self, value: O, /) -> Self: return self.coerce(value) & cast(O, self)
+	def  __ror__(self, value: O, /) -> Self: return self.coerce(value) | cast(O, self)
+	def __rsub__(self, value: O, /) -> Self: return self.coerce(value) - cast(O, self)
+	def __rxor__(self, value: O, /) -> Self: return self.coerce(value) ^ cast(O, self)
+
+
+class DivisiblyReflected[O](Full[O], Reflected[O]):
+
+	def __rtruediv__(self, value: O, /) -> Self: return self.coerce(value) / cast(O, self)
+
+
+class SetLike[O, T: SupportsTruth](Operable[O], Order[O, T]):
 
 	def        union(self, *values: O) -> Self: cls = self.__class__; return reduce(cls. __or__, values, self)
 	def intersection(self, *values: O) -> Self: cls = self.__class__; return reduce(cls.__and__, values, self)
@@ -175,10 +284,54 @@ class SetLike[O, T: SupportsTruth](Operable[O], Partial[O, T]):
 		...
 
 
+class CoerciveSetLike[O, T: SupportsTruth](SetLike[O, T], Coercible[O], Truth):
+
+	def __or__(self, value: O, /) -> Self:
+		coerced = self.coerce(value)
+
+		return ~(~self & cast(O, ~coerced))
+
+	def __sub__(self, value: O, /) -> Self:
+		coerced = self.coerce(value)
+
+		return self & cast(O, ~coerced)
+
+	def __xor__(self, value: O, /) -> Self:
+		coerced = self.coerce(value)
+
+		left = self - cast(O, coerced)
+		right = coerced - cast(O, self)
+
+		return left | cast(O, right)
+
 class MeasuredSetLike[O, T: SupportsTruth](SetLike[O, T], Measurable[T]):
 
 	def isdisjoint(self, value: O, /) -> T:
 		return ~abs(self & value)
+
+
+class Mutable[O](Semi[O], Operable[O]):
+
+	@abstractmethod
+	def become(self, result: Self, /) -> Self:
+		...
+
+	def __iadd__(self, value: O, /) -> Self: return self.become(self + value)
+	def __imul__(self, value: O, /) -> Self: return self.become(self * value)
+	def __iand__(self, value: O, /) -> Self: return self.become(self & value)
+	def  __ior__(self, value: O, /) -> Self: return self.become(self | value)
+	def __isub__(self, value: O, /) -> Self: return self.become(self - value)
+	def __ixor__(self, value: O, /) -> Self: return self.become(self ^ value)
+
+
+class MutableSetLike[O, T: SupportsTruth](Mutable[O], SetLike[O, T]):
+
+	def              update(self, *values: O) -> None: self.become(self.       union(*values))
+	def intersection_update(self, *values: O) -> None: self.become(self.intersection(*values))
+	def   difference_update(self, *values: O) -> None: self.become(self.  difference(*values))
+
+	def symmetric_difference_update(self, value: O, /) -> None:
+		self.become(self.symmetric_difference(value))
 
 
 class Bounded(ABC):
@@ -194,68 +347,28 @@ class Bounded(ABC):
 		...
 
 
-class SetValue[O, T: SupportsTruth](SupportsTruth, Protocol):
+class SetValue[O, T: SupportsTruth](
+	SupportsOperable[O],
+	SupportsOrder[O, T],
+	SupportsSemi[O],
+	SupportsAbs[T],
+	SupportsBounded,
+	SupportsIntersection[O],
+	SupportsBool,
+	SupportsTruth,
+	Protocol,
+):
 
-	def __bool__(self, /) -> bool:
-		...
-
-	def __add__(self, value: O, /) -> Self:
-		...
-
-	def __mul__(self, value: O, /) -> Self:
-		...
-
-	def __and__(self, value: O, /) -> Self:
-		...
-
-	def __or__(self, value: O, /) -> Self:
-		...
-
-	def __sub__(self, value: O, /) -> Self:
-		...
-
-	def __xor__(self, value: O, /) -> Self:
-		...
-
-	def __abs__(self, /) -> T:
-		...
-
-	def __eq__(self, value: O, /) -> T:
-		...
-
-	def __ne__(self, value: O, /) -> T:
-		...
-
-	def __lt__(self, value: O, /) -> T:
-		...
-
-	def __le__(self, value: O, /) -> T:
-		...
-
-	def __gt__(self, value: O, /) -> T:
-		...
-
-	def __ge__(self, value: O, /) -> T:
-		...
-
-	def intersection(self, *values: O) -> Self:
-		...
-
-	@classmethod
-	def minimum(cls, /) -> Self:
-		...
-
-	@classmethod
-	def maximum(cls, /) -> Self:
-		...
+	...
 
 
 class Real(
 	Bounded,
-	Full[number],
-	SetLike[number, "Prob"],
+	DivisiblyReflected[number],
+	CoerciveSetLike[number, "Prob"],
+	Total[number, "Prob"],
+	SelfMeasured,
 	Measurable["Real"],
-	Truth,
 	float,
 ):
 
@@ -285,56 +398,15 @@ class Real(
 #
 #		return cls(super().__pow__(value, mod))
 
-	def __or__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		value = cls(value)
-
-		return ~(~self & ~value)
-
-	def __sub__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		value = cls(value)
-
-		return self & ~value
-
-	def __xor__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		value = cls(value)
-
-		return (self - value) | (value - self)
-	#	return (self | value) - (value & self)
-
-	def     __radd__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) + self
-	def     __rsub__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) - self
-	def     __rmul__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) * self
-	def __rtruediv__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) / self
-	def     __rand__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) & self
-	def      __ror__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) | self
-	def     __rxor__(self, value: number, /) -> Self: cls = self.__class__; return cls(value) ^ self
-
-	def __bool__(self, /) -> bool:
-		return float.__bool__(self)
-
 #	def __rpow__(self, value: numeric, mod: None = None, /) -> Self:
 #		cls = self.__class__
 #
 #		return cls(value).__pow__(self, mod)
 
-	def __neg__(self, /) -> Self: return ~self
-	def __pos__(self, /) -> Self: return  self
-	def	__abs__(self, /) -> Self: return  self
-
 	def __invert__(self, /) -> Self:
 		cls = self.__class__
 
 		return cls(~self.prob)
-
-	def __eq__(self, value: number, /) -> Prob: return ~(self != value)
-	def __le__(self, value: number, /) -> Prob: return ~(self >  value)
-	def __ge__(self, value: number, /) -> Prob: return ~(self <  value)
 
 	def __ne__(self, value: number, /) -> Prob: cls = self.__class__; return self.prob ^ cls(value).prob
 	def __lt__(self, value: number, /) -> Prob: cls = self.__class__; return cls(value).prob - self.prob
@@ -458,8 +530,11 @@ class Prob(Real):
 
 class Bool(
 	Bounded,
-	Semi[number],
+	ConjunctiveSemi[number],
+	Reflected[number],
+	SelfMeasured,
 	MeasuredSetLike[number, "Bool"],
+	Total[number, "Bool"],
 	Truth,
 	int,
 ):
@@ -475,117 +550,30 @@ class Bool(
 	def __repr__(self, /) -> str: return repr(bool(self))
 	def  __str__(self, /) -> str: return  str(bool(self))
 
-	def __add__(self, value: number, /) -> Self:
+	def apply(self, value: number, operation: Callable[[bool, bool], bool], /) -> Self:
 		cls = self.__class__
 
 		if isinstance(value, float):
-			return NotImplemented
+			return cast(Self, NotImplemented)
 
-		return cls(bool(self) and bool(value))
+		return cls(operation(bool(self), bool(value)))
 
-	def __mul__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		if isinstance(value, float):
-			return NotImplemented
-
-		return cls(bool(self) and bool(value))
-
-	def __and__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		if isinstance(value, float):
-			return NotImplemented
-
-		return cls(bool(self) and bool(value))
-
-	def  __or__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		if isinstance(value, float):
-			return NotImplemented
-
-		return cls(bool(self) or bool(value))
-
-	def __sub__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		if isinstance(value, float):
-			return NotImplemented
-
-		return cls(bool(self) and not bool(value))
-
-	def __xor__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		if isinstance(value, float):
-			return NotImplemented
-
-		return cls(bool(self) is not bool(value))
-
-	def __radd__(self, value: int, /) -> Self: cls = self.__class__; return cls(value) + self
-	def __rmul__(self, value: int, /) -> Self: cls = self.__class__; return cls(value) * self
-	def __rand__(self, value: int, /) -> Self: cls = self.__class__; return cls(value) & self
-	def  __ror__(self, value: int, /) -> Self: cls = self.__class__; return cls(value) | self
-	def __rsub__(self, value: int, /) -> Self: cls = self.__class__; return cls(value) - self
-	def __rxor__(self, value: int, /) -> Self: cls = self.__class__; return cls(value) ^ self
+	def __and__(self, value: number, /) -> Self: return self.apply(value, lambda left, right: left and     right)
+	def  __or__(self, value: number, /) -> Self: return self.apply(value, lambda left, right: left or      right)
+	def __sub__(self, value: number, /) -> Self: return self.apply(value, lambda left, right: left and not right)
+	def __xor__(self, value: number, /) -> Self: return self.apply(value, lambda left, right: left is  not right)
 
 	def __invert__(self, /) -> Self:
 		cls = self.__class__
 
 		return cls(not self)
 
-	def __pos__(self, /) -> Self: return  self
-	def __neg__(self, /) -> Self: return ~self
-	def __abs__(self, /) -> Self: return  self
-
-	def __eq__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		if isinstance(value, float):
-			return NotImplemented
-
-		return cls(bool(self) is bool(value))
-
-	def __ne__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		if isinstance(value, float):
-			return NotImplemented
-
-		return cls(bool(self) is not bool(value))
-
-	def __lt__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		if isinstance(value, float):
-			return NotImplemented
-
-		return cls(bool(value) and not bool(self))
-
-	def __le__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		if isinstance(value, float):
-			return NotImplemented
-
-		return cls(bool(value) or not bool(self))
-
-	def __gt__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		if isinstance(value, float):
-			return NotImplemented
-
-		return cls(bool(self) and not bool(value))
-
-	def __ge__(self, value: number, /) -> Self:
-		cls = self.__class__
-
-		if isinstance(value, float):
-			return NotImplemented
-
-		return cls(bool(self) or not bool(value))
+	def __eq__(self, value: number, /) -> Self: return self.apply(value, operator.eq)
+	def __ne__(self, value: number, /) -> Self: return self.apply(value, operator.ne)
+	def __lt__(self, value: number, /) -> Self: return self.apply(value, operator.lt)
+	def __le__(self, value: number, /) -> Self: return self.apply(value, operator.le)
+	def __gt__(self, value: number, /) -> Self: return self.apply(value, operator.gt)
+	def __ge__(self, value: number, /) -> Self: return self.apply(value, operator.ge)
 
 	@classmethod
 	def minimum(cls, /) -> Self: return int.__new__(cls, True )
@@ -595,8 +583,9 @@ class Bool(
 
 class Set[K: Hashable, T: SetValue, V: SetValue = T](
 	Bounded,
-	Semi[Iterable[K] | Mapping[K, V]],
+	MutableSetLike[Iterable[K] | Mapping[K, V], T],
 	MeasuredSetLike[Iterable[K] | Mapping[K, V], T],
+	Partial[Iterable[K] | Mapping[K, V], T],
 	Truth,
 	dict[K, V],
 ):
@@ -648,58 +637,20 @@ class Set[K: Hashable, T: SetValue, V: SetValue = T](
 	def __bool__(self, /) -> bool:
 		return self.complement or any(self.values())
 
-	def __add__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
+	def __add__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: return self.combine(other, operator.add )
+	def __mul__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: return self.combine(other, operator.mul )
+	def __and__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: return self.combine(other, operator.and_)
+	def  __or__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: return self.combine(other, operator.or_ )
+	def __sub__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: return self.combine(other, operator.sub )
+	def __xor__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: return self.combine(other, operator.xor )
+
+	def combine(self, other: Iterable[K] | Mapping[K, V], operation: Callable[[V, V], V], /) -> Self:
 		cls = self.__class__
 
 		other = cls(other)
 
-		return cls({key: self[key] + other[key] for key in self.keys() | other.keys()},
-			complement = bool(self.default + other.default),
-		)
-
-	def __mul__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
-		cls = self.__class__
-
-		other = cls(other)
-
-		return cls({key: self[key] * other[key] for key in self.keys() | other.keys()},
-			complement = bool(self.default * other.default),
-		)
-
-	def __and__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
-		cls = self.__class__
-
-		other = cls(other)
-
-		return cls({key: self[key] & other[key] for key in self.keys() | other.keys()},
-			complement = bool(self.default & other.default),
-		)
-
-	def __or__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
-		cls = self.__class__
-
-		other = cls(other)
-
-		return cls({key: self[key] | other[key] for key in self.keys() | other.keys()},
-			complement = bool(self.default | other.default),
-		)
-
-	def __sub__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
-		cls = self.__class__
-
-		other = cls(other)
-
-		return cls({key: self[key] - other[key] for key in self.keys() | other.keys()},
-			complement = bool(self.default - other.default),
-		)
-
-	def __xor__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
-		cls = self.__class__
-
-		other = cls(other)
-
-		return cls({key: self[key] ^ other[key] for key in self.keys() | other.keys()},
-			complement = bool(self.default ^ other.default),
+		return cls({key: operation(self[key], other[key]) for key in self.keys() | other.keys()},
+			complement = bool(operation(self.default, other.default)),
 		)
 
 	def become(self, result: Self, /) -> Self:
@@ -713,13 +664,6 @@ class Set[K: Hashable, T: SetValue, V: SetValue = T](
 
 		return self
 
-	def __iadd__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: return self.become(self + other)
-	def __imul__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: return self.become(self * other)
-	def __iand__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: return self.become(self & other)
-	def  __ior__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: return self.become(self | other)
-	def __isub__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: return self.become(self - other)
-	def __ixor__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: return self.become(self ^ other)
-
 	def __invert__(self, /) -> Self:
 		cls = self.__class__
 
@@ -728,14 +672,7 @@ class Set[K: Hashable, T: SetValue, V: SetValue = T](
 		)
 
 	def __pos__(self, /) -> Self:
-		cls = self.__class__
-
-		return cls(self,
-			complement = self.complement,
-		)
-
-	def __neg__(self, /) -> Self:
-		return ~self
+		return self.copy()
 
 	def __abs__(self, /) -> T:
 		cls = self.__class__
@@ -744,31 +681,9 @@ class Set[K: Hashable, T: SetValue, V: SetValue = T](
 
 		return result if self.complement else ~result
 
-	def __eq__(self, other: Iterable[K] | Mapping[K, V], /) -> T:
-		cls = self.__class__
-
-		other = cls(other)
-
-		return (self.default == other.default).intersection(*(self[key] == other[key] for key in self.keys() | other.keys()))
-
-	def __le__(self, other: Iterable[K] | Mapping[K, V], /) -> T:
-		cls = self.__class__
-
-		other = cls(other)
-
-		return (self.default <= other.default).intersection(*(self[key] <= other[key] for key in self.keys() | other.keys()))
-
-
-	def __ge__(self, other: Iterable[K] | Mapping[K, V], /) -> T:
-		cls = self.__class__
-
-		other = cls(other)
-
-		return (self.default >= other.default).intersection(*(self[key] >= other[key] for key in self.keys() | other.keys()))
-
-	def __ne__(self, other: Iterable[K] | Mapping[K, V], /) -> T: return ~(self == other)
-	def __lt__(self, other: Iterable[K] | Mapping[K, V], /) -> T: return  (self <= other) & (self != other)
-	def __gt__(self, other: Iterable[K] | Mapping[K, V], /) -> T: return  (self >= other) & (self != other)
+	def __eq__(self, other: Iterable[K] | Mapping[K, V], /) -> T: return self.compare(other, operator.eq)
+	def __le__(self, other: Iterable[K] | Mapping[K, V], /) -> T: return self.compare(other, operator.le)
+	def __ge__(self, other: Iterable[K] | Mapping[K, V], /) -> T: return self.compare(other, operator.ge)
 
 	@classmethod
 	def fromkeys(cls, iterable: Iterable[K], value: V | None = None, /) -> Self:
@@ -789,6 +704,15 @@ class Set[K: Hashable, T: SetValue, V: SetValue = T](
 	@property
 	def default(self, /) -> V:
 		return self.truth.minimum() if self.complement else self.truth.maximum()
+
+	def compare(self, other: Iterable[K] | Mapping[K, V], comparison: Callable[[V, V], T], /) -> T:
+		cls = self.__class__
+
+		other = cls(other)
+
+		return comparison(self.default, other.default).intersection(
+			*(comparison(self[key], other[key]) for key in self.keys() | other.keys()),
+		)
 
 	def copy(self, /) -> Self:
 		cls = self.__class__
@@ -812,13 +736,6 @@ class Set[K: Hashable, T: SetValue, V: SetValue = T](
 	def clear(self, /) -> None:
 		self.complement = False
 		dict.update(self, {key: self.truth.maximum() for key in self.indices})
-
-	def              update(self, *iterables: Iterable[K]): self.become(self.       union(*iterables))
-	def intersection_update(self, *iterables: Iterable[K]): self.become(self.intersection(*iterables))
-	def   difference_update(self, *iterables: Iterable[K]): self.become(self.  difference(*iterables))
-
-	def symmetric_difference_update(self, iterable : Iterable[K], /):
-		self.become(self.symmetric_difference(iterable))
 
 
 class IndexSet[I: Hashable](Set[I, Bool],
