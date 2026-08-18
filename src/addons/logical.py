@@ -27,6 +27,7 @@ from typing import (
 	KeysView,
 	Mapping,
 	Never,
+	Protocol,
 	Self,
 	TypeAlias,
 )
@@ -35,6 +36,27 @@ from typing import cast
 
 number: TypeAlias = int | float
 
+
+
+class SupportsComplement(Protocol):
+
+	def __invert__(self, /) -> Self:
+		...
+
+
+class SupportsTruth(SupportsComplement, Protocol):
+
+	def __and__(self, value: Self, /) -> Self:
+		...
+
+	def __or__(self, value: Self, /) -> Self:
+		...
+
+	def __sub__(self, value: Self, /) -> Self:
+		...
+
+	def __xor__(self, value: Self, /) -> Self:
+		...
 
 
 class Complementable(ABC):
@@ -48,7 +70,11 @@ class Truth(Complementable):
 
 	def __and__(self, value: Self, /) -> Self: return ~(~self | ~value)
 	def  __or__(self, value: Self, /) -> Self: return ~(~self & ~value)
+	def __sub__(self, value: Self, /) -> Self: return    self & ~value
 
+	def __xor__(self, value: Self, /) -> Self:
+		return (self | value) - (self & value)
+	#	return (self - value) | (self - value)
 
 class Operable[O](ABC):
 
@@ -68,26 +94,14 @@ class Operable[O](ABC):
 		return (self | value) - cast(O, self & value)
 
 
-class Boolean[O: Complementable](Complementable, Operable[O]):
-
-	def __and__(self, value: O, /) -> Self: return ~(self | ~value)
-	def  __or__(self, value: O, /) -> Self: return ~(self & ~value)
-	def __sub__(self, value: O, /) -> Self: return   self & ~value
-
-
-class Arithmetic[O](ABC):
-
-	...
-
-
-class Measurable[T: Complementable](ABC):
+class Measurable[T: SupportsComplement](ABC):
 
 	@abstractmethod
 	def __abs__(self, /) -> T:
 		...
 
 
-class Order[O, T: Truth](ABC):
+class Order[O, T: SupportsTruth](ABC):
 
 	@abstractmethod
 	def __le__(self, value: O, /) -> T:
@@ -104,93 +118,47 @@ class Order[O, T: Truth](ABC):
 	def __gt__(self, value: O, /) -> T: return (self >= value) & (self != value)
 
 
-class Partial[O, T: Truth](Order[O, T]):
+class Partial[O, T: SupportsTruth](Order[O, T]):
 
 	def __le__(self, value: O, /) -> T: return (self < value) | (self == value)
 	def __ge__(self, value: O, /) -> T: return (self > value) | (self == value)
 
 
-class Total[O, T: Truth](Order[O, T]):
+class Total[O, T: SupportsTruth](Order[O, T]):
 
 	def __le__(self, value: O, /) -> T: return ~(self > value)
 	def __ge__(self, value: O, /) -> T: return ~(self < value)
 
 
-class SomeBase[T: Truth](Truth, Measurable[T]):
+class Boolean[O: Complementable, T: SupportsTruth](Truth, Operable[O], Partial[O, T]):
+
+	def __and__(self, value: O, /) -> Self: complement: Self = ~self; return ~(complement | ~value)
+	def  __or__(self, value: O, /) -> Self: complement: Self = ~self; return ~(complement & ~value)
+	def __sub__(self, value: O, /) -> Self:                           return         self & ~value
+
+	def __le__(self, value: O, /) -> T: return (self | value) == value
+	def __ge__(self, value: O, /) -> T: return (self & value) == value
+
+
+class Semi[O](ABC):
 
 	@abstractmethod
-	def __bool__(self, /) -> bool:
+	def __add__(self, value: O, /) -> Self:
 		...
 
 	@abstractmethod
-	def __add__(self, value: Self, /) -> Self:
+	def __mul__(self, value: O, /) -> Self:
 		...
+
+
+class Full[O](Semi[O]):
 
 	@abstractmethod
-	def __mul__(self, value: Self, /) -> Self:
+	def __truediv__(self, value: O, /) -> Self:
 		...
 
-	def __sub__(self, value: Self, /) -> Self:
-		return self & ~value
 
-	def __xor__(self, value: Self, /) -> Self:
-		return (self | value) - (self & value)
-
-	def __neg__(self, /) -> Self:
-		return ~self
-
-	def __pos__(self, /) -> Self:
-		return self
-
-	@abstractmethod
-	def __eq__(self, value: Self, /) -> T:
-		...
-
-	def __ne__(self, value: Self, /) -> T:
-		return ~(self == value)
-
-	@abstractmethod
-	def __le__(self, value: Self, /) -> T:
-		...
-
-	@abstractmethod
-	def __ge__(self, value: Self, /) -> T:
-		...
-
-	def __lt__(self, value: Self, /) -> T:
-		return (self <= value) & (self != value)
-
-	def __gt__(self, value: Self, /) -> T:
-		return (self >= value) & (self != value)
-
-	@classmethod
-	@abstractmethod
-	def minimum(cls, /) -> Self:
-		...
-
-	@classmethod
-	@abstractmethod
-	def maximum(cls, /) -> Self:
-		...
-
-	def        union(self, *values: Self) -> Self: cls = self.__class__; return reduce(cls. __or__, values, self)
-	def intersection(self, *values: Self) -> Self: cls = self.__class__; return reduce(cls.__and__, values, self)
-	def   difference(self, *values: Self) -> Self: cls = self.__class__; return reduce(cls.__sub__, values, self)
-
-	def symmetric_difference(self, value: Self, /) -> Self:
-		return self ^ value
-
-	def issubset(self, value: Self, /) -> T:
-		return self <= value
-
-	def issuperset(self, value: Self, /) -> T:
-		return self >= value
-
-	def isdisjoint(self, value: Self, /) -> T:
-		return ~abs(self & value)
-
-
-class SetLike[O, T: Truth](Operable[O], Partial[O, T]):
+class SetLike[O, T: SupportsTruth](Operable[O], Partial[O, T]):
 
 	def        union(self, *values: O) -> Self: cls = self.__class__; return reduce(cls. __or__, values, self)
 	def intersection(self, *values: O) -> Self: cls = self.__class__; return reduce(cls.__and__, values, self)
@@ -207,13 +175,89 @@ class SetLike[O, T: Truth](Operable[O], Partial[O, T]):
 		...
 
 
-class MeasuredSetLike[O, T: Truth](SetLike[O, T], Measurable[T]):
+class MeasuredSetLike[O, T: SupportsTruth](SetLike[O, T], Measurable[T]):
 
 	def isdisjoint(self, value: O, /) -> T:
 		return ~abs(self & value)
 
 
-class Real(SetLike[number, "Prob"], float):
+class Bounded(ABC):
+
+	@classmethod
+	@abstractmethod
+	def minimum(cls, /) -> Self:
+		...
+
+	@classmethod
+	@abstractmethod
+	def maximum(cls, /) -> Self:
+		...
+
+
+class SetValue[O, T: SupportsTruth](SupportsTruth, Protocol):
+
+	def __bool__(self, /) -> bool:
+		...
+
+	def __add__(self, value: O, /) -> Self:
+		...
+
+	def __mul__(self, value: O, /) -> Self:
+		...
+
+	def __and__(self, value: O, /) -> Self:
+		...
+
+	def __or__(self, value: O, /) -> Self:
+		...
+
+	def __sub__(self, value: O, /) -> Self:
+		...
+
+	def __xor__(self, value: O, /) -> Self:
+		...
+
+	def __abs__(self, /) -> T:
+		...
+
+	def __eq__(self, value: O, /) -> T:
+		...
+
+	def __ne__(self, value: O, /) -> T:
+		...
+
+	def __lt__(self, value: O, /) -> T:
+		...
+
+	def __le__(self, value: O, /) -> T:
+		...
+
+	def __gt__(self, value: O, /) -> T:
+		...
+
+	def __ge__(self, value: O, /) -> T:
+		...
+
+	def intersection(self, *values: O) -> Self:
+		...
+
+	@classmethod
+	def minimum(cls, /) -> Self:
+		...
+
+	@classmethod
+	def maximum(cls, /) -> Self:
+		...
+
+
+class Real(
+	Bounded,
+	Full[number],
+	SetLike[number, "Prob"],
+	Measurable["Real"],
+	Truth,
+	float,
+):
 
 	__slots__ = ()
 
@@ -349,7 +393,7 @@ class Dist(Real):
 	def prob(self, /) -> Prob: return Prob(1 / (1 + float(self)))
 
 
-class Prob(Real, SomeBase["Prob"]):
+class Prob(Real):
 
 	__slots__ = ()
 
@@ -412,7 +456,13 @@ class Prob(Real, SomeBase["Prob"]):
 	def prob(self, /) -> Prob: return self
 
 
-class Bool(MeasuredSetLike[number, "Bool"], int, SomeBase["Bool"]):
+class Bool(
+	Bounded,
+	Semi[number],
+	MeasuredSetLike[number, "Bool"],
+	Truth,
+	int,
+):
 
 	__slots__ = ()
 
@@ -543,9 +593,11 @@ class Bool(MeasuredSetLike[number, "Bool"], int, SomeBase["Bool"]):
 	def maximum(cls, /) -> Self: return int.__new__(cls, False)
 
 
-class Set[K: Hashable, T: SomeBase, V: SomeBase = T](
+class Set[K: Hashable, T: SetValue, V: SetValue = T](
+	Bounded,
+	Semi[Iterable[K] | Mapping[K, V]],
 	MeasuredSetLike[Iterable[K] | Mapping[K, V], T],
-	SomeBase[T],
+	Truth,
 	dict[K, V],
 ):
 
