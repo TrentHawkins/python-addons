@@ -1,6 +1,6 @@
 # `python-addons`
 
-`python-addons` explores foundational Python value types whose supported
+`python-addons` provides foundational Python value types whose supported
 operations form an explicit part of their contract.
 
 The project is currently experimental and requires Python 3.14 or newer.
@@ -103,6 +103,53 @@ contract is currently conventional rather than enforced. In particular,
 internal state must not be changed after an instance has been used as a
 dictionary key or set member.
 
+## Logical values and indexed sets
+
+`Bool`, `Prob`, `Dist`, and `Real` are compatible representations of logical
+strength. `Prob` uses `[0, 1]`, while `Dist` uses odds against success:
+
+```text
+p = 1 / (1 + d)
+d = (1 - p) / p
+```
+
+This gives the endpoints a useful graph interpretation: probability `0` is an
+absent edge at infinite difficulty, and probability `1` is a zero-difficulty
+edge. Distance addition is transported to `Prob.__add__`, so `+` extends a path
+without leaving probability representation.
+
+`IndexSet` and `FuzzySet` lift the same pointwise algebra to indexed
+membership:
+
+```python
+from addons import FuzzySet, IndexSet
+
+
+neighbors = IndexSet({"b", "c"})
+bool(neighbors["b"])            # True
+bool(neighbors["missing"])      # False
+
+weights = FuzzySet({"b": 0.8})
+float(weights["b"])             # 0.8
+float(weights["missing"].dist)  # inf
+```
+
+The mapping backend retains explicit coverage, while every missing key obtains
+the algebraic default. Complement flips that default, making `~set_value` an
+effective representation of a complement without materializing a universe.
+Raw values are normalized through the declared truth carrier, including in
+nested set structures.
+
+The generic `Set[K, T, V = T]` supports recursive relations: `K` is the index,
+`V` the stored membership type, and `T` the terminal truth returned by recursive
+comparison or measurement. This is sufficient for a later `Graph[I, T]` layer
+to hide crisp or fuzzy neighborhood carriers without fixing the universe of
+possible weights today.
+
+See [Logical values and indexed sets](docs/logical-foundations.md) for the
+coordinate formulas, operator authorities, complement semantics, typing model,
+and the graph-shaped acceptance example.
+
 ## Project layout
 
 ```text
@@ -110,8 +157,10 @@ src/
 └── addons/
     ├── __init__.py
     ├── base.py
+    ├── logical.py
     └── py.typed
-tests/                  # reserved for the test suite
+tests/
+└── test_logical.py
 ```
 
 The package ships inline type information and is checked with Pyright.
@@ -121,5 +170,6 @@ Useful development commands:
 ```console
 uv sync --all-groups
 uv run pyright
+uv run pytest
 uv build
 ```

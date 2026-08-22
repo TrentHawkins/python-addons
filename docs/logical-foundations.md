@@ -1,406 +1,216 @@
-# Logical weights: probability-distance duality
+# Logical values and indexed sets
 
-Status: exploratory design reference, 2026-08-05.
+`addons.logical` models one logical strength in four compatible coordinates and
+lifts that algebra pointwise to indexed sets. The design is intended to make
+crisp and fuzzy relations share one representation without pretending that all
+of their operations have the same numerical meaning.
 
-This note records the intended foundations of `src/addons/logical.py`. It is a
-stable reference for later discussion and should be updated whenever a mapping,
-operation, identity, or interpretation changes.
+## Coordinates
 
-## Objective
-
-Model the same edge strength in interchangeable coordinates:
-
-- Boolean presence: `True` is a perfect/present edge and `False` is absence;
-- probability or reliability `p` in `[0, 1]`: `1` is a zero-effort edge and
-  `0` is absence;
-- distance or cost `d` in `[0, +inf]`: `0` is a zero-effort edge and `+inf` is
-  absence;
-- `base` is the unlabelled implementation carrier for the extended-real
-  reference coordinate; `real` is its public nominal type, while probability
-  and distance remain the primary operational coordinates.
-
-The principal use case is a weighted directed graph whose weights may be
-written as probabilities but consumed by shortest-path-style algorithms. An
-operation missing or unnatural in one coordinate may be transported through a
-bijection to the coordinate in which it is canonical, then mapped back.
-
-For a bijection `f: A -> B` and an operation defined canonically in `B`, the
-transported operation in `A` is:
-
-```text
-a op_A b = f_inverse(f(a) op_B f(b))
-```
-
-Transporting operations this way preserves their algebraic laws. Defining the
-same operation independently in several coordinates does not guarantee that
-the coordinates remain consistent.
-
-## Conversion matrix and transport of structure
-
-The properties `real`, `dist`, and `prob` form a 3-by-3 coordinate-conversion
-matrix. Write the conversion from coordinate `A` to `B` as `F[A,B]`. For this
-matrix to represent one underlying value space, it should satisfy:
-
-```text
-F[A,A](a) = a
-F[B,A](F[A,B](a)) = a
-F[B,C](F[A,B](a)) = F[A,C](a)
-```
-
-The last law makes every conversion triangle commute. Only the bijections and
-inverses along a spanning tree are mathematically independent; the remaining
-matrix entries can be defined by composition. This avoids direct formulas that
-silently disagree with an indirect path.
-
-The implementation separates two views of this matrix:
-
-- public `real`, `dist`, and `prob` properties return typed coordinate values;
-- private `_real`, `_dist`, and `_prob` cells return raw floats.
-
-`base.__new__` selects a private raw cell using the target class's coordinate
-name, then constructs the requested type exactly once. Public properties may
-therefore use the simple forms `real(self)`, `dist(self)`, and `prob(self)`
-without recursively re-entering the same property.
-
-Only the `real <-> dist` and `dist <-> prob` raw pairs contain primitive
-formulas. The derived `base._prob` and `prob._real` cells compose through
-`dist`, so changing one bijection pair propagates through the remaining matrix.
-
-Every algebraic operation then has one authoritative coordinate `S`. In another
-coordinate `A`, an n-ary operation is defined by converting all operands to
-`S`, applying the authoritative operation, and converting its result back to
-`A`. Associativity, commutativity, identities, involution, and other equational
-laws are thereby inherited rather than reimplemented.
-
-Distinguished constants are the nullary case of exactly the same rule. In the
-current design, their methods and canonical values live on `base`. A `base`
-instance is a tagged value in the real/reference coordinate, so construction
-transports it to the requested `cls`:
-
-```text
-constant_A = cls(constant_base)
-           = F[real,A](constant_real)
-```
-
-Passing the result through `A.__new__` performs this transport only when the
-argument retains its source-coordinate type. A raw float is untagged and is
-interpreted as already being in the target coordinate; it cannot communicate
-that `0.5` was meant as a probability rather than a distance or real value.
-
-## Current architectural direction
-
-`prob` and `dist` deliberately have asymmetric responsibilities:
-
-| Operation family | Authority | Transported implementation |
-|---|---|---|
-| path accumulation | `dist.__add__` | `prob.__add__` goes through `dist` |
-| independent conjunction | `prob.__mul__` / `prob.__and__` | `dist.__mul__` and `dist.__and__` go through `prob` |
-| independent disjunction | `prob.__or__`, by De Morgan duality | `dist.__or__` should go through `prob` |
-| complement | `prob.__neg__`, interpreted as `1-p` | `dist.__neg__` should go through `prob` |
-
-This is a good use of deliberate deferral. Changing the `prob.dist` and
-`dist.prob` properties can change the transported formulas without duplicating
-them in every dunder. For that to work completely, no transported operation may
-retain a formula belonging to one particular link.
-
-Reciprocal distance is the transport of `1-p` under the odds/rational link
-only. Under the active exponential link distance complement is:
-
-```text
-d_not = -log(1 - exp(-d))
-```
-
-The current implementation correctly makes distance complement defer to
-probability complement. Consequently distance `|`, inherited difference, and
-inherited xor can follow the selected conversion properties automatically once
-both conversion directions are operational.
-
-Runtime checks confirm that round trips and conversion triangles commute across
-all three coordinates for representative interior values and endpoints.
-Complement, addition, conjunction, disjunction, difference, and xor also
-commute between `prob` and `dist`.
-
-## Distinguished constants
-
-The draft now exposes `min`, `mid`, and `max`, sourced in the natural order of
-the real/reference carrier:
-
-- `base.min() = real.min() = -inf`;
-- `base.mid() = real.mid() = 0`;
-- `base.max() = real.max() = +inf`.
-
-The active exponential conversion chain transports these constants to:
-
-| Constant | `real` | `dist` | `prob` |
-|---|---:|---:|---:|
-| `min` | `-inf` | `+inf` | `0` |
-| `mid` | `0` | `1` | `exp(-1)` |
-| `max` | `+inf` | `0` | `1` |
-
-The labels identify the same underlying reference points in every coordinate;
-they do not promise increasing raw payloads in every representation. Probability
-preserves the real ordering, while distance reverses it. This reversal records
-the optimization direction: maximizing real/probability corresponds to
-minimizing distance. Complement exchanges `min` with `max`.
-
-The midpoint is link-dependent. Because `real(0)` is authoritative,
-`dist.mid()` remains `1` under `d = exp(-x)`, while the selected distance-to-
-probability property determines its probability representation:
-
-```text
-exponential link: prob.mid = exp(-1)
-rational link:    prob.mid = 1/2
-```
-
-Thus changing the authoritative conversion properties changes the derived
-constant variant without duplicating constants in each class.
-
-`real.mid()` is the identity of ordinary real addition. It is not the identity
-of the current path-addition operation: ordinary distance addition has identity
-`dist(0)`, and transported probability addition has identity `prob(1)`. In the
-reference-ordered naming these are the `max` constants. Each operation must
-transport its own identity from the coordinate in which that operation is
-authoritative.
-
-## Domains and endpoints
-
-The closed graph-weight domains require extended endpoints:
-
-| Meaning | Boolean | Probability `p` | Distance `d` | Real score `x` |
-|---|---:|---:|---:|---:|
-| absent / impossible | `False` | `0` | `+inf` | `-inf` |
-| zero effort / certain | `True` | `1` | `0` | `+inf` |
-
-The exact score interpretation depends on the selected probability-distance
-link. Implementations need explicit endpoint handling because `log(0)` and
-division by zero raise before producing these mathematical limits.
-
-## Two probability-distance links
-
-Both candidate links are decreasing bijections between `[0, +inf]` and
-`[0, 1]`, but they transport addition into different probability operations.
-They therefore represent different meanings of distance and must not be mixed
-inside one untagged `dist` type.
-
-### Odds/rational link
-
-```text
-p = 1 / (1 + d)
-d = 1 / p - 1 = (1 - p) / p
-```
-
-Here `d` is odds against success. With the score-distance map
+The active coordinate system is
 
 ```text
 d = exp(-x)
-x = -log(d)
+p = 1 / (1 + d)
+
+x = -log(d) = log(p) - log(1 - p)
+d = (1 - p) / p
 ```
 
-the complete triangle is:
+where:
 
-```text
-p = sigmoid(x)
-x = logit(p)
-d = exp(-x) = (1 - p) / p
+- `Real` stores the extended-real score or logit `x`;
+- `Dist` stores nonnegative difficulty `d`, the odds against success;
+- `Prob` stores probability `p` in `[0, 1]`;
+- `Bool` is the crisp restriction of `Prob` to `{0, 1}`.
+
+Typed values retain their coordinate when passed to another constructor:
+
+```python
+from addons import Dist, Prob, Real
+
+Prob(Dist(1))       # 0.5
+Dist(Prob(0.5))     # 1.0
+Real(Prob(0.5))     # 0.0
 ```
 
-Ordinary probability complement transports particularly cleanly:
+A bare `int` or `float` is interpreted directly in the target coordinate.
+Conversions use endpoint-aware formulas; finite logits outside the exponential
+range saturate at the appropriate extended endpoint instead of raising.
+Negative zero is canonicalized to positive zero.
 
-```text
-p       -> 1 - p
-d       -> 1 / d
-x       -> -x
-```
+## Distinguished values
 
-If distance addition is canonical, its transported probability composition is
-the Hamacher product with parameter zero:
+`minimum()` and `maximum()` follow difficulty order, not the raw numerical
+ordering of every coordinate:
 
-```text
-d_path = d1 + d2
-p_path = p1*p2 / (p1 + p2 - p1*p2)
-```
+| Meaning | `Real` | `Dist` | `Prob` | `Bool` |
+|---|---:|---:|---:|---:|
+| best / certain / zero difficulty (`minimum`) | `+inf` | `0` | `1` | `True` |
+| reference (`midimum`) | `0` | `1` | `0.5` | — |
+| worst / absent / infinite difficulty (`maximum`) | `-inf` | `+inf` | `0` | `False` |
 
-Its De Morgan dual is:
+For indexed sets, `minimum()` is consequently the universal set and
+`maximum()` is the empty set.
 
-```text
-p_or = (p1 + p2 - 2*p1*p2) / (1 - p1*p2)
-d_or = d1*d2 / (d1 + d2)
-```
-
-with endpoints interpreted by limits. The distance disjunction is the familiar
-parallel-sum formula.
-
-### Exponential/surprisal link
-
-```text
-p = exp(-d)
-d = -log(p)
-```
-
-Here `d` is self-information, surprisal, or negative log reliability. It is the
-canonical link for independent path probabilities because:
-
-```text
-d_path = d1 + d2
-p_path = p1 * p2
-```
-
-This explains the intended transported implementation `prob.__add__(p, q) =
-p*q` when `+` denotes distance-style path accumulation.
-
-Ordinary probability complement is less simple in distance coordinates:
-
-```text
-p_not = 1 - p
-d_not = -log(1 - exp(-d))
-```
-
-If `d = exp(-x)` remains the score-distance map, composition gives:
-
-```text
-p = exp(-exp(-x))
-x = -log(-log(p))
-```
-
-This is a Gumbel/log-log coordinate, not the sigmoid/logit map. The exponential
-link is nevertheless exactly the entropy-inspired construction intended by the
-draft.
-
-## Best-path algebra
-
-For shortest or most-reliable path, two separate operations are needed:
-
-1. extend a path through consecutive edges;
-2. select the better of alternative paths.
-
-Under the exponential link they correspond as follows:
-
-| Coordinate | Extend path | Choose alternative | Empty path | No path |
-|---|---|---|---:|---:|
-| distance | `d1 + d2` | `min(d1, d2)` | `0` | `+inf` |
-| probability | `p1 * p2` | `max(p1, p2)` | `1` | `0` |
-| Boolean | `b1 & b2` | `b1 | b2` | `True` | `False` |
-| real score | `-log(exp(-x1) + exp(-x2))` | `max(x1, x2)` | `+inf` | `-inf` |
-
-The exponential probability-distance map is an isomorphism between the
-min-plus distance semiring and the max-product probability semiring.
-
-The rational link retains the same `min`/`max` alternative selection but uses
-the Hamacher product rather than ordinary multiplication to extend a path.
-
-An unchanged shortest-path implementation that selects the smallest value also
-requires probability comparison to use cost order, which reverses ordinary
-numeric probability order. Alternatively, the algorithm must accept its choice
-operation explicitly and use `max` for probabilities.
-
-## Probabilistic logic is a different choice
-
-Product conjunction and its De Morgan dual give:
-
-```text
-p_and = p1 * p2
-p_or  = 1 - (1 - p1)*(1 - p2)
-```
-
-This models independent-event conjunction and noisy disjunction. It is not the
-same as the max-product best-path algebra, whose alternative operation is
-`max`. The two choices agree at Boolean endpoints but differ for intermediate
-probabilities.
-
-This distinction must remain explicit:
-
-- use `max` when choosing the single most reliable path;
-- use probabilistic union when computing the chance that at least one
-  independent event occurs;
-- shared-edge graph paths are generally not independent, so noisy disjunction
-  cannot be applied to arbitrary paths without accounting for dependence.
-
-The operator names `&` and `|` may represent fuzzy conjunction/disjunction,
-while a graph semiring may need separately named path-extension and
-alternative-choice operations. Reusing the same symbols is safe only after
-choosing one interpretation.
-
-## Role of the real coordinate
-
-The real coordinate is useful when it has a declared interpretation:
-
-- under the rational link it is log-odds or evidence;
-- under the exponential link composed with `d = exp(-x)`, it is a Gumbel/log-log
-  score;
-- transporting distance addition gives
-  `-log(exp(-x1) + exp(-x2))`, not ordinary real addition.
-
-The `dist` and `prob` coordinates are sufficient for graph operations. `base`
-implements the reference-coordinate row of the matrix and owns the
-distinguished constants; `real` is the clean public nominal form of that same
-coordinate. The conversion matrix uses the spanning path
-`real <-> dist <-> prob`; direct `real <-> prob` conversion defers through
-`dist`, forcing the triangle to commute.
+NaN has no independent logical meaning. Construction maps it to `maximum()`,
+the absent or worst value in the requested coordinate. This also resolves
+indeterminate transported endpoint forms such as `0 * inf` conservatively to
+absence.
 
 ## Operation authority
 
-Each public operation should have exactly one authoritative coordinate and be
-transported everywhere else. The present direction is:
+Each operation has one authoritative coordinate and is transported to the
+others:
 
-| Meaning | Authoritative coordinate |
-|---|---|
-| path extension | `dist`: addition |
-| best alternative | `dist`: minimum |
-| independent conjunction | `prob`: multiplication |
-| independent disjunction | `prob`: De Morgan dual |
-| complement | `prob`: `1-p` |
+| Operation | Authority | Meaning |
+|---|---|---|
+| `a + b` | `Dist` addition | consecutive path difficulty |
+| `a * b` | `Dist` multiplication | multiplication in odds/difficulty space |
+| `a & b` | `Prob` multiplication | independent probabilistic conjunction |
+| `a \| b` | De Morgan dual of `&` | probabilistic disjunction |
+| `~a` | `Prob`, as `1 - p` | logical complement |
 
-Graph choice and probabilistic disjunction must not silently share one
-operator.
+Authority specifies the algebra, not a mandatory runtime call path. `Real` and
+`Dist` use equivalent direct formulas where round-tripping through another
+coordinate would lose range. For example, `~Real(-1000)` remains `Real(1000)`
+even though converting the original score to `Prob` underflows to zero.
 
-## Current draft observations
+These distinctions matter away from Boolean endpoints. In particular,
+`Prob.__mul__` is not ordinary multiplication of probabilities. It transports
+distance multiplication, so its identity is `Prob.midimum()` (`0.5`). Ordinary
+probabilistic conjunction belongs to `&`:
 
-The current `logical.py` implements the intended authority/deferral pattern:
+```text
+p & q = p*q
+p | q = 1 - (1-p)*(1-q)
+```
 
-1. `base.__new__` is the sole constructor dispatcher. Tagged logical inputs
-   select the target class's private raw matrix cell; untagged numeric inputs
-   remain raw payloads.
-2. The `_coordinate` class variable is inherited by semantic subclasses, so
-   conversion does not depend on class names.
-3. Private diagonal cells expose the existing raw payload, preventing recursive
-   same-coordinate reconstruction. Public matrix properties remain uniformly
-   defined on `base`.
-4. `base` and `real` share the `real` coordinate rather than representing two
-   mathematical coordinates. `real` is only its clean public nominal type.
-5. The base-owned constants use `cls(base(value))`; the inner value supplies
-   reference-coordinate context and the outer construction selects the target
-   matrix column dynamically.
-6. Interior values and the `0`, `1`, and infinite endpoints round-trip, every
-   conversion triangle commutes, and complement, addition, conjunction,
-   disjunction, difference, and xor agree across probability and distance.
-7. The live link is currently exponential/surprisal; the unreachable second
-   property returns are rational-link reference formulas. They should
-   eventually become a named link strategy or comments/reference functions,
-   since dead returns are not a runtime selection mechanism.
-8. Validate domains: `prob` belongs to `[0, 1]`; `dist` belongs to
-   `[0, +inf]`; score endpoints may be infinite; NaN needs an explicit policy.
-9. Decide whether equality and hashing are coordinate-strict or semantic.
-   Inheriting `float` currently makes equal raw payloads compare equal across
-   different coordinates even when they represent different edge strengths.
-10. Keep operation identities separate from the interior reference constant.
-   With transported distance addition, the identity is `dist.max() = dist(0)`
-   or equivalently `prob.max() = prob(1)`, not `mid()`.
-11. Decide ordering semantics. Natural probability order and distance/cost order
-   are reversed.
-12. Restrict or transport raw float operations that can leave the domain.
-13. Keep fuzzy conjunction/disjunction separate from best-path extension/choice
-   unless one interpretation is deliberately selected.
+Distance addition transports to the Hamacher product with parameter zero:
 
-## Open decisions
+```text
+p + q = p*q / (p + q - p*q)
+```
 
-- Primary link: odds/rational, exponential/surprisal, or two distinct types?
-- Primary graph task: best path, reachability, aggregate reliability, or several
-  explicit algebras?
-- Operator vocabulary: Python arithmetic/logical dunders or named operations?
-- Probability ordering: natural confidence order or reversed cost order?
-- Equality: same coordinate only or equality after canonical conversion?
-- Endpoint representation and NaN policy?
-- Should the nominal `real` type acquire additional authoritative operations,
-  or remain a clean public view of the reference semantics implemented by
-  `base`?
-- Are edge/path dependencies in scope for probabilistic disjunction?
+with endpoints evaluated by their limits. Thus `Prob.minimum()` (`1`) is the
+identity of path extension and `Prob.maximum()` (`0`) is an absent path.
+
+Difference, symmetric difference, and the remaining set-like methods are
+derived from complement, conjunction, and disjunction. The formulas agree with
+ordinary Boolean algebra on `Bool`; intermediate probabilities intentionally
+remain fuzzy.
+
+## Fuzzy relations are values, not predicates
+
+Comparisons on `Real`, `Dist`, and `Prob` return `Prob`. Comparisons on `Bool`
+return `Bool`. They are relation strengths and should not be mistaken for crisp
+ordering predicates.
+
+Python necessarily calls `bool()` on a comparison result in `if`, sorting,
+`min`, heaps, and similar machinery. Any nonzero probability then counts as
+true, which is not a usable total order. Algorithms requiring a crisp cost
+order should compare an explicit projection such as `float(weight.dist)`.
+The fuzzy scalar classes are unhashable for the same reason: fuzzy equality
+does not satisfy the equality contract required by hash tables. `Bool` retains
+`int` hashing because its equality is crisp.
+
+## Indexed sets
+
+`Set[K, T, V = T]` is a `dict[K, V]` with a logical default:
+
+- `K` is the index type;
+- `V` is the membership value stored at each covered index;
+- `T` is the terminal truth type returned after recursive measurement or
+  comparison;
+- `truth` is the concrete `V` carrier and the normalization boundary.
+
+A finite set defaults to `truth.maximum()` (absence). A complemented set
+defaults to `truth.minimum()` (presence). Explicit entries are retained even
+when equal to the default; they record the set's known coverage. Complement
+flips both every explicit value and the implicit default, so it is an effective
+operation rather than a universe-dependent materialization.
+
+```python
+from addons import FuzzySet, IndexSet
+
+crisp = IndexSet({"a", "b"})
+bool(crisp["a"])          # True
+bool(crisp["missing"])    # False
+
+fuzzy = FuzzySet({"a": 0.8})
+float(fuzzy["a"])         # 0.8
+float(fuzzy["missing"])   # 0.0
+float((~fuzzy)["missing"])  # 1.0
+```
+
+Mapping values are normalized through `truth.coerce` during construction,
+assignment, `setdefault`, and `fromkeys`. Raw nested mappings therefore become
+typed nested sets automatically.
+
+### Views and iteration
+
+- `value[key]` and `value.get(key)` return valued membership, including the
+  implicit default;
+- `key in value` converts that membership to a crisp Python `bool`;
+- `value.indices` exposes all explicitly covered keys;
+- `len(value)` counts those covered keys, not fuzzy cardinality;
+- iteration yields explicitly covered keys whose membership is truthy;
+- complemented sets cannot be iterated because they have implicit members
+  outside the finite coverage map.
+
+Consequently `set(IndexSet(...))` behaves as expected. For a nested adjacency
+relation, an explicitly stored vertex with an empty neighborhood is present in
+`.indices` but is not yielded by outer iteration. A separate vertex registry or
+`.indices` should be used when isolated vertices matter.
+
+`abs(value)` is a recursively collapsed truth measure, not cardinality. Its
+result is `T`, and complement satisfies `abs(~value) == ~abs(value)` in the
+value algebra.
+
+## Recursive relations and future graphs
+
+Conceptually, an unweighted adjacency relation is a set indexed by vertices
+whose values are `IndexSet` neighborhoods; the fuzzy analogue substitutes
+`FuzzySet`. A future graph-facing class can hide the expanded recursive type:
+
+```python
+from typing import Hashable
+
+from addons import Bool, FuzzySet, IndexSet, Prob, Set, SetValue
+
+
+class Graph[I: Hashable, T: SetValue](Set[I, T, Set[I, T]]):
+    pass
+
+
+class UnweightedGraph[I: Hashable](Graph[I, Bool], truth=IndexSet):
+    pass
+
+
+class WeightedGraph[I: Hashable](Graph[I, Prob], truth=FuzzySet):
+    pass
+```
+
+The apparent repetition of `T` is required for sound static typing. Python has
+no associated types that let a checker infer the terminal result type from
+`Set[I, T]`. `Graph[I, T]` is the appropriate public abstraction: it hides that
+implementation detail and remains open to future truth/weight carriers.
+
+No graph type or algorithm is part of the library yet. The nested form is an
+acceptance case for the set algebra, not a commitment to a graph API.
+
+## Graph interpretation
+
+For a probabilistic edge weight:
+
+| Probability | Distance | Interpretation |
+|---:|---:|---|
+| `0` | `+inf` | absent / impossible edge |
+| `1` | `0` | zero-difficulty edge |
+| interior `p` | `(1-p)/p` | finite difficulty |
+
+`+` extends a path by adding its distance difficulties. Choosing the best of
+alternative paths is a separate operation: minimize projected distance or
+maximize probability. It is not probabilistic `|`, which aggregates an
+independent-event disjunction. Keeping extension, choice, and probabilistic
+union distinct is essential for correct future graph algorithms.
