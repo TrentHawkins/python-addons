@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 
+import abc
+import builtins
+import functools
 import math
 import typing
 
@@ -8,7 +11,80 @@ import typing
 type pair[T] = tuple[T, T]
 
 
-class frac:
+class Invertible(abc.ABC):
+
+	@abc.abstractmethod
+	def __invert__(self) -> typing.Self:
+		...
+
+
+class Boolean(Invertible):
+
+	def  __or__(self, other: typing.Self, /) -> typing.Self: return ~(~self & ~other)
+	def __and__(self, other: typing.Self, /) -> typing.Self: return ~(~self | ~other)
+	def __sub__(self, other: typing.Self, /) -> typing.Self: return    self & ~other
+	def __xor__(self, other: typing.Self, /) -> typing.Self:
+		return (self | other) - (self & other)
+	#	return (self - other) | (other - self)
+
+	def union       (self, *others: typing.Self) -> typing.Self: return functools.reduce(self.__class__. __or__, others, self)
+	def intersection(self, *others: typing.Self) -> typing.Self: return functools.reduce(self.__class__.__and__, others, self)
+	def difference  (self, *others: typing.Self) -> typing.Self: return functools.reduce(self.__class__.__sub__, others, self)
+
+	def symmetric_difference(self, other: typing.Self) -> typing.Self:
+		return self ^ other
+
+
+class Distance(abc.ABC):
+
+	@abc.abstractmethod
+	def __add__(self, other: typing.Self, /) -> typing.Self:
+		...
+
+	@abc.abstractmethod
+	def __mul__(self, times: int, /) -> typing.Self:
+		...
+
+
+class Order(abc.ABC):
+
+	@abc.abstractmethod
+	def __le__(self, other: typing.Self, /) -> bool:
+		...
+
+	@abc.abstractmethod
+	def __ge__(self, other: typing.Self, /) -> bool:
+		...
+
+	def __eq__(self, other: typing.Self, /) -> bool: return not self != other
+	def __ne__(self, other: typing.Self, /) -> bool: return not self == other
+
+	def __lt__(self, other: typing.Self, /) -> bool: return self <= other and self != other
+	def __gt__(self, other: typing.Self, /) -> bool: return self >= other and self != other
+
+	def issubset  (self, other: typing.Self, /) -> bool: return self <= other
+	def issuperset(self, other: typing.Self, /) -> bool: return self >= other
+
+	@abc.abstractmethod
+	def isdisjoint(self, other: typing.Self, /) -> bool:
+		...
+
+
+class Partial(Order):
+
+	def __le__(self, other: typing.Self, /) -> bool: return self < other or self == other
+	def __ge__(self, other: typing.Self, /) -> bool: return self > other or self == other
+
+
+class Total(Order):
+
+	def __le__(self, other: typing.Self, /) -> bool: return not self > other
+	def __ge__(self, other: typing.Self, /) -> bool: return not self < other
+	def __eq__(self, other: typing.Self, /) -> bool:
+		return self <= other and self >= other
+
+
+class frac(Distance, Boolean, Total, abc.ABC):
 
 	numer: int
 	denom: int
@@ -18,7 +94,7 @@ class frac:
 		denom: int        = 1, /
 	) -> typing.Self:
 		if isinstance(numer, cls ): return numer
-		if isinstance(numer, frac): return cls.from_integer_ratio(*numer.integer_ratio)
+		if isinstance(numer, frac): return cls.from_integers(*numer.integers)
 
 		self = super().__new__(cls)
 
@@ -35,32 +111,34 @@ class frac:
 	def __repr__(self) -> str:
 		return repr(float(self))
 
+	def __hash__(self) -> int:
+		return hash(self.integers)
+
+	def __bool__(self) -> bool:
+		_, b = self.integers
+
+		return bool(b)
+
 	def __float__(self) -> float:
 		return self.numer / self.denom if self.denom else math.inf
 
-	def     __add__(self, other: frac) -> typing.Self: cls = type(self); return cls(dist(self) + dist(other))
-	def     __mul__(self, other: frac) -> typing.Self: cls = type(self); return cls(dist(self) * dist(other))
-	def      __or__(self, other: frac) -> typing.Self: cls = type(self); return cls(prob(self) | prob(other))
-	def     __and__(self, other: frac) -> typing.Self: cls = type(self); return cls(prob(self) & prob(other))
-	def     __sub__(self, other: frac) -> typing.Self: cls = type(self); return cls(prob(self) - prob(other))
-	def     __xor__(self, other: frac) -> typing.Self: cls = type(self); return cls(prob(self) ^ prob(other))
-	def __truediv__(self, other: frac) -> typing.Self: cls = type(self); return cls(dist(self) / dist(other))
+	def __le__(self, other: frac, /) -> bool: a, b = self.integers; c, d = other.integers; return a * d >= c * b
+	def __ge__(self, other: frac, /) -> bool: a, b = self.integers; c, d = other.integers; return a * d <= c * b
 
-	def __invert__(self) -> typing.Self:
-		cls = type(self)
-
-		return cls(~prob(self))
 
 	@classmethod
-	def from_integer_ratio(cls,
+	def from_integers(cls,
 		numer: int,
 		denom: int, /
 	) -> typing.Self:
 		return cls(numer, denom)
 
 	@property
-	def integer_ratio(self) -> pair[int]:
+	def integers(self) -> pair[int]:
 		return self.numer, self.denom
+
+	def isdisjoint(self, other: frac) -> bool:
+		return not (self & other)
 
 
 class dist(frac):
@@ -86,20 +164,25 @@ class dist(frac):
 			              self.denom              * other.denom,
 		)
 
-	def __mul__(self, other: frac) -> typing.Self:
-		cls, other = type(self), dist(other)
+	def __mul__(self, times: int) -> typing.Self:
+		cls = type(self)
 
 		return cls(
-			self.numer * other.numer,
-			self.denom * other.denom,
+			self.numer * times,
+			self.denom,
 		)
 
-	def __truediv__(self, other: frac) -> typing.Self:
-		cls, other = type(self), dist(other)
+	def __and__(self, other: frac) -> typing.Self:
+		cls = type(self)
+
+		return cls(prob(self) & prob(other))
+
+	def __invert__(self) -> typing.Self:
+		cls = type(self)
 
 		return cls(
-			self.numer * other.denom,
-			self.denom * other.numer,
+			self.denom,
+			self.numer,
 		)
 
 
@@ -118,6 +201,9 @@ class prob(frac):
 
 		return self
 
+	def __add__(self, other: frac) -> typing.Self: cls = type(self); return cls(dist(self) + dist(other))
+	def __mul__(self, times: int ) -> typing.Self: cls = type(self); return cls(dist(self) *      times )
+
 	def __and__(self, other: frac) -> typing.Self:
 		cls, other = type(self), prob(other)
 
@@ -125,15 +211,6 @@ class prob(frac):
 			self.numer * other.numer,
 			self.denom * other.denom,
 		)
-
-	def __or__(self, other: frac) -> typing.Self:
-		return ~(~self & ~other)
-
-	def __sub__(self, other: frac) -> typing.Self:
-		return self & ~other
-
-	def __xor__(self, other: frac) -> typing.Self:
-		return (self | other) - (self & other)
 
 	def __invert__(self) -> typing.Self:
 		cls = type(self)
@@ -144,7 +221,7 @@ class prob(frac):
 		)
 
 	@classmethod
-	def from_integer_ratio(cls,
+	def from_integers(cls,
 		numer: int,
 		denom: int, /
 	) -> typing.Self:
@@ -154,7 +231,7 @@ class prob(frac):
 		)
 
 	@property
-	def integer_ratio(self) -> pair[int]:
+	def integers(self) -> pair[int]:
 		return (
 			self.denom - self.numer,
 			self.numer,
