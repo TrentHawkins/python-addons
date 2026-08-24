@@ -135,19 +135,19 @@ class Separable(Operable, abc.ABC):
 		return not (self & other)
 
 
-class frac(Separable, Total, Additive, abc.ABC):
+class Frac(Separable, Total, Additive, abc.ABC):
 
 	numer: int
 	denom: int
 
 	def __new__(cls,
-		numer: int | frac = 0,
+		numer: int | Frac = 0,
 		denom: int        = 1, /
 	) -> typing.Self:
 		if isinstance(numer, cls):
 			return numer
 
-		if isinstance(numer, frac):
+		if isinstance(numer, Frac):
 			return cls.encode(*numer.decode())
 
 		self = super().__new__(cls)
@@ -176,14 +176,14 @@ class frac(Separable, Total, Additive, abc.ABC):
 	def __float__(self) -> float:
 		return self.numer / self.denom if self.denom else math.inf
 
-	def __add__(self, other: int | frac, /) -> typing.Self: cls = type(self); return cls(dist(self) + dist(other))
-	def __mul__(self, times: int       , /) -> typing.Self: cls = type(self); return cls(dist(self) *      times )
-	def __and__(self, other: int | frac, /) -> typing.Self: cls = type(self); return cls(prob(self) & prob(other))
+	def __add__(self, other: int | Frac, /) -> typing.Self: cls = type(self); return cls(Dist(self) + Dist(other))
+	def __mul__(self, times: int       , /) -> typing.Self: cls = type(self); return cls(Dist(self) *      times )
+	def __and__(self, other: int | Frac, /) -> typing.Self: cls = type(self); return cls(Prob(self) & Prob(other))
 
 	def __invert__(self) -> typing.Self: cls = type(self); a, b = self.decode(); return cls.encode(b, a)
 
-	def __le__(self, other: frac, /) -> bool: a, b = self.decode(); c, d = other.decode(); return a * d >= c * b
-	def __ge__(self, other: frac, /) -> bool: a, b = self.decode(); c, d = other.decode(); return a * d <= c * b
+	def __le__(self, other: Frac, /) -> bool: a, b = self.decode(); c, d = other.decode(); return a * d >= c * b
+	def __ge__(self, other: Frac, /) -> bool: a, b = self.decode(); c, d = other.decode(); return a * d <= c * b
 
 
 	@classmethod
@@ -204,10 +204,10 @@ class frac(Separable, Total, Additive, abc.ABC):
 		...
 
 
-class dist(frac):
+class Dist(Frac):
 
 	def __new__(cls,
-		numer: int | frac = 0,
+		numer: int | Frac = 0,
 		denom: int        = 1, /
 	) -> typing.Self:
 		if not (numer or denom): numer = 1
@@ -219,8 +219,8 @@ class dist(frac):
 
 		return self
 
-	def __add__(self, other: int | frac) -> typing.Self:
-		cls, other = type(self), dist(other)
+	def __add__(self, other: int | Frac) -> typing.Self:
+		cls, other = type(self), Dist(other)
 
 		return cls(
 			other.numer * self.denom + self.numer * other.denom,
@@ -246,10 +246,10 @@ class dist(frac):
 		return self.numer, self.denom
 
 
-class prob(frac):
+class Prob(Frac):
 
 	def __new__(cls,
-		numer: int | frac = 1,
+		numer: int | Frac = 1,
 		denom: int        = 1, /
 	) -> typing.Self:
 		if not (numer or denom): denom = 1
@@ -261,8 +261,8 @@ class prob(frac):
 
 		return self
 
-	def __and__(self, other: int | frac) -> typing.Self:
-		cls, other = type(self), prob(other)
+	def __and__(self, other: int | Frac) -> typing.Self:
+		cls, other = type(self), Prob(other)
 
 		return cls(
 			self.numer * other.numer,
@@ -286,7 +286,7 @@ class prob(frac):
 		)
 
 
-class boolean(Additive, Total, Separable):
+class Bool(Additive, Total, Separable):
 
 	def __init__(self, _: object = False, /):
 		self._ = bool(_)
