@@ -2,7 +2,6 @@ from __future__ import annotations
 
 
 import abc
-import builtins
 import functools
 import math
 import typing
@@ -18,73 +17,125 @@ class Invertible(abc.ABC):
 		...
 
 
-class Boolean(Invertible):
+class Operable(Invertible):
 
-	def  __or__(self, other: typing.Self, /) -> typing.Self: return ~(~self & ~other)
-	def __and__(self, other: typing.Self, /) -> typing.Self: return ~(~self | ~other)
-	def __sub__(self, other: typing.Self, /) -> typing.Self: return    self & ~other
-	def __xor__(self, other: typing.Self, /) -> typing.Self:
+	def  __or__(self, other: Operable, /) -> typing.Self: return ~(~self & ~other)
+	def __and__(self, other: Operable, /) -> typing.Self: return ~(~self | ~other)
+	def __sub__(self, other: Operable, /) -> typing.Self: return    self & ~other
+	def __xor__(self, other: Operable, /) -> typing.Self:
 		return (self | other) - (self & other)
 	#	return (self - other) | (other - self)
 
-	def union       (self, *others: typing.Self) -> typing.Self: return functools.reduce(self.__class__. __or__, others, self)
-	def intersection(self, *others: typing.Self) -> typing.Self: return functools.reduce(self.__class__.__and__, others, self)
-	def difference  (self, *others: typing.Self) -> typing.Self: return functools.reduce(self.__class__.__sub__, others, self)
+	def  __ror__(self, other: Operable, /) -> typing.Self: return self | other
+	def __rand__(self, other: Operable, /) -> typing.Self: return self & other
+	def __rxor__(self, other: Operable, /) -> typing.Self: return self ^ other
 
-	def symmetric_difference(self, other: typing.Self) -> typing.Self:
+	def  __ior__(self, other: Operable, /) -> typing.Self: return self | other
+	def __iand__(self, other: Operable, /) -> typing.Self: return self & other
+	def __isub__(self, other: Operable, /) -> typing.Self: return self - other
+	def __ixor__(self, other: Operable, /) -> typing.Self: return self ^ other
+
+	@typing.final
+	def union(self, *others: Operable) -> typing.Self:
+		return functools.reduce(self.__class__.__or__, others, self)
+
+	@typing.final
+	def intersection(self, *others: Operable) -> typing.Self:
+		return functools.reduce(self.__class__.__and__, others, self)
+
+	@typing.final
+	def difference(self, *others: Operable) -> typing.Self:
+		return functools.reduce(self.__class__.__sub__, others, self)
+
+	@typing.final
+	def symmetric_difference(self, other: Operable, /) -> typing.Self:
 		return self ^ other
 
+	@typing.final
+	@classmethod
+	def any(cls, others: typing.Iterable[Operable], /) -> typing.Self:
+		return cls.union(*others)  # pyright: ignore[reportArgumentType]
 
-class Distance(abc.ABC):
+	@typing.final
+	@classmethod
+	def all(cls, others: typing.Iterable[Operable], /) -> typing.Self:
+		return cls.intersection(*others)  # pyright: ignore[reportArgumentType]
+
+class Additive(abc.ABC):
 
 	@abc.abstractmethod
-	def __add__(self, other: typing.Self, /) -> typing.Self:
+	def __add__(self, other: Additive, /) -> typing.Self:
 		...
 
 	@abc.abstractmethod
 	def __mul__(self, times: int, /) -> typing.Self:
 		...
 
+	def __radd__(self, other: Additive, /) -> typing.Self: return self + other
+	def __rmul__(self, other: int     , /) -> typing.Self: return self * other
+
+	def __iadd__(self, other: Additive, /) -> typing.Self: return self + other
+	def __imul__(self, other: int     , /) -> typing.Self: return self * other
+
+	@typing.final
+	@classmethod
+	def sum(cls, others: typing.Iterable[Additive], /) -> typing.Self:
+		return sum(others,  #  pyright: ignore[reportArgumentType, reportCallIssue]
+		#	start = cls()  #  pyright: ignore[reportReturnType]
+		)
+	#	return functools.reduce(cls.__add__, others, cls())
 
 class Order(abc.ABC):
 
 	@abc.abstractmethod
-	def __le__(self, other: typing.Self, /) -> bool:
+	def __le__(self, other: Order, /) -> bool:
 		...
 
 	@abc.abstractmethod
-	def __ge__(self, other: typing.Self, /) -> bool:
+	def __ge__(self, other: Order, /) -> bool:
 		...
 
-	def __eq__(self, other: typing.Self, /) -> bool: return not self != other
-	def __ne__(self, other: typing.Self, /) -> bool: return not self == other
+	def __eq__(self, other: Order, /) -> bool: return not self != other
+	def __ne__(self, other: Order, /) -> bool: return not self == other
 
-	def __lt__(self, other: typing.Self, /) -> bool: return self <= other and self != other
-	def __gt__(self, other: typing.Self, /) -> bool: return self >= other and self != other
+	def __lt__(self, other: Order, /) -> bool: return self <= other and self != other
+	def __gt__(self, other: Order, /) -> bool: return self >= other and self != other
 
-	def issubset  (self, other: typing.Self, /) -> bool: return self <= other
-	def issuperset(self, other: typing.Self, /) -> bool: return self >= other
+	@typing.final
+	def issubset  (self, other: Order, /) -> bool:
+		return self <= other
 
-	@abc.abstractmethod
-	def isdisjoint(self, other: typing.Self, /) -> bool:
-		...
+	@typing.final
+	def issuperset(self, other: Order, /) -> bool:
+		return self >= other
 
 
 class Partial(Order):
 
-	def __le__(self, other: typing.Self, /) -> bool: return self < other or self == other
-	def __ge__(self, other: typing.Self, /) -> bool: return self > other or self == other
+	def __le__(self, other: Order, /) -> bool: return self < other or self == other
+	def __ge__(self, other: Order, /) -> bool: return self > other or self == other
 
 
 class Total(Order):
 
-	def __le__(self, other: typing.Self, /) -> bool: return not self > other
-	def __ge__(self, other: typing.Self, /) -> bool: return not self < other
-	def __eq__(self, other: typing.Self, /) -> bool:
+	def __le__(self, other: Order, /) -> bool: return not self > other
+	def __ge__(self, other: Order, /) -> bool: return not self < other
+	def __eq__(self, other: Order, /) -> bool:
 		return self <= other and self >= other
 
 
-class frac(Distance, Boolean, Total, abc.ABC):
+class Separable(Operable, abc.ABC):
+
+	@abc.abstractmethod
+	def __bool__(self) -> bool:
+		...
+
+	@typing.final
+	def isdisjoint(self, other: Operable) -> bool:
+		return not (self & other)
+
+
+class frac(Separable, Total, Additive, abc.ABC):
 
 	numer: int
 	denom: int
@@ -93,8 +144,11 @@ class frac(Distance, Boolean, Total, abc.ABC):
 		numer: int | frac = 0,
 		denom: int        = 1, /
 	) -> typing.Self:
-		if isinstance(numer, cls ): return numer
-		if isinstance(numer, frac): return cls.from_integers(*numer.integers)
+		if isinstance(numer, cls):
+			return numer
+
+		if isinstance(numer, frac):
+			return cls.encode(*numer.decode())
 
 		self = super().__new__(cls)
 
@@ -112,33 +166,42 @@ class frac(Distance, Boolean, Total, abc.ABC):
 		return repr(float(self))
 
 	def __hash__(self) -> int:
-		return hash(self.integers)
+		return hash(self.decode())
 
 	def __bool__(self) -> bool:
-		_, b = self.integers
+		_, b = self.decode()
 
 		return bool(b)
 
 	def __float__(self) -> float:
 		return self.numer / self.denom if self.denom else math.inf
 
-	def __le__(self, other: frac, /) -> bool: a, b = self.integers; c, d = other.integers; return a * d >= c * b
-	def __ge__(self, other: frac, /) -> bool: a, b = self.integers; c, d = other.integers; return a * d <= c * b
+	def __add__(self, other: int | frac, /) -> typing.Self: cls = type(self); return cls(dist(self) + dist(other))
+	def __mul__(self, times: int       , /) -> typing.Self: cls = type(self); return cls(dist(self) *      times )
+	def __and__(self, other: int | frac, /) -> typing.Self: cls = type(self); return cls(prob(self) & prob(other))
+
+	def __invert__(self) -> typing.Self: cls = type(self); a, b = self.decode(); return cls.encode(b, a)
+
+	def __le__(self, other: frac, /) -> bool: a, b = self.decode(); c, d = other.decode(); return a * d >= c * b
+	def __ge__(self, other: frac, /) -> bool: a, b = self.decode(); c, d = other.decode(); return a * d <= c * b
 
 
 	@classmethod
-	def from_integers(cls,
+	@abc.abstractmethod
+	def encode(cls,
 		numer: int,
 		denom: int, /
 	) -> typing.Self:
-		return cls(numer, denom)
+		...
 
+	@typing.final
 	@property
-	def integers(self) -> pair[int]:
-		return self.numer, self.denom
+	def decoded(self) -> pair[int]:
+		return self.decode()
 
-	def isdisjoint(self, other: frac) -> bool:
-		return not (self & other)
+	@abc.abstractmethod
+	def decode(self) -> pair[int]:
+		...
 
 
 class dist(frac):
@@ -156,7 +219,7 @@ class dist(frac):
 
 		return self
 
-	def __add__(self, other: frac) -> typing.Self:
+	def __add__(self, other: int | frac) -> typing.Self:
 		cls, other = type(self), dist(other)
 
 		return cls(
@@ -172,24 +235,21 @@ class dist(frac):
 			self.denom,
 		)
 
-	def __and__(self, other: frac) -> typing.Self:
-		cls = type(self)
+	@classmethod
+	def encode(cls,
+		numer: int,
+		denom: int, /
+	) -> typing.Self:
+		return cls(numer, denom)
 
-		return cls(prob(self) & prob(other))
-
-	def __invert__(self) -> typing.Self:
-		cls = type(self)
-
-		return cls(
-			self.denom,
-			self.numer,
-		)
+	def decode(self) -> pair[int]:
+		return self.numer, self.denom
 
 
 class prob(frac):
 
 	def __new__(cls,
-		numer: int | frac = 0,
+		numer: int | frac = 1,
 		denom: int        = 1, /
 	) -> typing.Self:
 		if not (numer or denom): denom = 1
@@ -201,10 +261,7 @@ class prob(frac):
 
 		return self
 
-	def __add__(self, other: frac) -> typing.Self: cls = type(self); return cls(dist(self) + dist(other))
-	def __mul__(self, times: int ) -> typing.Self: cls = type(self); return cls(dist(self) *      times )
-
-	def __and__(self, other: frac) -> typing.Self:
+	def __and__(self, other: int | frac) -> typing.Self:
 		cls, other = type(self), prob(other)
 
 		return cls(
@@ -212,16 +269,8 @@ class prob(frac):
 			self.denom * other.denom,
 		)
 
-	def __invert__(self) -> typing.Self:
-		cls = type(self)
-
-		return cls(
-			self.denom - self.numer,
-			self.denom             ,
-		)
-
 	@classmethod
-	def from_integers(cls,
+	def encode(cls,
 		numer: int,
 		denom: int, /
 	) -> typing.Self:
@@ -230,9 +279,33 @@ class prob(frac):
 			denom + numer,
 		)
 
-	@property
-	def integers(self) -> pair[int]:
+	def decode(self) -> pair[int]:
 		return (
 			self.denom - self.numer,
 			self.numer,
 		)
+
+
+class boolean(Additive, Total, Separable):
+
+	def __init__(self, _: object = False, /):
+		self._ = bool(_)
+
+	def __repr__(self, /) -> str:
+		return repr(self._)
+
+	def __bool__(self) -> bool:
+		return self._
+
+	def __add__(self, other: object, /) -> typing.Self: cls = type(self); return cls(self and other)
+	def __mul__(self, _    : int   , /) -> typing.Self: cls = type(self); return cls(self          )
+	def __and__(self, other: object, /) -> typing.Self: cls = type(self); return cls(self and other)
+
+	def __invert__(self, /) -> typing.Self:
+		cls = type(self)
+
+		return cls(not self)
+
+	def __ne__(self, other: object, /) -> bool: return bool(self ) is not bool(other)
+	def __le__(self, other: object, /) -> bool: return bool(other) or not bool(self )
+	def __ge__(self, other: object, /) -> bool: return bool(self ) or not bool(other)
