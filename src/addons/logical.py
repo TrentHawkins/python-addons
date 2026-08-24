@@ -135,7 +135,12 @@ class Separable(Operable, abc.ABC):
 		return not (self & other)
 
 
-class Frac(Separable, Total, Additive, abc.ABC):
+class Boolean(Separable, Total, Additive, abc.ABC):
+
+	...
+
+
+class Frac(Boolean, abc.ABC):
 
 	numer: int
 	denom: int
@@ -286,13 +291,13 @@ class Prob(Frac):
 		)
 
 
-class Bool(Additive, Total, Separable):
+class Bool(Boolean):
 
 	def __init__(self, _: object = False, /):
 		self._ = bool(_)
 
 	def __repr__(self, /) -> str:
-		return repr(self._)
+		return repr(bool(self))
 
 	def __bool__(self) -> bool:
 		return self._
@@ -309,3 +314,15 @@ class Bool(Additive, Total, Separable):
 	def __ne__(self, other: object, /) -> bool: return bool(self ) is not bool(other)
 	def __le__(self, other: object, /) -> bool: return bool(other) or not bool(self )
 	def __ge__(self, other: object, /) -> bool: return bool(self ) or not bool(other)
+
+
+class Set[K: typing.Hashable, V: Boolean](Boolean, dict[K , V]):
+
+	...
+
+
+type IndexSet[I: typing.Hashable] = Set[I, Bool]
+type FuzzySet[I: typing.Hashable] = Set[I, Prob]
+
+type UnweightedGraph[I: typing.Hashable] = Set[I, Set[I, Bool]]
+type           Graph[I: typing.Hashable] = Set[I, Set[I, Prob]]
