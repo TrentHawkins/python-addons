@@ -352,7 +352,7 @@ class Bool(Boolean, Total):
 class Set[K: typing.Hashable, V: Boolean = Bool](Boolean, Partial, dict[K , V]):
 
 	truth: type[V]
-	complement: bool = False
+	default: V
 
 	def __init_subclass__(cls, *args,
 		truth: type[V] | None = None,
@@ -368,10 +368,10 @@ class Set[K: typing.Hashable, V: Boolean = Bool](Boolean, Partial, dict[K , V]):
 		if complement is None:
 			complement = iterable.complement if isinstance(iterable, Set) else False
 
-		self.complement = complement
+		self.default = type(self).truth.minimum() if complement else type(self).truth.maximum()
 
 		super().__init__(
-			iterable.items() if isinstance(iterable, typing.Mapping) else ((key, self.covered)
+			iterable.items() if isinstance(iterable, typing.Mapping) else ((key, ~self.default)
 			for key in iterable),
 		)
 
@@ -379,12 +379,8 @@ class Set[K: typing.Hashable, V: Boolean = Bool](Boolean, Partial, dict[K , V]):
 		return self.default
 
 	@property
-	def covered(self) -> V:
-		return type(self).truth.maximum() if self.complement else type(self).truth.minimum()
-
-	@property
-	def default(self) -> V:
-		return type(self).truth.minimum() if self.complement else type(self).truth.maximum()
+	def complement(self) -> bool:
+		return bool(self.default)
 
 
 type IndexSet[I: typing.Hashable] = Set[I, Bool]
