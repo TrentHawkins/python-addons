@@ -141,7 +141,15 @@ class Separable(Operable, abc.ABC):
 
 class Boolean(Separable, Additive, abc.ABC):
 
-	...
+	@classmethod
+	@abc.abstractmethod
+	def minimum(cls) -> typing.Self:
+		...
+
+	@classmethod
+	@abc.abstractmethod
+	def maximum(cls) -> typing.Self:
+		...
 
 
 class Frac(Boolean, Total, abc.ABC):
@@ -202,6 +210,19 @@ class Frac(Boolean, Total, abc.ABC):
 		denom: int, /
 	) -> typing.Self:
 		...
+
+#	The distinguished values are just canonical readings, so `encode` already knows them:
+	@classmethod
+	def minimum(cls) -> typing.Self:
+		return cls.encode(0, 1)
+
+	@classmethod
+	def midimum(cls) -> typing.Self:
+		return cls.encode(1, 1)
+
+	@classmethod
+	def maximum(cls) -> typing.Self:
+		return cls.encode(1, 0)
 
 	@typing.final
 	@property
@@ -315,6 +336,14 @@ class Bool(Boolean, Total):
 
 		return cls(not self)
 
+	@classmethod
+	def minimum(cls) -> typing.Self:
+		return cls(True)
+
+	@classmethod
+	def maximum(cls) -> typing.Self:
+		return cls(False)
+
 	def __ne__(self, other: object, /) -> bool: return bool(self ) is not bool(other)
 	def __le__(self, other: object, /) -> bool: return bool(other) or not bool(self )
 	def __ge__(self, other: object, /) -> bool: return bool(self ) or not bool(other)
@@ -342,14 +371,20 @@ class Set[K: typing.Hashable, V: Boolean = Bool](Boolean, Partial, dict[K , V]):
 		self.complement = complement
 
 		super().__init__(
-			iterable.items() if isinstance(iterable, typing.Mapping) else ((key, self.truth(not self.complement))
+			iterable.items() if isinstance(iterable, typing.Mapping) else ((key, self.covered)
 			for key in iterable),
 		)
 
 	def __missing__(self, _: K, /) -> V:
-		cls = type(self)
+		return self.default
 
-		return cls.truth(self.complement)
+	@property
+	def covered(self) -> V:
+		return type(self).truth.maximum() if self.complement else type(self).truth.minimum()
+
+	@property
+	def default(self) -> V:
+		return type(self).truth.minimum() if self.complement else type(self).truth.maximum()
 
 
 type IndexSet[I: typing.Hashable] = Set[I, Bool]
