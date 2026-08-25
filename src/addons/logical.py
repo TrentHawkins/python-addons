@@ -95,9 +95,10 @@ class Order(abc.ABC):
 	def __ge__(self, other: Order, /) -> bool:
 		...
 
-	def __eq__(self, other: Order, /) -> bool: return not self != other
-	def __ne__(self, other: Order, /) -> bool: return not self == other
+	def __ne__(self, other: Order, /) -> bool:
+		return not self == other
 
+	def __eq__(self, other: Order, /) -> bool: return self <= other and self >= other
 	def __lt__(self, other: Order, /) -> bool: return self <= other and self != other
 	def __gt__(self, other: Order, /) -> bool: return self >= other and self != other
 
@@ -112,16 +113,19 @@ class Order(abc.ABC):
 
 class Partial(Order):
 
-	def __le__(self, other: Order, /) -> bool: return self < other or self == other
-	def __ge__(self, other: Order, /) -> bool: return self > other or self == other
+#	Without trichotomy `__le__` is primitive; its converse is only the reflection:
+	def __le__(self, other: Order, /) -> bool: return other >= self
+	def __ge__(self, other: Order, /) -> bool: return other <= self
 
 
 class Total(Order):
 
+#	Trichotomy derives each relation from the negation of its converse:
 	def __le__(self, other: Order, /) -> bool: return not self > other
 	def __ge__(self, other: Order, /) -> bool: return not self < other
-	def __eq__(self, other: Order, /) -> bool:
-		return self <= other and self >= other
+
+	def __lt__(self, other: Order, /) -> bool: return not self >= other
+	def __gt__(self, other: Order, /) -> bool: return not self <= other
 
 
 class Separable(Operable, abc.ABC):
@@ -135,12 +139,12 @@ class Separable(Operable, abc.ABC):
 		return not (self & other)
 
 
-class Boolean(Separable, Total, Additive, abc.ABC):
+class Boolean(Separable, Additive, abc.ABC):
 
 	...
 
 
-class Frac(Boolean, abc.ABC):
+class Frac(Boolean, Total, abc.ABC):
 
 	numer: int
 	denom: int
@@ -238,7 +242,7 @@ class Dist(Frac):
 		return cls(
 			self.numer * times,
 			self.denom,
-		)
+		) if times else cls()
 
 	@classmethod
 	def encode(cls,
@@ -291,20 +295,20 @@ class Prob(Frac):
 		)
 
 
-class Bool(Boolean):
+class Bool(Boolean, Total):
 
 	def __init__(self, _: object = False, /):
 		self._ = bool(_)
 
-	def __repr__(self, /) -> str:
-		return repr(bool(self))
+	def __repr__(self) -> str: return repr(bool(self))
+	def __hash__(self) -> int: return hash(bool(self))
 
 	def __bool__(self) -> bool:
 		return self._
 
-	def __add__(self, other: object, /) -> typing.Self: cls = type(self); return cls(self and other)
-	def __mul__(self, _    : int   , /) -> typing.Self: cls = type(self); return cls(self          )
-	def __and__(self, other: object, /) -> typing.Self: cls = type(self); return cls(self and other)
+	def __add__(self, other: object, /) -> typing.Self: cls = type(self); return cls(self    and other)
+	def __mul__(self, times: int   , /) -> typing.Self: cls = type(self); return cls(self or not times)
+	def __and__(self, other: object, /) -> typing.Self: cls = type(self); return cls(self    and other)
 
 	def __invert__(self, /) -> typing.Self:
 		cls = type(self)
@@ -316,9 +320,36 @@ class Bool(Boolean):
 	def __ge__(self, other: object, /) -> bool: return bool(self ) or not bool(other)
 
 
-class Set[K: typing.Hashable, V: Boolean](Boolean, dict[K , V]):
+class Set[K: typing.Hashable, V: Boolean = Bool](Boolean, Partial, dict[K , V]):
 
-	...
+	truth: type[V]
+	complement: bool = False
+
+	def __init_subclass__(cls, *args,
+		truth: type[V] | None = None,
+	**kwargs) -> None:
+		super().__init_subclass__(*args, **kwargs)
+
+		if truth is not None:
+			cls.truth = truth
+
+	def __init__(self, iterable: typing.Iterable[K] | typing.Mapping[K, V] = (), /, *,
+		complement: bool | None = None,
+	):
+		if complement is None:
+			complement = iterable.complement if isinstance(iterable, Set) else False
+
+		self.complement = complement
+
+		super().__init__(
+			iterable.items() if isinstance(iterable, typing.Mapping) else ((key, self.truth(not self.complement))
+			for key in iterable),
+		)
+
+	def __missing__(self, _: K, /) -> V:
+		cls = type(self)
+
+		return cls.truth(self.complement)
 
 
 type IndexSet[I: typing.Hashable] = Set[I, Bool]
