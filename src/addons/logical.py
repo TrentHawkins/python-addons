@@ -1,97 +1,113 @@
 from __future__ import annotations
 
 
-import abc
-import functools
-import math
-import typing
+from abc import ABC, abstractmethod
+from collections.abc import Hashable, Iterable, Mapping
+from functools import reduce
+from math import gcd, inf
+from typing import Self, final
 
 
 type pair[T] = tuple[T, T]
 
 
-class Invertible(abc.ABC):
+class Bounded(ABC):
 
-	@abc.abstractmethod
-	def __invert__(self) -> typing.Self:
+	@classmethod
+	@abstractmethod
+	def minimum(cls) -> Self:
+		...
+
+	@classmethod
+	@abstractmethod
+	def maximum(cls) -> Self:
 		...
 
 
-class Operable(Invertible):
+class Invertible(ABC):
 
-	def  __or__(self, other: Operable, /) -> typing.Self: return ~(~self & ~other)
-	def __and__(self, other: Operable, /) -> typing.Self: return ~(~self | ~other)
-	def __sub__(self, other: Operable, /) -> typing.Self: return    self & ~other
-	def __xor__(self, other: Operable, /) -> typing.Self:
+	@abstractmethod
+	def __invert__(self) -> Self:
+		...
+
+
+class Operable(Invertible, Bounded):
+
+	def  __or__(self, other: Operable, /) -> Self: return ~(~self & ~other)
+	def __and__(self, other: Operable, /) -> Self: return ~(~self | ~other)
+	def __sub__(self, other: Operable, /) -> Self: return    self & ~other
+	def __xor__(self, other: Operable, /) -> Self:
 		return (self | other) - (self & other)
 	#	return (self - other) | (other - self)
 
-	def  __ror__(self, other: Operable, /) -> typing.Self: return self | other
-	def __rand__(self, other: Operable, /) -> typing.Self: return self & other
-	def __rxor__(self, other: Operable, /) -> typing.Self: return self ^ other
+	def  __ror__(self, other: Operable, /) -> Self: return self | other
+	def __rand__(self, other: Operable, /) -> Self: return self & other
+	def __rxor__(self, other: Operable, /) -> Self: return self ^ other
 
-	def  __ior__(self, other: Operable, /) -> typing.Self: return self | other
-	def __iand__(self, other: Operable, /) -> typing.Self: return self & other
-	def __isub__(self, other: Operable, /) -> typing.Self: return self - other
-	def __ixor__(self, other: Operable, /) -> typing.Self: return self ^ other
+	def  __ior__(self, other: Operable, /) -> Self: return self | other
+	def __iand__(self, other: Operable, /) -> Self: return self & other
+	def __isub__(self, other: Operable, /) -> Self: return self - other
+	def __ixor__(self, other: Operable, /) -> Self: return self ^ other
 
-	@typing.final
-	def union(self, *others: Operable) -> typing.Self:
-		return functools.reduce(self.__class__.__or__, others, self)
+	@final
+	def union(self, *others: Operable) -> Self:
+		return reduce(self.__class__.__or__, others, self)
 
-	@typing.final
-	def intersection(self, *others: Operable) -> typing.Self:
-		return functools.reduce(self.__class__.__and__, others, self)
+	@final
+	def intersection(self, *others: Operable) -> Self:
+		return reduce(self.__class__.__and__, others, self)
 
-	@typing.final
-	def difference(self, *others: Operable) -> typing.Self:
-		return functools.reduce(self.__class__.__sub__, others, self)
+	@final
+	def difference(self, *others: Operable) -> Self:
+		return reduce(self.__class__.__sub__, others, self)
 
-	@typing.final
-	def symmetric_difference(self, other: Operable, /) -> typing.Self:
+	@final
+	def symmetric_difference(self, other: Operable, /) -> Self:
 		return self ^ other
 
-	@typing.final
+	@final
 	@classmethod
-	def any(cls, others: typing.Iterable[Operable], /) -> typing.Self:
-		return cls.union(*others)  # pyright: ignore[reportArgumentType]
+	def any(cls, others: Iterable[Operable], /) -> Self:
+		return cls.maximum().union(*others)
+	#	return reduce(cls.__or__, others, cls.maximum())
 
-	@typing.final
+	@final
 	@classmethod
-	def all(cls, others: typing.Iterable[Operable], /) -> typing.Self:
-		return cls.intersection(*others)  # pyright: ignore[reportArgumentType]
+	def all(cls, others: Iterable[Operable], /) -> Self:
+		return cls.minimum().intersection(*others)
+	#	return reduce(cls.__and__, others, cls.minimum())
 
-class Additive(abc.ABC):
 
-	@abc.abstractmethod
-	def __add__(self, other: Additive, /) -> typing.Self:
+class Additive(Bounded):
+
+	@abstractmethod
+	def __add__(self, other: Additive, /) -> Self:
 		...
 
-	@abc.abstractmethod
-	def __mul__(self, times: int, /) -> typing.Self:
+	@abstractmethod
+	def __mul__(self, times: int, /) -> Self:
 		...
 
-	def __radd__(self, other: Additive, /) -> typing.Self: return self + other
-	def __rmul__(self, other: int     , /) -> typing.Self: return self * other
+	def __radd__(self, other: Additive, /) -> Self: return self + other
+	def __rmul__(self, other: int     , /) -> Self: return self * other
 
-	def __iadd__(self, other: Additive, /) -> typing.Self: return self + other
-	def __imul__(self, other: int     , /) -> typing.Self: return self * other
+	def __iadd__(self, other: Additive, /) -> Self: return self + other
+	def __imul__(self, other: int     , /) -> Self: return self * other
 
-	@typing.final
+	@final
 	@classmethod
-	def sum(cls, others: typing.Iterable[Additive], /) -> typing.Self:
-		return sum(others,  #  pyright: ignore[reportArgumentType, reportCallIssue]
-		#	start = cls()  #  pyright: ignore[reportReturnType]
-		)
-	#	return functools.reduce(cls.__add__, others, cls())
+	def sum(cls, others: Iterable[Additive], /) -> Self:
+		return sum(others, cls.minimum())  # pyright: ignore[reportReturnType]
+	#	return reduce(cls.__add__, others, cls.minimum())
 
-class Order(abc.ABC):
 
-	@abc.abstractmethod
+class Order(ABC):
+
+	@abstractmethod
 	def __le__(self, other: Order, /) -> bool:
 		...
 
-	@abc.abstractmethod
+	@abstractmethod
 	def __ge__(self, other: Order, /) -> bool:
 		...
 
@@ -102,25 +118,23 @@ class Order(abc.ABC):
 	def __lt__(self, other: Order, /) -> bool: return self <= other and self != other
 	def __gt__(self, other: Order, /) -> bool: return self >= other and self != other
 
-	@typing.final
+	@final
 	def issubset  (self, other: Order, /) -> bool:
 		return self <= other
 
-	@typing.final
+	@final
 	def issuperset(self, other: Order, /) -> bool:
 		return self >= other
 
 
 class Partial(Order):
 
-#	Without trichotomy `__le__` is primitive; its converse is only the reflection:
 	def __le__(self, other: Order, /) -> bool: return other >= self
 	def __ge__(self, other: Order, /) -> bool: return other <= self
 
 
 class Total(Order):
 
-#	Trichotomy derives each relation from the negation of its converse:
 	def __le__(self, other: Order, /) -> bool: return not self > other
 	def __ge__(self, other: Order, /) -> bool: return not self < other
 
@@ -128,31 +142,23 @@ class Total(Order):
 	def __gt__(self, other: Order, /) -> bool: return not self <= other
 
 
-class Separable(Operable, abc.ABC):
+class Separable(Operable, ABC):
 
-	@abc.abstractmethod
+	@abstractmethod
 	def __bool__(self) -> bool:
 		...
 
-	@typing.final
+	@final
 	def isdisjoint(self, other: Operable) -> bool:
 		return not (self & other)
 
 
-class Boolean(Separable, Additive, abc.ABC):
+class Boolean(Separable, Additive, ABC):
 
-	@classmethod
-	@abc.abstractmethod
-	def minimum(cls) -> typing.Self:
-		...
-
-	@classmethod
-	@abc.abstractmethod
-	def maximum(cls) -> typing.Self:
-		...
+	...
 
 
-class Frac(Boolean, Total, abc.ABC):
+class Frac(Boolean, Total, ABC):
 
 	numer: int
 	denom: int
@@ -160,7 +166,7 @@ class Frac(Boolean, Total, abc.ABC):
 	def __new__(cls,
 		numer: int | Frac = 0,
 		denom: int        = 1, /
-	) -> typing.Self:
+	) -> Self:
 		if isinstance(numer, cls):
 			return numer
 
@@ -169,7 +175,7 @@ class Frac(Boolean, Total, abc.ABC):
 
 		self = super().__new__(cls)
 
-		greatest_common_divisor = math.gcd(
+		greatest_common_divisor = gcd(
 			numer,
 			denom,
 		)
@@ -191,45 +197,44 @@ class Frac(Boolean, Total, abc.ABC):
 		return bool(b)
 
 	def __float__(self) -> float:
-		return self.numer / self.denom if self.denom else math.inf
+		return self.numer / self.denom if self.denom else inf
 
-	def __add__(self, other: int | Frac, /) -> typing.Self: cls = type(self); return cls(Dist(self) + Dist(other))
-	def __mul__(self, times: int       , /) -> typing.Self: cls = type(self); return cls(Dist(self) *      times )
-	def __and__(self, other: int | Frac, /) -> typing.Self: cls = type(self); return cls(Prob(self) & Prob(other))
+	def __add__(self, other: int | Frac, /) -> Self: cls = type(self); return cls(Dist(self) + Dist(other))
+	def __mul__(self, times: int       , /) -> Self: cls = type(self); return cls(Dist(self) *      times )
+	def __and__(self, other: int | Frac, /) -> Self: cls = type(self); return cls(Prob(self) & Prob(other))
 
-	def __invert__(self) -> typing.Self: cls = type(self); a, b = self.decode(); return cls.encode(b, a)
+	def __invert__(self) -> Self: cls = type(self); a, b = self.decode(); return cls.encode(b, a)
 
 	def __le__(self, other: Frac, /) -> bool: a, b = self.decode(); c, d = other.decode(); return a * d >= c * b
 	def __ge__(self, other: Frac, /) -> bool: a, b = self.decode(); c, d = other.decode(); return a * d <= c * b
 
 
 	@classmethod
-	@abc.abstractmethod
+	@abstractmethod
 	def encode(cls,
 		numer: int,
 		denom: int, /
-	) -> typing.Self:
+	) -> Self:
 		...
 
-#	The distinguished values are just canonical readings, so `encode` already knows them:
 	@classmethod
-	def minimum(cls) -> typing.Self:
+	def minimum(cls) -> Self:
 		return cls.encode(0, 1)
 
 	@classmethod
-	def midimum(cls) -> typing.Self:
+	def midimum(cls) -> Self:
 		return cls.encode(1, 1)
 
 	@classmethod
-	def maximum(cls) -> typing.Self:
+	def maximum(cls) -> Self:
 		return cls.encode(1, 0)
 
-	@typing.final
+	@final
 	@property
 	def decoded(self) -> pair[int]:
 		return self.decode()
 
-	@abc.abstractmethod
+	@abstractmethod
 	def decode(self) -> pair[int]:
 		...
 
@@ -239,7 +244,7 @@ class Dist(Frac):
 	def __new__(cls,
 		numer: int | Frac = 0,
 		denom: int        = 1, /
-	) -> typing.Self:
+	) -> Self:
 		if not (numer or denom): numer = 1
 
 		self = super().__new__(cls, numer, denom)
@@ -249,7 +254,7 @@ class Dist(Frac):
 
 		return self
 
-	def __add__(self, other: int | Frac) -> typing.Self:
+	def __add__(self, other: int | Frac) -> Self:
 		cls, other = type(self), Dist(other)
 
 		return cls(
@@ -257,7 +262,7 @@ class Dist(Frac):
 			              self.denom              * other.denom,
 		)
 
-	def __mul__(self, times: int) -> typing.Self:
+	def __mul__(self, times: int) -> Self:
 		cls = type(self)
 
 		return cls(
@@ -269,7 +274,7 @@ class Dist(Frac):
 	def encode(cls,
 		numer: int,
 		denom: int, /
-	) -> typing.Self:
+	) -> Self:
 		return cls(numer, denom)
 
 	def decode(self) -> pair[int]:
@@ -281,7 +286,7 @@ class Prob(Frac):
 	def __new__(cls,
 		numer: int | Frac = 1,
 		denom: int        = 1, /
-	) -> typing.Self:
+	) -> Self:
 		if not (numer or denom): denom = 1
 
 		self = super().__new__(cls, numer, denom)
@@ -291,7 +296,7 @@ class Prob(Frac):
 
 		return self
 
-	def __and__(self, other: int | Frac) -> typing.Self:
+	def __and__(self, other: int | Frac) -> Self:
 		cls, other = type(self), Prob(other)
 
 		return cls(
@@ -303,7 +308,7 @@ class Prob(Frac):
 	def encode(cls,
 		numer: int,
 		denom: int, /
-	) -> typing.Self:
+	) -> Self:
 		return cls(
 			denom,
 			denom + numer,
@@ -327,21 +332,21 @@ class Bool(Boolean, Total):
 	def __bool__(self) -> bool:
 		return self._
 
-	def __add__(self, other: object, /) -> typing.Self: cls = type(self); return cls(self    and other)
-	def __mul__(self, times: int   , /) -> typing.Self: cls = type(self); return cls(self or not times)
-	def __and__(self, other: object, /) -> typing.Self: cls = type(self); return cls(self    and other)
+	def __add__(self, other: object, /) -> Self: cls = type(self); return cls(self    and other)
+	def __mul__(self, times: int   , /) -> Self: cls = type(self); return cls(self or not times)
+	def __and__(self, other: object, /) -> Self: cls = type(self); return cls(self    and other)
 
-	def __invert__(self, /) -> typing.Self:
+	def __invert__(self, /) -> Self:
 		cls = type(self)
 
 		return cls(not self)
 
 	@classmethod
-	def minimum(cls) -> typing.Self:
+	def minimum(cls) -> Self:
 		return cls(True)
 
 	@classmethod
-	def maximum(cls) -> typing.Self:
+	def maximum(cls) -> Self:
 		return cls(False)
 
 	def __ne__(self, other: object, /) -> bool: return bool(self ) is not bool(other)
@@ -349,20 +354,20 @@ class Bool(Boolean, Total):
 	def __ge__(self, other: object, /) -> bool: return bool(self ) or not bool(other)
 
 
-class Set[K: typing.Hashable, V: Boolean = Bool](Boolean, Partial, dict[K , V]):
+class Set[K: Hashable, V: Boolean = Bool](Boolean, Partial, dict[K , V]):
 
 	truth: type[V]
 	default: V
 
 	def __init_subclass__(cls, *args,
 		truth: type[V] | None = None,
-	**kwargs) -> None:
+	**kwargs):
 		super().__init_subclass__(*args, **kwargs)
 
 		if truth is not None:
 			cls.truth = truth
 
-	def __init__(self, iterable: typing.Iterable[K] | typing.Mapping[K, V] = (), /, *,
+	def __init__(self, iterable: Iterable[K] | Mapping[K, V] = (), /, *,
 		complement: bool | None = None,
 	):
 		if complement is None:
@@ -370,21 +375,120 @@ class Set[K: typing.Hashable, V: Boolean = Bool](Boolean, Partial, dict[K , V]):
 
 		self.default = type(self).truth.minimum() if complement else type(self).truth.maximum()
 
-		super().__init__(
-			iterable.items() if isinstance(iterable, typing.Mapping) else ((key, ~self.default)
-			for key in iterable),
-		)
+		super().__init__()
+
+		if not isinstance(iterable, Mapping):
+			iterable = dict.fromkeys(iterable, ~self.default)
+
+		for key, value in iterable.items():
+			self[key] = value
 
 	def __missing__(self, _: K, /) -> V:
 		return self.default
+
+	def __setitem__(self, key: K, value: object, /):
+		cls = type(self)
+
+		super().__setitem__(key, cls.truth(value))  # pyright: ignore[reportCallIssue]
+
+	def __invert__(self) -> Self:
+		cls = type(self)
+
+		return cls({key: ~value for key, value in self.items()},
+			complement = not self.complement,
+		)
+
+	def __and__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
+		cls = type(self)
+		other = cls(other)
+
+		return cls({key: self[key] & other[key] for key in self.keys() | other.keys()},
+			complement = self.complement and other.complement,
+		)
+
+	def __or__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
+		cls = type(self)
+		other = cls(other)
+
+		return cls({key: self[key] | other[key] for key in self.keys() | other.keys()},
+			complement = self.complement or other.complement,
+		)
+
+	def __sub__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
+		cls = type(self)
+		other = cls(other)
+
+		return cls({key: self[key] & ~other[key] for key in self.keys() | other.keys()},
+			complement = self.complement and not other.complement,
+		)
+
+	def __xor__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
+		cls = type(self)
+		other = cls(other)
+
+		return cls({key: self[key] ^ other[key] for key in self.keys() | other.keys()},
+			complement = self.complement is not other.complement,
+		)
+
+	def __ior__ (self, other: Iterable[K] | Mapping[K, V], /) -> Self: self.update                     (other); return self
+	def __iand__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: self.intersection_update        (other); return self
+	def __isub__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: self.difference_update          (other); return self
+	def __ixor__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: self.symmetric_difference_update(other); return self
+
+	@classmethod
+	def fromkeys(cls, iterable: Iterable[K], value: V | None = None, /) -> Self:
+		return cls(iterable if value is None else dict.fromkeys(iterable, value))
+
+	@classmethod
+	def minimum(cls) -> Self:
+		return cls(complement = True)
+
+	@classmethod
+	def maximum(cls) -> Self:
+		return cls()
 
 	@property
 	def complement(self) -> bool:
 		return bool(self.default)
 
+	def get(self, key: K, default: V | None = None, /) -> V:
+		return self[key] if default is None or key in self else default
 
-type IndexSet[I: typing.Hashable] = Set[I, Bool]
-type FuzzySet[I: typing.Hashable] = Set[I, Prob]
+	def setdefault(self, key: K, default: V | None = None, /) -> V:
+		if key not in self: self[key] = ~self.default if default is None else default
 
-type UnweightedGraph[I: typing.Hashable] = Set[I, Set[I, Bool]]
-type           Graph[I: typing.Hashable] = Set[I, Set[I, Prob]]
+		return self[key]
+	def become(self, other: Self, /):
+		items = dict(other)
+
+		self.default = other.default
+
+		dict.clear(self)
+		dict.update(self, items)
+
+	def update(self, *others: Iterable[K] | Mapping[K, V]):
+		cls = type(self)
+
+		self.become(self.union(*map(cls, others)))
+
+	def intersection_update(self, *others: Iterable[K] | Mapping[K, V]):
+		cls = type(self)
+
+		self.become(self.intersection(*map(cls, others)))
+
+	def difference_update(self, *others: Iterable[K] | Mapping[K, V]):
+		cls = type(self)
+
+		self.become(self.difference(*map(cls, others)))
+
+	def symmetric_difference_update(self, other: Iterable[K] | Mapping[K, V], /):
+		cls = type(self)
+
+		self.become(self.symmetric_difference(cls(other)))
+
+
+class IndexSet[I: Hashable](Set[I, Bool], truth = Bool): ...
+class FuzzySet[I: Hashable](Set[I, Prob], truth = Prob): ...
+
+class UnweightedGraph[I: Hashable](Set[I, IndexSet[I]], truth = IndexSet[I]): ...
+class           Graph[I: Hashable](Set[I, FuzzySet[I]], truth = FuzzySet[I]): ...
