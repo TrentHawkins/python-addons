@@ -358,7 +358,7 @@ class Bool(Boolean, Total):
 class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict[K , V]):
 
 	truth: type[V]
-	default: V
+	complement: bool
 
 	def __init_subclass__(cls, *args,
 		truth: type[V] | None = None,
@@ -374,7 +374,7 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 		if complement is None:
 			complement = iterable.complement if isinstance(iterable, Set) else False
 
-		self.default = type(self).truth.minimum() if complement else type(self).truth.maximum()
+		self.complement = complement
 
 		super().__init__()
 
@@ -479,19 +479,19 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 		cls = type(self)
 		other = cls(other)
 
-		return all(self[key] <= other[key] for key in self.keys() | other.keys())
+		return self.default <= other.default and all(self[key] <= other[key] for key in self.keys() | other.keys())
 
 	def __ge__(self, other: Iterable[K] | Mapping[K, V], /) -> bool:
 		cls = type(self)
 		other = cls(other)
 
-		return all(self[key] >= other[key] for key in self.keys() | other.keys())
+		return self.default >= other.default and all(self[key] >= other[key] for key in self.keys() | other.keys())
 
 	def __eq__(self, other: Iterable[K] | Mapping[K, V], /) -> bool:
 		cls = type(self)
 		other = cls(other)
 
-		return all(self[key] == other[key] for key in self.keys() | other.keys())
+		return self.default == other.default and all(self[key] == other[key] for key in self.keys() | other.keys())
 
 	@classmethod
 	def fromkeys(cls, iterable: Iterable[K], value: V | None = None, /) -> Self:
@@ -506,8 +506,10 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 		return cls()
 
 	@property
-	def complement(self) -> bool:
-		return bool(self.default)
+	def default(self) -> V:
+		cls = type(self)
+
+		return cls.truth.minimum() if self.complement else cls.truth.maximum()
 
 	def get(self, key: K, default: V | None = None, /) -> V:
 		return self[key] if default is None or key in self else default
@@ -519,7 +521,7 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 	def become(self, other: Self, /):
 		items = dict(other)
 
-		self.default = other.default
+		self.complement = other.complement
 
 		dict.clear(self)
 		dict.update(self, items)
@@ -548,5 +550,5 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 class IndexSet[I: Hashable](Set[I, Bool], truth = Bool): ...
 class FuzzySet[I: Hashable](Set[I, Prob], truth = Prob): ...
 
-class UnweightedGraph[I: Hashable](Set[I, IndexSet[I]], truth = IndexSet[I]): ...
-class           Graph[I: Hashable](Set[I, FuzzySet[I]], truth = FuzzySet[I]): ...
+class UnweightedGraph[I: Hashable](Set[I, Bool, IndexSet[I]], truth = IndexSet[I]): ...
+class           Graph[I: Hashable](Set[I, Prob, FuzzySet[I]], truth = FuzzySet[I]): ...
