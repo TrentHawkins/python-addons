@@ -2,7 +2,7 @@ from __future__ import annotations
 
 
 from abc import ABC, abstractmethod
-from collections.abc import Hashable, Iterable, Iterator, Mapping
+from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
 from functools import reduce
 from math import gcd, inf
 from typing import Self, final, cast
@@ -150,6 +150,11 @@ class Boolean[T: Separable](Separable, Additive, Order, ABC):
 	@abstractmethod
 	def __abs__(self) -> T:
 		...
+
+
+type SetLike[K: Hashable, V: Boolean] = Iterable[K] | Mapping[K, V]
+type Operator[V: Boolean] = Callable[[V, V], V]
+type Relation[V: Boolean] = Callable[[V, V], bool]
 
 
 class Frac(Boolean, Total, ABC):
@@ -368,7 +373,7 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 		if truth is not None:
 			cls.truth = truth
 
-	def __init__(self, iterable: Iterable[K] | Mapping[K, V] = (), /, *,
+	def __init__(self, iterable: SetLike[K, V] = (), /, *,
 		complement: bool | None = None,
 	):
 		if complement is None:
@@ -410,7 +415,7 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 		cls = type(self)
 
 		return cls({key: ~value for key, value in self.items()},
-			complement = not self.complement,
+			complement = bool(~self.default),
 		)
 
 	def __abs__(self) -> T:
@@ -423,13 +428,6 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 
 		return result if self.complement else ~result
 
-	def __add__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
-		cls = type(self)
-		other = cls(other)
-
-		return cls({key: self[key] + other[key] for key in self.keys() | other.keys()},
-			complement = bool(self.default + other.default),
-		)
 
 	def __mul__(self, times: int, /) -> Self:
 		cls = type(self)
@@ -438,60 +436,20 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 			complement = bool(self.default * times),
 		)
 
-	def __and__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
-		cls = type(self)
-		other = cls(other)
+	def __add__(self, other: SetLike[K, V], /) -> Self: return self.operate(other, self.truth.__add__)
+	def __and__(self, other: SetLike[K, V], /) -> Self: return self.operate(other, self.truth.__and__)
+	def  __or__(self, other: SetLike[K, V], /) -> Self: return self.operate(other, self.truth. __or__)
+	def __sub__(self, other: SetLike[K, V], /) -> Self: return self.operate(other, self.truth.__sub__)
+	def __xor__(self, other: SetLike[K, V], /) -> Self: return self.operate(other, self.truth.__xor__)
 
-		return cls({key: self[key] & other[key] for key in self.keys() | other.keys()},
-			complement = bool(self.default & other.default),
-		)
+	def __ior__ (self, other: SetLike[K, V], /) -> Self: self.update                     (other); return self
+	def __iand__(self, other: SetLike[K, V], /) -> Self: self.intersection_update        (other); return self
+	def __isub__(self, other: SetLike[K, V], /) -> Self: self.difference_update          (other); return self
+	def __ixor__(self, other: SetLike[K, V], /) -> Self: self.symmetric_difference_update(other); return self
 
-	def __or__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
-		cls = type(self)
-		other = cls(other)
-
-		return cls({key: self[key] | other[key] for key in self.keys() | other.keys()},
-			complement = bool(self.default | other.default),
-		)
-
-	def __sub__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
-		cls = type(self)
-		other = cls(other)
-
-		return cls({key: self[key] & ~other[key] for key in self.keys() | other.keys()},
-			complement = bool(self.default & ~other.default),
-		)
-
-	def __xor__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
-		cls = type(self)
-		other = cls(other)
-
-		return cls({key: self[key] ^ other[key] for key in self.keys() | other.keys()},
-			complement = bool(self.default ^ other.default),
-		)
-
-	def __ior__ (self, other: Iterable[K] | Mapping[K, V], /) -> Self: self.update                     (other); return self
-	def __iand__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: self.intersection_update        (other); return self
-	def __isub__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: self.difference_update          (other); return self
-	def __ixor__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: self.symmetric_difference_update(other); return self
-
-	def __le__(self, other: Iterable[K] | Mapping[K, V], /) -> bool:
-		cls = type(self)
-		other = cls(other)
-
-		return self.default <= other.default and all(self[key] <= other[key] for key in self.keys() | other.keys())
-
-	def __ge__(self, other: Iterable[K] | Mapping[K, V], /) -> bool:
-		cls = type(self)
-		other = cls(other)
-
-		return self.default >= other.default and all(self[key] >= other[key] for key in self.keys() | other.keys())
-
-	def __eq__(self, other: Iterable[K] | Mapping[K, V], /) -> bool:
-		cls = type(self)
-		other = cls(other)
-
-		return self.default == other.default and all(self[key] == other[key] for key in self.keys() | other.keys())
+	def __le__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, self.truth.__le__)
+	def __ge__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, self.truth.__ge__)
+	def __eq__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, self.truth.__eq__)
 
 	@classmethod
 	def fromkeys(cls, iterable: Iterable[K], value: V | None = None, /) -> Self:
@@ -518,6 +476,27 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 		if key not in self: self[key] = ~self.default if default is None else default
 
 		return self[key]
+
+	def update(self, *others: SetLike[K, V]):
+		cls = type(self)
+
+		self.become(self.union(*map(cls, others)))
+
+	def intersection_update(self, *others: SetLike[K, V]):
+		cls = type(self)
+
+		self.become(self.intersection(*map(cls, others)))
+
+	def difference_update(self, *others: SetLike[K, V]):
+		cls = type(self)
+
+		self.become(self.difference(*map(cls, others)))
+
+	def symmetric_difference_update(self, other: SetLike[K, V], /):
+		cls = type(self)
+
+		self.become(self.symmetric_difference(cls(other)))
+
 	def become(self, other: Self, /):
 		items = dict(other)
 
@@ -526,25 +505,19 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 		dict.clear(self)
 		dict.update(self, items)
 
-	def update(self, *others: Iterable[K] | Mapping[K, V]):
+	def operate(self, other: SetLike[K, V], /, operator: Operator[V]) -> Self:
 		cls = type(self)
+		other = cls(other)
 
-		self.become(self.union(*map(cls, others)))
+		return cls({key: operator(self[key], other[key]) for key in self.keys() | other.keys()},
+			complement = bool(operator(self.default, other.default)),
+		)
 
-	def intersection_update(self, *others: Iterable[K] | Mapping[K, V]):
+	def relate(self, other: SetLike[K, V], /, relation: Relation[V]) -> bool:
 		cls = type(self)
+		other = cls(other)
 
-		self.become(self.intersection(*map(cls, others)))
-
-	def difference_update(self, *others: Iterable[K] | Mapping[K, V]):
-		cls = type(self)
-
-		self.become(self.difference(*map(cls, others)))
-
-	def symmetric_difference_update(self, other: Iterable[K] | Mapping[K, V], /):
-		cls = type(self)
-
-		self.become(self.symmetric_difference(cls(other)))
+		return relation(self.default, other.default) and all(relation(self[key], other[key]) for key in self.keys() | other.keys())
 
 
 class IndexSet[I: Hashable](Set[I, Bool], truth = Bool): ...
