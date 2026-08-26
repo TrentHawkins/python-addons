@@ -4,8 +4,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Hashable, Iterable, Iterator, Mapping
 from functools import reduce
-from math import gcd, inf, lcm
-from typing import Self, final
+from math import gcd, inf
+from typing import Self, final, cast
 
 
 type pair[T] = tuple[T, T]
@@ -86,9 +86,6 @@ class Additive(Bounded):
 	def __radd__(self, other: Additive, /) -> Self: return self + other
 	def __rmul__(self, other: int     , /) -> Self: return self * other
 
-	def __iadd__(self, other: Additive, /) -> Self: return self + other
-	def __imul__(self, other: int     , /) -> Self: return self * other
-
 	@final
 	@classmethod
 	def sum(cls, others: Iterable[Additive], /) -> Self:
@@ -148,12 +145,10 @@ class Separable(Operable, ABC):
 		return not (self & other)
 
 
-class Boolean(Separable, Additive, ABC):
+class Boolean[T: Separable](Separable, Additive, ABC):
 
-#	A recursively collapsed truth measure, landing in `Prob` because the mean of a
-#	crisp carrier need not be crisp. Self-dual, so `abs(~x) == ~abs(x)`:
 	@abstractmethod
-	def __abs__(self) -> Prob:
+	def __abs__(self) -> T:
 		...
 
 
@@ -204,7 +199,7 @@ class Frac(Boolean, Total, ABC):
 
 	def __invert__(self) -> Self: cls = type(self); a, b = self.decode(); return cls.encode(b, a)
 
-	def __abs__(self) -> Prob: return Prob(self)
+	def __abs__(self) -> Self: cls = type(self); return cls(self)
 
 	def __le__(self, other: Frac, /) -> bool: a, b = self.decode(); c, d = other.decode(); return a * d >= c * b
 	def __ge__(self, other: Frac, /) -> bool: a, b = self.decode(); c, d = other.decode(); return a * d <= c * b
@@ -342,8 +337,10 @@ class Bool(Boolean, Total):
 
 		return cls(not self)
 
-	def __abs__(self) -> Prob:
-		return Prob.minimum() if self else Prob.maximum()
+	def __abs__(self) -> Self:
+		cls = type(self)
+
+		return cls.minimum() if self else cls.maximum()
 
 	@classmethod
 	def minimum(cls) -> Self:
@@ -416,18 +413,15 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 			complement = not self.complement,
 		)
 
-#	The measure of a set is the mean of its members' measures -- the only aggregate that
-#	is self-dual, hence the only one satisfying `abs(~s) == ~abs(s)`. An uncovered set
-#	measures its default. Exact throughout: a common denominator, never a float.
-	def __abs__(self) -> Prob:
-		measures = [abs(value) for value in self.values()]
+	def __abs__(self) -> T:
+		measures = [abs(value if self.complement else ~value) for value in self.values()]
 
 		if not measures:
 			return abs(self.default)
 
-		common = lcm(*(measure.denom for measure in measures))
+		result = cast(T, sum(measures, abs(self.truth.minimum())))
 
-		return Prob(sum(measure.numer * (common // measure.denom) for measure in measures), common * len(measures))
+		return result if self.complement else ~result
 
 	def __add__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
 		cls = type(self)
