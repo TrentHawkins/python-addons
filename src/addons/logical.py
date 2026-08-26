@@ -145,7 +145,7 @@ class Separable(Operable, ABC):
 		return not (self & other)
 
 
-class Boolean[T: Separable](Separable, Additive, ABC):
+class Boolean[T: Separable](Separable, Additive, Order, ABC):
 
 	@abstractmethod
 	def __abs__(self) -> T:
@@ -474,6 +474,24 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 	def __iand__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: self.intersection_update        (other); return self
 	def __isub__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: self.difference_update          (other); return self
 	def __ixor__(self, other: Iterable[K] | Mapping[K, V], /) -> Self: self.symmetric_difference_update(other); return self
+
+	def __le__(self, other: Iterable[K] | Mapping[K, V], /) -> bool:
+		cls = type(self)
+		other = cls(other)
+
+		return all(self[key] <= other[key] for key in self.keys() | other.keys())
+
+	def __ge__(self, other: Iterable[K] | Mapping[K, V], /) -> bool:
+		cls = type(self)
+		other = cls(other)
+
+		return all(self[key] >= other[key] for key in self.keys() | other.keys())
+
+	def __eq__(self, other: Iterable[K] | Mapping[K, V], /) -> bool:
+		cls = type(self)
+		other = cls(other)
+
+		return all(self[key] == other[key] for key in self.keys() | other.keys())
 
 	@classmethod
 	def fromkeys(cls, iterable: Iterable[K], value: V | None = None, /) -> Self:
