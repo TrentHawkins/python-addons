@@ -46,15 +46,21 @@ class Operable(Invertible, Bounded):
 
 	@final
 	def union(self, *others: Operable) -> Self:
-		return reduce(self.__class__.__or__, others, self)
+		cls = type(self)
+
+		return reduce(cls.__or__, others, self)
 
 	@final
 	def intersection(self, *others: Operable) -> Self:
-		return reduce(self.__class__.__and__, others, self)
+		cls = type(self)
+
+		return reduce(cls.__and__, others, self)
 
 	@final
 	def difference(self, *others: Operable) -> Self:
-		return reduce(self.__class__.__sub__, others, self)
+		cls = type(self)
+
+		return reduce(cls.__sub__, others, self)
 
 	@final
 	def symmetric_difference(self, other: Operable, /) -> Self:
@@ -411,13 +417,6 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 
 		super().__setitem__(key, cls.truth(value))  # pyright: ignore[reportCallIssue]
 
-	def __invert__(self) -> Self:
-		cls = type(self)
-
-		return cls({key: ~value for key, value in self.items()},
-			complement = bool(~self.default),
-		)
-
 	def __abs__(self) -> T:
 		measures = [abs(value if self.complement else ~value) for value in self.values()]
 
@@ -428,6 +427,12 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 
 		return result if self.complement else ~result
 
+	def __invert__(self) -> Self:
+		cls = type(self)
+
+		return cls({key: ~value for key, value in self.items()},
+			complement = not self.complement,
+		)
 
 	def __mul__(self, times: int, /) -> Self:
 		cls = type(self)
@@ -436,20 +441,20 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 			complement = bool(self.default * times),
 		)
 
-	def __add__(self, other: SetLike[K, V], /) -> Self: return self.operate(other, self.truth.__add__)
-	def __and__(self, other: SetLike[K, V], /) -> Self: return self.operate(other, self.truth.__and__)
-	def  __or__(self, other: SetLike[K, V], /) -> Self: return self.operate(other, self.truth. __or__)
-	def __sub__(self, other: SetLike[K, V], /) -> Self: return self.operate(other, self.truth.__sub__)
-	def __xor__(self, other: SetLike[K, V], /) -> Self: return self.operate(other, self.truth.__xor__)
+	def __add__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__add__)
+	def __and__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__and__)
+	def  __or__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth. __or__)
+	def __sub__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__sub__)
+	def __xor__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__xor__)
 
 	def __ior__ (self, other: SetLike[K, V], /) -> Self: self.update                     (other); return self
 	def __iand__(self, other: SetLike[K, V], /) -> Self: self.intersection_update        (other); return self
 	def __isub__(self, other: SetLike[K, V], /) -> Self: self.difference_update          (other); return self
 	def __ixor__(self, other: SetLike[K, V], /) -> Self: self.symmetric_difference_update(other); return self
 
-	def __le__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, self.truth.__le__)
-	def __ge__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, self.truth.__ge__)
-	def __eq__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, self.truth.__eq__)
+	def __le__(self, other: SetLike[K, V], /) -> bool: cls = type(self); return self.relate(other, cls.truth.__le__)
+	def __ge__(self, other: SetLike[K, V], /) -> bool: cls = type(self); return self.relate(other, cls.truth.__ge__)
+	def __eq__(self, other: SetLike[K, V], /) -> bool: cls = type(self); return self.relate(other, cls.truth.__eq__)
 
 	@classmethod
 	def fromkeys(cls, iterable: Iterable[K], value: V | None = None, /) -> Self:
@@ -469,11 +474,37 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 
 		return cls.truth.minimum() if self.complement else cls.truth.maximum()
 
+	def add    (self, key: K, /): self[key] = self.truth.minimum()
+	def discard(self, key: K, /): self[key] = self.truth.maximum()
+	def remove (self, key: K, /):
+		if key not in self:
+			raise KeyError(key)
+
+		self.discard(key)
+
+	def pop(self, key: K, default: V | None = None, /) -> V:
+		if key in self.keys():
+			return dict.pop(self, key)
+
+		if default is None:
+			raise KeyError(key)
+
+		return default
+
+	def clear(self):
+		self.become(self.maximum())
+
+	def copy(self) -> Self:
+		cls = type(self)
+
+		return cls(self)
+
 	def get(self, key: K, default: V | None = None, /) -> V:
-		return self[key] if default is None or key in self else default
+		return self[key] if default is None or key in self.keys() else default
 
 	def setdefault(self, key: K, default: V | None = None, /) -> V:
-		if key not in self: self[key] = ~self.default if default is None else default
+		if key not in self.keys():
+			self[key] = self.default if default is None else default
 
 		return self[key]
 
