@@ -2,9 +2,9 @@ from __future__ import annotations
 
 
 from abc import ABC, abstractmethod
-from collections.abc import Hashable, Iterable, Mapping
+from collections.abc import Hashable, Iterable, Iterator, Mapping
 from functools import reduce
-from math import gcd, inf
+from math import gcd, inf, lcm
 from typing import Self, final
 
 
@@ -43,11 +43,6 @@ class Operable(Invertible, Bounded):
 	def  __ror__(self, other: Operable, /) -> Self: return self | other
 	def __rand__(self, other: Operable, /) -> Self: return self & other
 	def __rxor__(self, other: Operable, /) -> Self: return self ^ other
-
-	def  __ior__(self, other: Operable, /) -> Self: return self | other
-	def __iand__(self, other: Operable, /) -> Self: return self & other
-	def __isub__(self, other: Operable, /) -> Self: return self - other
-	def __ixor__(self, other: Operable, /) -> Self: return self ^ other
 
 	@final
 	def union(self, *others: Operable) -> Self:
@@ -155,7 +150,11 @@ class Separable(Operable, ABC):
 
 class Boolean(Separable, Additive, ABC):
 
-	...
+#	A recursively collapsed truth measure, landing in `Prob` because the mean of a
+#	crisp carrier need not be crisp. Self-dual, so `abs(~x) == ~abs(x)`:
+	@abstractmethod
+	def __abs__(self) -> Prob:
+		...
 
 
 class Frac(Boolean, Total, ABC):
@@ -204,6 +203,8 @@ class Frac(Boolean, Total, ABC):
 	def __and__(self, other: int | Frac, /) -> Self: cls = type(self); return cls(Prob(self) & Prob(other))
 
 	def __invert__(self) -> Self: cls = type(self); a, b = self.decode(); return cls.encode(b, a)
+
+	def __abs__(self) -> Prob: return Prob(self)
 
 	def __le__(self, other: Frac, /) -> bool: a, b = self.decode(); c, d = other.decode(); return a * d >= c * b
 	def __ge__(self, other: Frac, /) -> bool: a, b = self.decode(); c, d = other.decode(); return a * d <= c * b
@@ -341,6 +342,9 @@ class Bool(Boolean, Total):
 
 		return cls(not self)
 
+	def __abs__(self) -> Prob:
+		return Prob.minimum() if self else Prob.maximum()
+
 	@classmethod
 	def minimum(cls) -> Self:
 		return cls(True)
@@ -354,7 +358,7 @@ class Bool(Boolean, Total):
 	def __ge__(self, other: object, /) -> bool: return bool(self ) or not bool(other)
 
 
-class Set[K: Hashable, V: Boolean = Bool](Boolean, Partial, dict[K , V]):
+class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict[K , V]):
 
 	truth: type[V]
 	default: V
@@ -386,6 +390,20 @@ class Set[K: Hashable, V: Boolean = Bool](Boolean, Partial, dict[K , V]):
 	def __missing__(self, _: K, /) -> V:
 		return self.default
 
+	def __contains__(self, key: K, /) -> bool:
+		return bool(self[key])
+
+	def __iter__(self, /) -> Iterator[K]:
+		cls = type(self)
+
+		if self.complement:
+			raise TypeError(f"cannot iterate an {cls.__name__} with implicit members")
+
+		return (key for key, value in self.items() if value)
+
+	def __bool__(self, /) -> bool:
+		return self.complement or any(map(bool, self.values()))
+
 	def __setitem__(self, key: K, value: object, /):
 		cls = type(self)
 
@@ -398,12 +416,40 @@ class Set[K: Hashable, V: Boolean = Bool](Boolean, Partial, dict[K , V]):
 			complement = not self.complement,
 		)
 
+#	The measure of a set is the mean of its members' measures -- the only aggregate that
+#	is self-dual, hence the only one satisfying `abs(~s) == ~abs(s)`. An uncovered set
+#	measures its default. Exact throughout: a common denominator, never a float.
+	def __abs__(self) -> Prob:
+		measures = [abs(value) for value in self.values()]
+
+		if not measures:
+			return abs(self.default)
+
+		common = lcm(*(measure.denom for measure in measures))
+
+		return Prob(sum(measure.numer * (common // measure.denom) for measure in measures), common * len(measures))
+
+	def __add__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
+		cls = type(self)
+		other = cls(other)
+
+		return cls({key: self[key] + other[key] for key in self.keys() | other.keys()},
+			complement = bool(self.default + other.default),
+		)
+
+	def __mul__(self, times: int, /) -> Self:
+		cls = type(self)
+
+		return cls({key: self[key] * times for key in self.keys()},
+			complement = bool(self.default * times),
+		)
+
 	def __and__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
 		cls = type(self)
 		other = cls(other)
 
 		return cls({key: self[key] & other[key] for key in self.keys() | other.keys()},
-			complement = self.complement and other.complement,
+			complement = bool(self.default & other.default),
 		)
 
 	def __or__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
@@ -411,7 +457,7 @@ class Set[K: Hashable, V: Boolean = Bool](Boolean, Partial, dict[K , V]):
 		other = cls(other)
 
 		return cls({key: self[key] | other[key] for key in self.keys() | other.keys()},
-			complement = self.complement or other.complement,
+			complement = bool(self.default | other.default),
 		)
 
 	def __sub__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
@@ -419,7 +465,7 @@ class Set[K: Hashable, V: Boolean = Bool](Boolean, Partial, dict[K , V]):
 		other = cls(other)
 
 		return cls({key: self[key] & ~other[key] for key in self.keys() | other.keys()},
-			complement = self.complement and not other.complement,
+			complement = bool(self.default & ~other.default),
 		)
 
 	def __xor__(self, other: Iterable[K] | Mapping[K, V], /) -> Self:
@@ -427,7 +473,7 @@ class Set[K: Hashable, V: Boolean = Bool](Boolean, Partial, dict[K , V]):
 		other = cls(other)
 
 		return cls({key: self[key] ^ other[key] for key in self.keys() | other.keys()},
-			complement = self.complement is not other.complement,
+			complement = bool(self.default ^ other.default),
 		)
 
 	def __ior__ (self, other: Iterable[K] | Mapping[K, V], /) -> Self: self.update                     (other); return self
