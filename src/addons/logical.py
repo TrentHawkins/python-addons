@@ -2,6 +2,7 @@ from __future__ import annotations
 
 
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
 from functools import reduce
 from math import gcd, inf
@@ -366,10 +367,9 @@ class Bool(Boolean, Total):
 	def __ge__(self, other: object, /) -> bool: return bool(self ) or not bool(other)
 
 
-class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict[K , V]):
+class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defaultdict[K , V]):
 
 	truth: type[V]
-	complement: bool
 
 	def __init_subclass__(cls, *args,
 		truth: type[V] | None = None,
@@ -385,18 +385,13 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 		if complement is None:
 			complement = iterable.complement if isinstance(iterable, Set) else False
 
-		self.complement = complement
-
-		super().__init__()
+		super().__init__(self.truth.minimum if complement else self.truth.maximum)
 
 		if not isinstance(iterable, Mapping):
 			iterable = dict.fromkeys(iterable, ~self.default)
 
 		for key, value in iterable.items():
 			self[key] = value
-
-	def __missing__(self, _: K, /) -> V:
-		return self.default
 
 	def __contains__(self, key: K, /) -> bool:
 		return bool(self[key])
@@ -470,9 +465,11 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 
 	@property
 	def default(self) -> V:
-		cls = type(self)
+		return self.default_factory()  # pyright: ignore[reportOptionalCall]
 
-		return cls.truth.minimum() if self.complement else cls.truth.maximum()
+	@property
+	def complement(self) -> bool:
+		return bool(self.default)
 
 	def add    (self, key: K, /): self[key] = self.truth.minimum()
 	def discard(self, key: K, /): self[key] = self.truth.maximum()
@@ -484,7 +481,7 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 
 	def pop(self, key: K, default: V | None = None, /) -> V:
 		if key in self.keys():
-			return dict.pop(self, key)
+			return super().pop(key)
 
 		if default is None:
 			raise KeyError(key)
@@ -500,11 +497,10 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 		return cls(self)
 
 	def get(self, key: K, default: V | None = None, /) -> V:
-		return self[key] if default is None or key in self.keys() else default
+		return super().get(key, self.default if default is None else default)
 
 	def setdefault(self, key: K, default: V | None = None, /) -> V:
-		if key not in self.keys():
-			self[key] = self.default if default is None else default
+		if default is not None and key not in self.keys(): self[key] = default
 
 		return self[key]
 
@@ -531,7 +527,7 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 	def become(self, other: Self, /):
 		items = dict(other)
 
-		self.complement = other.complement
+		self.default_factory = other.default_factory
 
 		dict.clear(self)
 		dict.update(self, items)
@@ -551,8 +547,32 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, dict
 		return relation(self.default, other.default) and all(relation(self[key], other[key]) for key in self.keys() | other.keys())
 
 
-class IndexSet[I: Hashable](Set[I, Bool], truth = Bool): ...
-class FuzzySet[I: Hashable](Set[I, Prob], truth = Prob): ...
+class Graph[V: Hashable, E: Boolean](Set[V, E, "Graph"]):
 
-class UnweightedGraph[I: Hashable](Set[I, Bool, IndexSet[I]], truth = IndexSet[I]): ...
-class           Graph[I: Hashable](Set[I, Prob, FuzzySet[I]], truth = FuzzySet[I]): ...
+	registry: list[type[Self]]
+
+	def __init_subclass__(cls, *args,
+		weighed: bool,
+		depth: int,
+	**kwargs):
+
+		if not depth:
+			truth = Prob if weighed else Bool
+
+		else:
+			try:
+				truth = cls.registry[-1]
+
+			except IndexError:
+				class SubGraph(cls,
+					weighed = weighed,
+					depth = depth - 1,
+				):
+
+					...
+
+				truth = SubGraph
+
+		super().__init_subclass__(*args,
+			truth = truth,  # type: ignore
+		**kwargs)
