@@ -393,8 +393,6 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 		for key, value in iterable.items():
 			self[key] = value
 
-#	`~self` because a complement cannot be iterated: what it can show is the exceptions it records.
-#	Values are dropped only when every one of them is `minimum`, so grades never go invisible.
 	def __repr__(self) -> str:
 		shown = ~self if self.complement else self
 		items = {key: value for key, value in shown.items() if value}
@@ -402,10 +400,13 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 
 		return ("~" if self.complement else "") + (repr(set(items)) if items and crisp else repr(items))
 
-#	`defaultdict` reduces to its factory, which `__init__` reads as an iterable and chokes on.
-#	Rebuild from the two things `__init__` actually takes: the recorded items and the polarity.
 	def __reduce__(self) -> tuple[Callable[[SetLike[K, V]], Self], tuple[dict[K, V]]]:
-		return partial(type(self), complement = self.complement), (dict(self),)
+		cls = type(self)
+		factory = partial(cls,
+			complement = self.complement,
+		)
+
+		return factory, (dict(self),)
 
 	def __contains__(self, key: K, /) -> bool:
 		return bool(self[key])
@@ -510,8 +511,6 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 
 		return cls(self)
 
-#	`defaultdict.__copy__` reconstructs as `cls(factory, self)` and never reaches `__reduce__`,
-#	so the shallow path needs pointing at the one constructor call that reads polarity back.
 	__copy__ = copy
 
 	def get(self, key: K, default: V | None = None, /) -> V:
@@ -565,10 +564,12 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 		return relation(self.default, other.default) and all(relation(self[key], other[key]) for key in self.keys() | other.keys())
 
 
-@final
 class Graph[V: Hashable, E: Boolean](Set[V, E, "Graph"]):
 
-	registry: pair[list[type[Graph]]] = ([], [])
+	registry: pair[list[type[Graph]]] = (
+		[],
+		[],
+	)
 
 	@classmethod
 	def carrier(cls, weighted: bool = False, depth: int = 0, /) -> type[Boolean]:
@@ -588,8 +589,8 @@ class Graph[V: Hashable, E: Boolean](Set[V, E, "Graph"]):
 			):
 				...
 
-			Level.__name__ = ('' if weighted else 'Unweighted.') + str(level)
-			Level.__qualname__ = f"{Graph.__qualname__}.{Level.__name__}"
+			Level.__name__ = ('' if weighted else 'Unweighted') + str(level)
+			Level.__qualname__ = Graph.__qualname__ + Level.__name__
 
 			setattr(Graph, Level.__name__, Level)
 			registry.append(Level)
