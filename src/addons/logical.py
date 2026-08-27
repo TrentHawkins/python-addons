@@ -387,10 +387,10 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 
 		super().__init__(self.truth.minimum if complement else self.truth.maximum)
 
-		if not isinstance(iterable, Mapping):
-			iterable = dict.fromkeys(iterable, ~self.default)
+	#	Lazily, because `~default` is a whole carrier to build and an empty `iterable` needs none.
+		items = iterable.items() if isinstance(iterable, Mapping) else ((key, ~self.default) for key in iterable)
 
-		for key, value in iterable.items():
+		for key, value in items:
 			self[key] = value
 
 	def __repr__(self) -> str:
@@ -564,7 +564,7 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 		return relation(self.default, other.default) and all(relation(self[key], other[key]) for key in self.keys() | other.keys())
 
 
-class Graph[V: Hashable, E: Boolean](Set[V, E, "Graph"]):
+class Graph[V: Hashable, E: Boolean](Set[V, E, "Graph[V, E] | E"]):
 
 	registry: pair[list[type[Graph]]] = (
 		[],
@@ -584,13 +584,13 @@ class Graph[V: Hashable, E: Boolean](Set[V, E, "Graph"]):
 
 		while (level := len(registry)) <= depth:
 			@final
-			class Level(Graph,  # pyright: ignore[reportGeneralTypeIssues]
-				truth = cls.carrier(weighted, level)  # pyright: ignore[reportArgumentType]
+			class Level(Graph,
+				truth = cls.carrier(weighted, level)
 			):
 				...
 
-			Level.__name__ = ('' if weighted else 'Unweighted') + str(level)
-			Level.__qualname__ = Graph.__qualname__ + Level.__name__
+			Level.__name__ = ('' if weighted else 'Unweighted.') + str(level)
+			Level.__qualname__ = f"{Graph.__qualname__}.{Level.__name__}"
 
 			setattr(Graph, Level.__name__, Level)
 			registry.append(Level)
