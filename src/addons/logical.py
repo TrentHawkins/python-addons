@@ -7,7 +7,7 @@ from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
 from functools import partial, reduce
 from math import gcd, inf
 from operator import eq, ge, le
-from typing import Self, final, cast
+from typing import Any, Literal, Self, cast, final, overload
 
 
 type pair[T] = tuple[T, T]
@@ -574,20 +574,54 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 
 
 @final
-class UnweightedGraph:
+class UnweightedDeepSet:
 
 	...
 
 
-class Graph[V: Hashable, E: Coded = Bool](Set[V, E, "Graph[V, E] | E"]):
+class DeepSet[V: Hashable, E: Coded = Bool](Set[V, E, "DeepSet[V, E] | E"]):
 
-	registry: pair[list[type[Graph]]] = (
+	registry: pair[list[type[DeepSet[Any, Any]]]] = (
 		[],
 		[],
 	)
 
+#	A declared rung IS the factory's product for that slot, so that `class X(DeepSet, ...)` and
+#	`X = DeepSet.of(...)` name one class and never two. Everything below it is built on the way,
+#	which is also what leaves the slot free to claim: a rung can only ever be spoken for once.
+	def __init_subclass__(cls, *args,
+		weighted: bool | None = None,
+		depth: int | None = None,
+	**kwargs):
+		if weighted is None and depth is None:
+			super().__init_subclass__(*args, **kwargs)
+
+			return
+
+		weighted, depth = bool(weighted), depth or 0
+		kwargs.setdefault("truth", cls.of(weighted, depth - 1) if depth else Prob if weighted else Bool)
+
+		super().__init_subclass__(*args, **kwargs)
+
+		registry = cls.registry[weighted]
+
+		if len(registry) != depth:
+			raise TypeError(f"{registry[depth].__qualname__} already holds depth {depth}, {cls.__name__} cannot")
+
+		registry.append(cls)
+
+#	`weighted` is a runtime switch that decides a type, and `Literal` is the one case where that
+#	is expressible: two overloads, so the weighted family stops being annotated as the crisp one.
+	@overload
 	@classmethod
-	def of(cls, weighted: bool = False, depth: int = 0, /) -> type[Graph]:
+	def of(cls, weighted: Literal[False] = False, depth: int = 0, /) -> type[DeepSet[Any, Bool]]: ...
+
+	@overload
+	@classmethod
+	def of(cls, weighted: Literal[True], depth: int = 0, /) -> type[DeepSet[Any, Prob]]: ...
+
+	@classmethod
+	def of(cls, weighted: bool = False, depth: int = 0, /) -> type[DeepSet[Any, Any]]:
 		if depth < 0:
 			raise ValueError(f"{cls.__name__} depth must be non-negative, got {depth}")
 
@@ -595,12 +629,12 @@ class Graph[V: Hashable, E: Coded = Bool](Set[V, E, "Graph[V, E] | E"]):
 
 		while (level := len(registry)) <= depth:
 			@final
-			class Level(Graph,
+			class Level(DeepSet,
 				truth = cls.of(weighted, level - 1) if level else Prob if weighted else Bool
 			):
 				...
 
-			holders = (UnweightedGraph, Graph)
+			holders = (UnweightedDeepSet, DeepSet)
 			holder = holders[weighted]
 
 			Level.__name__ = str(level)
@@ -610,3 +644,35 @@ class Graph[V: Hashable, E: Coded = Bool](Set[V, E, "Graph[V, E] | E"]):
 			registry.append(Level)
 
 		return registry[depth]
+
+
+class IndexSet[I: Hashable](DeepSet[I, Bool],
+	weighted = False,
+	depth = 0,
+):
+
+	...
+
+
+class FuzzySet[I: Hashable](DeepSet[I, Prob],
+	weighted = False,
+	depth = 0,
+):
+
+	...
+
+
+class UnweightedGraph[V: Hashable](DeepSet[V, Bool],
+	weighted = False,
+	depth = 0,
+):
+
+	...
+
+
+class Graph[V: Hashable](DeepSet[V, Prob],
+	weighted = True,
+	depth = 1,
+):
+
+	...
