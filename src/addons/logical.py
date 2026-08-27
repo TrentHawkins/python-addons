@@ -7,7 +7,7 @@ from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
 from functools import partial, reduce
 from math import gcd, inf
 from operator import eq, ge, le
-from typing import Any, Self, final, cast
+from typing import Self, final, cast
 
 
 type pair[T] = tuple[T, T]
@@ -369,12 +369,12 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 	truth: type[V]
 
 	def __init_subclass__(cls, *args,
-		truth: type[V] | None = None,
+		truth: type[Boolean] | None = None,
 	**kwargs):
 		super().__init_subclass__(*args, **kwargs)
 
 		if truth is not None:
-			cls.truth = truth
+			cls.truth = cast(type[V], truth)
 
 	def __init__(self, iterable: SetLike[K, V] = (), /, *,
 		default: V | None = None,
@@ -595,7 +595,7 @@ class Graph[V: Hashable, E: Coded = Bool](Set[V, E, "Graph[V, E] | E"]):
 
 		while (level := len(registry)) <= depth:
 			@final
-			class Level(Graph[Any, Any],
+			class Level(Graph,
 				truth = cls.of(weighted, level - 1) if level else Prob if weighted else Bool
 			):
 				...
