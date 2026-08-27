@@ -4,9 +4,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
-from functools import reduce
+from functools import partial, reduce
 from math import gcd, inf
-from typing import ClassVar, Self, final, cast
+from typing import Self, final, cast
 
 
 type pair[T] = tuple[T, T]
@@ -393,6 +393,20 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 		for key, value in iterable.items():
 			self[key] = value
 
+#	`~self` because a complement cannot be iterated: what it can show is the exceptions it records.
+#	Values are dropped only when every one of them is `minimum`, so grades never go invisible.
+	def __repr__(self) -> str:
+		shown = ~self if self.complement else self
+		items = {key: value for key, value in shown.items() if value}
+		crisp = all(value == self.truth.minimum() for value in items.values())
+
+		return ("~" if self.complement else "") + (repr(set(items)) if items and crisp else repr(items))
+
+#	`defaultdict` reduces to its factory, which `__init__` reads as an iterable and chokes on.
+#	Rebuild from the two things `__init__` actually takes: the recorded items and the polarity.
+	def __reduce__(self) -> tuple[Callable[[SetLike[K, V]], Self], tuple[dict[K, V]]]:
+		return partial(type(self), complement = self.complement), (dict(self),)
+
 	def __contains__(self, key: K, /) -> bool:
 		return bool(self[key])
 
@@ -496,6 +510,10 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 
 		return cls(self)
 
+#	`defaultdict.__copy__` reconstructs as `cls(factory, self)` and never reaches `__reduce__`,
+#	so the shallow path needs pointing at the one constructor call that reads polarity back.
+	__copy__ = copy
+
 	def get(self, key: K, default: V | None = None, /) -> V:
 		return super().get(key, self.default if default is None else default)
 
@@ -547,46 +565,33 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 		return relation(self.default, other.default) and all(relation(self[key], other[key]) for key in self.keys() | other.keys())
 
 
+@final
 class Graph[V: Hashable, E: Boolean](Set[V, E, "Graph"]):
 
-#	Keyed on `cls` too, and not just on the knobs: `of` builds subclasses OF the receiver,
-#	so the root is an input the built class depends on, and every subclass shares this one
-#	dict by inheritance. Drop `cls` and `Custom.of(...)` silently hands back a plain `Graph`.
-	registry: ClassVar[dict[tuple[type[Graph], bool, int], type[Graph]]] = {}
-
-	def __init_subclass__(cls, *args,
-		weighed: bool | None = None,
-		depth: int | None = None,
-	**kwargs):
-		if weighed is not None or depth is not None:
-			kwargs.setdefault("truth", cls.carrier(bool(weighed), depth or 0))
-
-		super().__init_subclass__(*args, **kwargs)
-
-	#	A declared class IS its own factory product, so both idioms meet on the same object.
-		if weighed is not None or depth is not None:
-			cls.registry.setdefault((cls, bool(weighed), depth or 0), cls)
+	registry: pair[list[type[Graph]]] = ([], [])
 
 	@classmethod
-	def carrier(cls, weighed: bool = False, depth: int = 0, /) -> type[Boolean]:
-		"""What a graph of this `depth` stores: the scalar truth at the bottom, a shallower graph above it."""
+	def carrier(cls, weighted: bool = False, depth: int = 0, /) -> type[Boolean]:
+		return cls.of(weighted, depth - 1) if depth else Prob if weighted else Bool
+
+	@classmethod
+	def of(cls, weighted: bool = False, depth: int = 0, /) -> type[Graph]:
 		if depth < 0:
 			raise ValueError(f"{cls.__name__} depth must be non-negative, got {depth}")
 
-		return cls.of(weighed, depth - 1) if depth else Prob if weighed else Bool
+		registry = cls.registry[weighted]
 
-	@classmethod
-	def of(cls, weighed: bool = False, depth: int = 1, /) -> type[Self]:
-		"""The graph class nesting `depth` levels of adjacency over `Prob` if `weighed` else `Bool`.
+		while (level := len(registry)) <= depth:
+			@final
+			class Level(Graph,  # pyright: ignore[reportGeneralTypeIssues]
+				truth = cls.carrier(weighted, level)  # pyright: ignore[reportArgumentType]
+			):
+				...
 
-		Every level is a direct subclass of `cls` and never of the level above it: siblings, not a chain,
-		so a custom root propagates its methods all the way down without any level inheriting another's `truth`.
-		"""
-		key = (cls, weighed, depth)
+			Level.__name__ = ('' if weighted else 'Unweighted.') + str(level)
+			Level.__qualname__ = f"{Graph.__qualname__}.{Level.__name__}"
 
-		if key not in cls.registry:
-			cls.registry[key] = type(cls)(f"{cls.__name__}{'Weighed' if weighed else 'Crisp'}{depth}", (cls,), {},
-				truth = cls.carrier(weighed, depth),
-			)
+			setattr(Graph, Level.__name__, Level)
+			registry.append(Level)
 
-		return cast(type[Self], cls.registry[key])
+		return registry[depth]
