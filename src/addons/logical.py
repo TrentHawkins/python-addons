@@ -6,7 +6,7 @@ from collections import defaultdict
 from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
 from functools import reduce
 from math import gcd, inf
-from typing import Self, final, cast
+from typing import ClassVar, Self, final, cast
 
 
 type pair[T] = tuple[T, T]
@@ -549,30 +549,44 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 
 class Graph[V: Hashable, E: Boolean](Set[V, E, "Graph"]):
 
-	registry: list[type[Self]]
+#	Keyed on `cls` too, and not just on the knobs: `of` builds subclasses OF the receiver,
+#	so the root is an input the built class depends on, and every subclass shares this one
+#	dict by inheritance. Drop `cls` and `Custom.of(...)` silently hands back a plain `Graph`.
+	registry: ClassVar[dict[tuple[type[Graph], bool, int], type[Graph]]] = {}
 
 	def __init_subclass__(cls, *args,
-		weighed: bool,
-		depth: int,
+		weighed: bool | None = None,
+		depth: int | None = None,
 	**kwargs):
+		if weighed is not None or depth is not None:
+			kwargs.setdefault("truth", cls.carrier(bool(weighed), depth or 0))
 
-		if not depth:
-			truth = Prob if weighed else Bool
+		super().__init_subclass__(*args, **kwargs)
 
-		else:
-			try:
-				truth = cls.registry[-1]
+	#	A declared class IS its own factory product, so both idioms meet on the same object.
+		if weighed is not None or depth is not None:
+			cls.registry.setdefault((cls, bool(weighed), depth or 0), cls)
 
-			except IndexError:
-				class SubGraph(cls,
-					weighed = weighed,
-					depth = depth - 1,
-				):
+	@classmethod
+	def carrier(cls, weighed: bool = False, depth: int = 0, /) -> type[Boolean]:
+		"""What a graph of this `depth` stores: the scalar truth at the bottom, a shallower graph above it."""
+		if depth < 0:
+			raise ValueError(f"{cls.__name__} depth must be non-negative, got {depth}")
 
-					...
+		return cls.of(weighed, depth - 1) if depth else Prob if weighed else Bool
 
-				truth = SubGraph
+	@classmethod
+	def of(cls, weighed: bool = False, depth: int = 1, /) -> type[Self]:
+		"""The graph class nesting `depth` levels of adjacency over `Prob` if `weighed` else `Bool`.
 
-		super().__init_subclass__(*args,
-			truth = truth,  # type: ignore
-		**kwargs)
+		Every level is a direct subclass of `cls` and never of the level above it: siblings, not a chain,
+		so a custom root propagates its methods all the way down without any level inheriting another's `truth`.
+		"""
+		key = (cls, weighed, depth)
+
+		if key not in cls.registry:
+			cls.registry[key] = type(cls)(f"{cls.__name__}{'Weighed' if weighed else 'Crisp'}{depth}", (cls,), {},
+				truth = cls.carrier(weighed, depth),
+			)
+
+		return cast(type[Self], cls.registry[key])
