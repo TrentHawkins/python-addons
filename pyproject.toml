@@ -32,6 +32,19 @@ include = [
     "tests",
 ]
 
+[tool.pylint.format]
+max-line-length = 132
+indent-string = "\t"
+
+[tool.pylint."messages control"]
+#	Errors and fatals only, matching the editor: conventions, refactors and warnings here are
+#	house style (tabs, long operator tables, deep contract stacks), not findings.
+disable = [
+    "C",
+    "R",
+    "W",
+]
+
 [tool.pytest.ini_options]
 testpaths = [
     "tests",

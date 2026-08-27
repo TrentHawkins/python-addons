@@ -6,7 +6,8 @@ from collections import defaultdict
 from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
 from functools import partial, reduce
 from math import gcd, inf
-from typing import Self, final, cast
+from operator import eq, ge, le
+from typing import Any, Self, final, cast
 
 
 type pair[T] = tuple[T, T]
@@ -152,32 +153,55 @@ class Separable(Operable, ABC):
 		return not (self & other)
 
 
-class Boolean[T: Separable](Separable, Additive, Order, ABC):
+class Boolean[T: Coded = Coded](Separable, Additive, Order, ABC):  # pylint: disable=used-before-assignment
 
 	@abstractmethod
 	def __abs__(self) -> T:
 		...
 
 
-type SetLike[K: Hashable, V: Boolean] = Iterable[K] | Mapping[K, V]
+class Coded(Boolean, ABC):
+
+	@classmethod
+	@abstractmethod
+	def encode(cls,
+		numer: int,
+		denom: int, /
+	) -> Self:
+		...
+
+	@abstractmethod
+	def decode(self) -> pair[int]:
+		...
+
+	@final
+	@property
+	def decoded(self) -> pair[int]:
+		return self.decode()
+
+
+type SetLike[K: Hashable, V: Boolean] = Iterable[K] | Mapping[K, V] | Boolean
 type Operator[V: Boolean] = Callable[[V, V], V]
-type Relation[V: Boolean] = Callable[[V, V], bool]
+type Relation = Callable[[Boolean, Boolean], bool]
 
 
-class Frac(Boolean, Total, ABC):
+class Frac(Coded, Total, ABC):
 
 	numer: int
 	denom: int
 
 	def __new__(cls,
-		numer: int | Frac = 0,
-		denom: int        = 1, /
+		numer: int | Boolean = 0,
+		denom: int           = 1, /
 	) -> Self:
 		if isinstance(numer, cls):
 			return numer
 
-		if isinstance(numer, Frac):
-			return cls.encode(*numer.decode())
+		if isinstance(numer, bool):
+			return cls.encode(*((0, 1) if numer else (1, 0)))
+
+		if isinstance(numer, Boolean):
+			return cls.encode(*abs(numer).decode())
 
 		self = super().__new__(cls)
 
@@ -205,25 +229,21 @@ class Frac(Boolean, Total, ABC):
 	def __float__(self) -> float:
 		return self.numer / self.denom if self.denom else inf
 
-	def __add__(self, other: int | Frac, /) -> Self: cls = type(self); return cls(Dist(self) + Dist(other))
-	def __mul__(self, times: int       , /) -> Self: cls = type(self); return cls(Dist(self) *      times )
-	def __and__(self, other: int | Frac, /) -> Self: cls = type(self); return cls(Prob(self) & Prob(other))
+	def __add__(self, other: int | Boolean, /) -> Self: cls = type(self); return cls(Dist(self) + Dist(other))
+	def __mul__(self, times: int          , /) -> Self: cls = type(self); return cls(Dist(self) *      times )
+	def __and__(self, other: int | Boolean, /) -> Self: cls = type(self); return cls(Prob(self) & Prob(other))
 
 	def __invert__(self) -> Self: cls = type(self); a, b = self.decode(); return cls.encode(b, a)
 
 	def __abs__(self) -> Self: cls = type(self); return cls(self)
 
-	def __le__(self, other: Frac, /) -> bool: a, b = self.decode(); c, d = other.decode(); return a * d >= c * b
-	def __ge__(self, other: Frac, /) -> bool: a, b = self.decode(); c, d = other.decode(); return a * d <= c * b
+	def __le__(self, other: object, /) -> bool: a, b = self.decode(); c, d = self.contract(other).decoded; return a * d >= c * b
+	def __ge__(self, other: object, /) -> bool: a, b = self.decode(); c, d = self.contract(other).decoded; return a * d <= c * b
 
-
+	@final
 	@classmethod
-	@abstractmethod
-	def encode(cls,
-		numer: int,
-		denom: int, /
-	) -> Self:
-		...
+	def contract(cls, other: object, /) -> Coded:
+		return abs(other) if isinstance(other, Boolean) else cls(cast(int, other))
 
 	@classmethod
 	def minimum(cls) -> Self:
@@ -237,21 +257,12 @@ class Frac(Boolean, Total, ABC):
 	def maximum(cls) -> Self:
 		return cls.encode(1, 0)
 
-	@final
-	@property
-	def decoded(self) -> pair[int]:
-		return self.decode()
-
-	@abstractmethod
-	def decode(self) -> pair[int]:
-		...
-
 
 class Dist(Frac):
 
 	def __new__(cls,
-		numer: int | Frac = 0,
-		denom: int        = 1, /
+		numer: int | Boolean = 0,
+		denom: int           = 1, /
 	) -> Self:
 		if not (numer or denom): numer = 1
 
@@ -262,7 +273,7 @@ class Dist(Frac):
 
 		return self
 
-	def __add__(self, other: int | Frac) -> Self:
+	def __add__(self, other: int | Boolean) -> Self:
 		cls, other = type(self), Dist(other)
 
 		return cls(
@@ -292,8 +303,8 @@ class Dist(Frac):
 class Prob(Frac):
 
 	def __new__(cls,
-		numer: int | Frac = 1,
-		denom: int        = 1, /
+		numer: int | Boolean = 1,
+		denom: int           = 1, /
 	) -> Self:
 		if not (numer or denom): denom = 1
 
@@ -304,7 +315,7 @@ class Prob(Frac):
 
 		return self
 
-	def __and__(self, other: int | Frac) -> Self:
+	def __and__(self, other: int | Boolean) -> Self:
 		cls, other = type(self), Prob(other)
 
 		return cls(
@@ -329,45 +340,31 @@ class Prob(Frac):
 		)
 
 
-class Bool(Boolean, Total):
+class Bool(Frac):
 
-	def __init__(self, _: object = False, /):
-		self._ = bool(_)
+	def __new__(cls, _: object = False, /) -> Self:
+		decoded = (0, 1) if _ else (1, 0)
 
-	def __repr__(self) -> str: return repr(bool(self))
-	def __hash__(self) -> int: return hash(bool(self))
+		return super().__new__(cls, *decoded)
 
-	def __bool__(self) -> bool:
-		return self._
-
-	def __add__(self, other: object, /) -> Self: cls = type(self); return cls(self    and other)
-	def __mul__(self, times: int   , /) -> Self: cls = type(self); return cls(self or not times)
-	def __and__(self, other: object, /) -> Self: cls = type(self); return cls(self    and other)
-
-	def __invert__(self, /) -> Self:
-		cls = type(self)
-
-		return cls(not self)
-
-	def __abs__(self) -> Self:
-		cls = type(self)
-
-		return cls.minimum() if self else cls.maximum()
+	def __repr__(self) -> str:
+		return repr(bool(self))
 
 	@classmethod
-	def minimum(cls) -> Self:
-		return cls(True)
+	def encode(cls,
+		numer: int,
+		denom: int, /
+	) -> Self:
+		return cls(denom)
 
-	@classmethod
-	def maximum(cls) -> Self:
-		return cls(False)
-
-	def __ne__(self, other: object, /) -> bool: return bool(self ) is not bool(other)
-	def __le__(self, other: object, /) -> bool: return bool(other) or not bool(self )
-	def __ge__(self, other: object, /) -> bool: return bool(self ) or not bool(other)
+	def decode(self) -> pair[int]:
+		return (
+			self.numer,
+			self.denom,
+		)
 
 
-class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defaultdict[K , V]):
+class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, defaultdict[K , V]):
 
 	truth: type[V]
 
@@ -380,14 +377,20 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 			cls.truth = truth
 
 	def __init__(self, iterable: SetLike[K, V] = (), /, *,
-		complement: bool | None = None,
+		default: V | None = None,
 	):
-		if complement is None:
-			complement = iterable.complement if isinstance(iterable, Set) else False
+		if default is None:
+			default = (
+				iterable.default     if isinstance(iterable, Set    ) else
+				self.truth(iterable) if isinstance(iterable, Boolean) else  # pyright: ignore[reportCallIssue]
+				self.truth.maximum()
+			)
 
-		super().__init__(self.truth.minimum if complement else self.truth.maximum)
+		if isinstance(iterable, Boolean) and not isinstance(iterable, Set):
+			iterable = ()
 
-	#	Lazily, because `~default` is a whole carrier to build and an empty `iterable` needs none.
+		super().__init__(partial(self.truth, default))
+
 		items = iterable.items() if isinstance(iterable, Mapping) else ((key, ~self.default) for key in iterable)
 
 		for key, value in items:
@@ -396,14 +399,16 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 	def __repr__(self) -> str:
 		shown = ~self if self.complement else self
 		items = {key: value for key, value in shown.items() if value}
-		crisp = all(value == self.truth.minimum() for value in items.values())
 
-		return ("~" if self.complement else "") + (repr(set(items)) if items and crisp else repr(items))
+		body = repr(set(items)) if items and all(value == self.truth.minimum() for value in items.values()) else repr(items)
+		sign = self.default
+
+		return body if not sign else f"~{body}" if sign == self.truth.minimum() else f"{sign!r}~{body}"
 
 	def __reduce__(self) -> tuple[Callable[[SetLike[K, V]], Self], tuple[dict[K, V]]]:
 		cls = type(self)
 		factory = partial(cls,
-			complement = self.complement,
+			default = self.default,
 		)
 
 		return factory, (dict(self),)
@@ -415,7 +420,7 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 		cls = type(self)
 
 		if self.complement:
-			raise TypeError(f"cannot iterate an {cls.__name__} with implicit members")
+			raise TypeError(f"cannot iterate {cls.__qualname__} with implicit members")
 
 		return (key for key, value in self.items() if value)
 
@@ -431,7 +436,7 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 		measures = [abs(value if self.complement else ~value) for value in self.values()]
 
 		if not measures:
-			return abs(self.default)
+			return cast(T, abs(self.default))
 
 		result = cast(T, sum(measures, abs(self.truth.minimum())))
 
@@ -441,14 +446,14 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 		cls = type(self)
 
 		return cls({key: ~value for key, value in self.items()},
-			complement = not self.complement,
+			default = ~self.default,
 		)
 
 	def __mul__(self, times: int, /) -> Self:
 		cls = type(self)
 
 		return cls({key: self[key] * times for key in self.keys()},
-			complement = bool(self.default * times),
+			default = self.default * times,
 		)
 
 	def __add__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__add__)
@@ -462,9 +467,9 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 	def __isub__(self, other: SetLike[K, V], /) -> Self: self.difference_update          (other); return self
 	def __ixor__(self, other: SetLike[K, V], /) -> Self: self.symmetric_difference_update(other); return self
 
-	def __le__(self, other: SetLike[K, V], /) -> bool: cls = type(self); return self.relate(other, cls.truth.__le__)
-	def __ge__(self, other: SetLike[K, V], /) -> bool: cls = type(self); return self.relate(other, cls.truth.__ge__)
-	def __eq__(self, other: SetLike[K, V], /) -> bool: cls = type(self); return self.relate(other, cls.truth.__eq__)
+	def __le__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, le)
+	def __ge__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, ge)
+	def __eq__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, eq)
 
 	@classmethod
 	def fromkeys(cls, iterable: Iterable[K], value: V | None = None, /) -> Self:
@@ -472,11 +477,11 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 
 	@classmethod
 	def minimum(cls) -> Self:
-		return cls(complement = True)
+		return cls(cls.truth.minimum())
 
 	@classmethod
 	def maximum(cls) -> Self:
-		return cls()
+		return cls(cls.truth.maximum())
 
 	@property
 	def default(self) -> V:
@@ -554,26 +559,32 @@ class Set[K: Hashable, T: Boolean = Bool, V: Boolean = T](Boolean, Partial, defa
 		other = cls(other)
 
 		return cls({key: operator(self[key], other[key]) for key in self.keys() | other.keys()},
-			complement = bool(operator(self.default, other.default)),
+			default = operator(self.default, other.default),
 		)
 
-	def relate(self, other: SetLike[K, V], /, relation: Relation[V]) -> bool:
+	def relate(self, other: SetLike[K, V], /, relation: Relation) -> bool:
 		cls = type(self)
+
+		if isinstance(other, Boolean) and not isinstance(other, Set):
+			return relation(abs(self), other)
+
 		other = cls(other)
 
 		return relation(self.default, other.default) and all(relation(self[key], other[key]) for key in self.keys() | other.keys())
 
 
-class Graph[V: Hashable, E: Boolean](Set[V, E, "Graph[V, E] | E"]):
+@final
+class UnweightedGraph:
+
+	...
+
+
+class Graph[V: Hashable, E: Coded = Bool](Set[V, E, "Graph[V, E] | E"]):
 
 	registry: pair[list[type[Graph]]] = (
 		[],
 		[],
 	)
-
-	@classmethod
-	def carrier(cls, weighted: bool = False, depth: int = 0, /) -> type[Boolean]:
-		return cls.of(weighted, depth - 1) if depth else Prob if weighted else Bool
 
 	@classmethod
 	def of(cls, weighted: bool = False, depth: int = 0, /) -> type[Graph]:
@@ -584,15 +595,18 @@ class Graph[V: Hashable, E: Boolean](Set[V, E, "Graph[V, E] | E"]):
 
 		while (level := len(registry)) <= depth:
 			@final
-			class Level(Graph,
-				truth = cls.carrier(weighted, level)
+			class Level(Graph[Any, Any],
+				truth = cls.of(weighted, level - 1) if level else Prob if weighted else Bool
 			):
 				...
 
-			Level.__name__ = ('' if weighted else 'Unweighted.') + str(level)
-			Level.__qualname__ = f"{Graph.__qualname__}.{Level.__name__}"
+			holders = (UnweightedGraph, Graph)
+			holder = holders[weighted]
 
-			setattr(Graph, Level.__name__, Level)
+			Level.__name__ = str(level)
+			Level.__qualname__ = f"{holder.__qualname__}.{Level.__name__}"
+
+			setattr(holder, Level.__name__, Level)
 			registry.append(Level)
 
 		return registry[depth]
