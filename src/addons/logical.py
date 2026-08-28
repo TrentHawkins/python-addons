@@ -664,6 +664,25 @@ class DeepSet[V: Hashable, E: Coded = Bool](Set[V, E, "DeepSet[V, E] | E"]):
 		return cast(DeepSet[V, E], self[head]).route(Edge(*rest)) if rest else (self, head)
 
 
+class Undirected[K: Hashable, T: Coded = Bool, V: Boolean = T](Set[K, T, V]):
+
+	def __setitem__(self, key: K | Edge[K], value: SetLike[K, V] | int, /):
+		if isinstance(key, Edge):
+			for edge in key.permutations:
+				super().__setitem__(edge, value)
+
+		else:
+			super().__setitem__(key, value)
+
+	def __delitem__(self, key: K | Edge[K], /):
+		if isinstance(key, Edge):
+			for edge in key.permutations:
+				super().__delitem__(edge)
+
+		else:
+			super().__delitem__(key)
+
+
 class IndexSet[I: Hashable](DeepSet[I, Bool],
 	weighted = False,
 	depth = 0,
