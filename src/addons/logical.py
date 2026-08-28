@@ -5,12 +5,14 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
 from functools import partial, reduce
+from itertools import permutations
 from math import gcd, inf
 from operator import eq, ge, le
-from typing import Any, Self, cast, final
+from typing import Self, cast, final
 
 
 type pair[T] = tuple[T, T]
+type frozenlist[T] = tuple[T, ...]
 
 
 class Bounded(ABC):
@@ -184,6 +186,12 @@ class Edge[K: Hashable](tuple[K, ...]):
 
 	def __new__(cls, *keys: K) -> Self:
 		return super().__new__(cls, keys)
+
+	@property
+	def permutations(self) -> set[Self]:
+		cls = type(self)
+
+		return {cls(*keys) for keys in permutations(self)}
 
 
 type SetLike[K: Hashable, V: Boolean] = Iterable[K | Edge[K]] | Mapping[K | Edge[K], V] | Boolean | bool
@@ -610,7 +618,7 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 
 class DeepSet[V: Hashable, E: Coded = Bool](Set[V, E, "DeepSet[V, E] | E"]):
 
-	registry: pair[list[type[DeepSet[Any, Any]]]] = (
+	registry: pair[list[type[DeepSet[V, E]]]] = (
 		[],
 		[],
 	)
