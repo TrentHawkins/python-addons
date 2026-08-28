@@ -435,25 +435,23 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 
 	@classmethod
 	def arity(cls) -> int:
-		return 1 + cls.truth.arity() if issubclass(cls.truth, Set) else 1
+		return 1
 
-	def route(self, key: K | Edge[K], /) -> tuple[Set[K, Any, Any], K]:
+	def route(self, key: K | Edge[K], /) -> tuple[Set[K, T, V], K]:
 		if not isinstance(key, Edge):
 			return self, key
 
-		if not 0 < len(key) <= self.arity():
-			raise KeyError(f"{type(self).__qualname__} takes up to {self.arity()} coordinates, not {len(key)}")
+		if len(key) != self.arity():
+			raise KeyError(f"{type(self).__qualname__} takes {self.arity()} coordinate, not {len(key)}")
 
-		head, *rest = key
-
-		return cast(Set[K, Any, Any], self[head]).route(Edge(*rest)) if rest else (self, head)
+		return self, key[0]
 
 	def __getitem__(self, key: K | Edge[K], /) -> V:
 		holder, last = self.route(key)
 
 		return cast(V, dict.__getitem__(holder, last))
 
-	def __setitem__(self, key: K | Edge[K], value: object, /):
+	def __setitem__(self, key: K | Edge[K], value: SetLike[K, V] | int, /):
 		holder, last = self.route(key)
 
 		dict.__setitem__(holder, last, holder.truth(value))  # pyright: ignore[reportCallIssue]
@@ -641,6 +639,21 @@ class DeepSet[V: Hashable, E: Coded = Bool](Set[V, E, "DeepSet[V, E] | E"]):
 
 		if rung:
 			registry.append(cls)
+
+	@classmethod
+	def arity(cls) -> int:
+		return 1 + cls.truth.arity() if issubclass(cls.truth, DeepSet) else 1
+
+	def route(self, key: V | Edge[V], /) -> tuple[DeepSet[V, E], V]:
+		if not isinstance(key, Edge):
+			return self, key
+
+		if not 0 < len(key) <= self.arity():
+			raise KeyError(f"{type(self).__qualname__} takes up to {self.arity()} coordinates, not {len(key)}")
+
+		head, *rest = key
+
+		return cast(DeepSet[V, E], self[head]).route(Edge(*rest)) if rest else (self, head)
 
 
 class IndexSet[I: Hashable](DeepSet[I, Bool],
