@@ -80,10 +80,10 @@ Comparisons are authority-free — a set meets a scalar at the measure — so `s
 
 ### The tower
 
-`DeepSet[V, E: Coded = Bool](Set[V, E, "DeepSet[V, E] | E"])` — a set whose values are sets.
+`SimplexSet[V, E: Coded = Bool](Set[V, E, "SimplexSet[V, E] | E"])` — a set whose values are sets.
 
-- `registry: pair[list[type[DeepSet]]]` — one dense list per polarity, indexed by depth.
-- A rung declares its slot: `class Graph[V](DeepSet[V, Prob], weighted = True, depth = 1)`, and `__init_subclass__` derives `truth` from the rung below and claims the slot. Declaring and looking up name **one** class, never two.
+- `registry: pair[list[type[SimplexSet]]]` — one dense list per polarity, indexed by depth.
+- A rung declares its slot: `class Graph[V](SimplexSet[V, Prob], weighted = True, depth = 1)`, and `__init_subclass__` derives `truth` from the rung below and claims the slot. Declaring and looking up name **one** class, never two.
 - `arity()` $= \text{depth} + 1$ — how many coordinates the rung takes, derived from the `truth` chain.
 
 | | depth 0 | depth 1 |
@@ -99,7 +99,7 @@ Comparisons are authority-free — a set meets a scalar at the measure — so `s
 
 `Edge[K](tuple[K, ...])` is a path, told apart from a key by being an `Edge`. A plain tuple stays a key — `IndexSet()[(0,0)] = True` still stores a tuple vertex.
 
-`route(key) -> (holder, coordinate)` is the single resolution point; every accessor funnels through it and then acts at the storage layer. `Set.route` handles the base case (a `Set` is flat by declaration); `DeepSet.route` owns the descent, because that is where the value union `DeepSet[V, E] | E` is declared and can be narrowed exactly.
+`route(key) -> (holder, coordinate)` is the single resolution point; every accessor funnels through it and then acts at the storage layer. `Set.route` handles the base case (a `Set` is flat by declaration); `SimplexSet.route` owns the descent, because that is where the value union `SimplexSet[V, E] | E` is declared and can be narrowed exactly.
 
 `Edge.permutations` yields the orderings, deduped, as `Edge`s — the input `Undirected` needs.
 
@@ -121,7 +121,7 @@ g[1][Edge(2,3)]     ==  g[Edge(1,2,3)]  True
 Two premises worth correcting:
 
 - **A 1-tuple subscript is expressible.** `g[1,]` is `g[(1,)]`. So `Edge` is not constrained to length $\geq 2$ by syntax — `Edge(1)` is legal and already means "the link of vertex 1".
-- **Modulo cyclic rotation there are 2 orientations** of a triangle, $|S_3| / |C_3| = 2$ — correct. But see §8 on why orientation is deliberately out of scope.
+- **Modulo cyclic rotation there are 2 orientations** of a triangle, $|S_3| / |C_3| = 2$ — correct. But see §9 on why orientation is deliberately out of scope.
 
 ---
 
@@ -140,13 +140,13 @@ abs(g[Edge(1,2)]) == 0.75    -- derived from the triangle, not independent
 
 ### Decided: a graded family, kept directed
 
-A `Complex` of dimension $d$ owns **one existing rung per dimension** — the graded family
+A `ComplexSet` of dimension $d$ owns **one existing rung per dimension** — the graded family
 
 $$\bigl(A_k \colon K^{\,k+1} \to E\bigr)_{k=0}^{d}$$
 
-where $A_k$ is a `DeepSet` of depth $k$. `DeepSet` is untouched; the algebra lifts componentwise, so for any lattice operation $\ast$ we have $(g \ast h)_k = g_k \ast h_k$.
+where $A_k$ is a `SimplexSet` of depth $k$. `SimplexSet` is untouched; the algebra lifts componentwise, so for any lattice operation $\ast$ we have $(g \ast h)_k = g_k \ast h_k$.
 
-**Cells are ordered.** Each permutation of a tuple is its own cell with its own weight, at every dimension — the fully directed case. `Undirected` collapses them by mirroring, per dimension. No sign is involved anywhere (see §8).
+**Cells are ordered.** Each permutation of a tuple is its own cell with its own weight, at every dimension — the fully directed case. `Undirected` collapses them by mirroring, per dimension (§8). No sign is involved anywhere (§9).
 
 ### The one notational rule
 
@@ -154,7 +154,7 @@ where $A_k$ is a `DeepSet` of depth $k$. `DeepSet` is untouched; the algebra lif
 
 | written | means | reaches |
 | --- | --- | --- |
-| `g[1]` | the **link** of $1$ — a `Complex` of dimension $d - 1$ | $\mathrm{Complex}(A_1[1], \dots, A_d[1])$ |
+| `g[1]` | the **link** of $1$ — a `ComplexSet` of dimension $d - 1$ | $\mathrm{ComplexSet}(A_1[1], \dots, A_d[1])$ |
 | `g[Edge(1)]` | the **weight** of the vertex $1$ | $A_0$ |
 | `g[Edge(1,2)]` | the **weight** of the edge $(1,2)$ | $A_1$ |
 | `g[Edge(1,2,3)]` | the **weight** of the triangle | $A_2$ |
@@ -186,18 +186,73 @@ Note `g[1,2][3]` from the original sketch becomes `g[1][2][3]`: an `Edge` now la
 
 ### What this costs
 
-- **`Edge` is reinterpreted** from "path" to "cell address". Today a short `Edge` on a depth-2 rung gives the link; under `Complex` it gives that dimension's weight. Full-length edges are unaffected, so `g[Edge(1,2,3)] == g[1][2][3]` still holds.
+- **`Edge` is reinterpreted** from "path" to "cell address". Today a short `Edge` on a depth-2 rung gives the link; under `ComplexSet` it gives that dimension's weight. Full-length edges are unaffected, so `g[Edge(1,2,3)] == g[1][2][3]` still holds.
 - **Downward closure** (a cell implies its faces) becomes an invariant that is *not* enforced — same class of problem as `Undirected`'s symmetry in §8.
 
 ### Rejected alternatives
 
 **Keep the pure tensor.** Depth $d$ models $d$-simplices only, faces stay derived slices. Zero rework, but no independent sub-dimensional weights and no mixed-dimension complexes.
 
-**A weight at every node.** Each slot holds *(weight, children)* rather than weight *or* children, so `V` becomes a product instead of the union `DeepSet[V, E] | E`. Most faithful to "partial keying yields sub-dimensional topology", and one walk reaches everything — but the largest rework: `abs` must combine own-weight with children, and the union typed exactly over several passes becomes a pair. The graded family reaches the same expressiveness by composition.
+**A weight at every node.** Each slot holds *(weight, children)* rather than weight *or* children, so `V` becomes a product instead of the union `SimplexSet[V, E] | E`. Most faithful to "partial keying yields sub-dimensional topology", and one walk reaches everything — but the largest rework: `abs` must combine own-weight with children, and the union typed exactly over several passes becomes a pair. The graded family reaches the same expressiveness by composition.
 
 ---
 
-## 8. Known open ends
+## 8. Symmetry — the undirected case
+
+Permutations only, no sign (§9). Undirected then has an exact statement: **$A_k$ is constant on $S_{k+1}$-orbits.**
+
+$$A_k(x_{\sigma(0)}, \dots, x_{\sigma(k)}) = A_k(x_0, \dots, x_k) \qquad \text{for all } \sigma \in S_{k+1}$$
+
+### Why the graded family makes this well-posed
+
+In the pure tensor, symmetry could not be *derived* by nesting undirected rungs, because $S_n$ is not generated by the per-level stabilizers. The graded family never tries: each $A_k$ symmetrises over its own $S_{k+1}$ **directly**, at the top of that rung, where the whole `Edge` is visible. Symmetry is applied wholesale per dimension rather than composed out of levels.
+
+**Links inherit symmetry for free.** A slice of a symmetric tensor is symmetric in the remaining coordinates, so the link of an undirected complex is undirected with no mixin on the sub-rungs — verified:
+
+```txt
+f[1] is a plain Graph (no mixin on it)
+f[1][Edge(2,3)] == f[1][Edge(3,2)]   ->   True
+```
+
+### Decided: mirroring, not canonicalisation
+
+Two implementations satisfy the orbit law. Write every ordering, or store one representative per orbit.
+
+| | mirroring | canonicalisation |
+| --- | --- | --- |
+| slots per cell | $(k+1)!$ | $1$ |
+| links | free, complete — stored sub-objects | must be gathered from $d$ slices |
+| invariant | maintained, therefore breakable | structural, cannot disagree |
+| requires of $K$ | `Hashable` | `Hashable` **and a total order** |
+
+**The last row decides it.** This library is a generalisation of `set`, so it must speak `set`'s language, and `collections.abc.Hashable` promises exactly `__hash__` and `__eq__` — nothing more. Ordering is absent from that contract on purpose: membership is equality-based and needs no order. Requiring one would narrow $K$ to a strictly smaller domain than `set` itself accepts.
+
+That is not a hypothetical narrowing:
+
+```txt
+complex        sorted -> TypeError: '<' not supported between instances of 'complex'
+None + int     sorted -> TypeError
+mixed types    sorted -> TypeError
+object()       sorted -> TypeError
+```
+
+And the sharpest case is worse than raising. `frozenset` is hashable *and* supports `<`, but that `<` is **subset** — a partial order:
+
+```txt
+frozenset({1,2}) < frozenset({2,3})   ->   False
+frozenset({2,3}) < frozenset({1,2})   ->   False
+sorted([a, b]) and sorted([b, a]) disagree
+```
+
+So `sorted` would silently return an *insertion-order-dependent* representative. A canonical form that depends on insertion order is not canonical. And a generalised set keyed by sets is precisely the case this library should handle well.
+
+### What this leaves
+
+$(k+1)!$ slots per cell — $2, 6, 24, 120$ through dimension $4$ — and an invariant that is maintained rather than structural, so it can be broken by any write that does not pass the whole `Edge` through the top-level `__setitem__`. Both are acceptable: the storage only bites past dimension $3$, and the breakage points are enumerable (see §9) rather than unbounded. A maintained invariant on the full `Hashable` domain is a better position than a structural one on a narrowed domain.
+
+---
+
+## 9. Known open ends
 
 **Orientation is out of scope, deliberately.** An *oriented* complex assigns $\pm 1$ by permutation parity, and boundary maps need that sign. `Prob` and `Bool` are a bounded lattice and a projective line — **neither has negation** — so orientation, boundary maps and anything homological are not expressible without a second, signed carrier.
 

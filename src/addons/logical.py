@@ -616,9 +616,9 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 		return relation(self.default, other.default) and all(relation(self[key], other[key]) for key in self.keys() | other.keys())
 
 
-class DeepSet[V: Hashable, E: Coded = Bool](Set[V, E, "DeepSet[V, E] | E"]):
+class SimplexSet[V: Hashable, E: Coded = Bool](Set[V, E, "SimplexSet[V, E] | E"]):
 
-	registry: pair[list[type[DeepSet[V, E]]]] = (
+	registry: pair[list[type[SimplexSet[V, E]]]] = (
 		[],
 		[],
 	)
@@ -650,9 +650,9 @@ class DeepSet[V: Hashable, E: Coded = Bool](Set[V, E, "DeepSet[V, E] | E"]):
 
 	@classmethod
 	def arity(cls) -> int:
-		return 1 + cls.truth.arity() if issubclass(cls.truth, DeepSet) else 1
+		return 1 + cls.truth.arity() if issubclass(cls.truth, SimplexSet) else 1
 
-	def route(self, key: V | Edge[V], /) -> tuple[DeepSet[V, E], V]:
+	def route(self, key: V | Edge[V], /) -> tuple[SimplexSet[V, E], V]:
 		if not isinstance(key, Edge):
 			return self, key
 
@@ -661,7 +661,7 @@ class DeepSet[V: Hashable, E: Coded = Bool](Set[V, E, "DeepSet[V, E] | E"]):
 
 		head, *rest = key
 
-		return cast(DeepSet[V, E], self[head]).route(Edge(*rest)) if rest else (self, head)
+		return cast(SimplexSet[V, E], self[head]).route(Edge(*rest)) if rest else (self, head)
 
 
 class Undirected[K: Hashable, T: Coded = Bool, V: Boolean = T](Set[K, T, V]):
@@ -683,7 +683,7 @@ class Undirected[K: Hashable, T: Coded = Bool, V: Boolean = T](Set[K, T, V]):
 			super().__delitem__(key)
 
 
-class IndexSet[I: Hashable](DeepSet[I, Bool],
+class IndexSet[I: Hashable](SimplexSet[I, Bool],
 	weighted = False,
 	depth = 0,
 ):
@@ -691,7 +691,7 @@ class IndexSet[I: Hashable](DeepSet[I, Bool],
 	...
 
 
-class FuzzySet[I: Hashable](DeepSet[I, Prob],
+class FuzzySet[I: Hashable](SimplexSet[I, Prob],
 	weighted = True,
 	depth = 0,
 ):
@@ -699,7 +699,7 @@ class FuzzySet[I: Hashable](DeepSet[I, Prob],
 	...
 
 
-class UnweightedGraph[V: Hashable](DeepSet[V, Bool],
+class UnweightedGraph[V: Hashable](SimplexSet[V, Bool],
 	weighted = False,
 	depth = 1,
 ):
@@ -707,7 +707,7 @@ class UnweightedGraph[V: Hashable](DeepSet[V, Bool],
 	...
 
 
-class Graph[V: Hashable](DeepSet[V, Prob],
+class Graph[V: Hashable](SimplexSet[V, Prob],
 	weighted = True,
 	depth = 1,
 ):
