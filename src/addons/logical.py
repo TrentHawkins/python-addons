@@ -180,7 +180,13 @@ class Coded(Boolean, ABC):
 		return self.decode()
 
 
-type SetLike[K: Hashable, V: Boolean] = Iterable[K] | Mapping[K, V] | Boolean | bool
+class Edge[K: Hashable](tuple[K, ...]):
+
+	def __new__(cls, *keys: K) -> Self:
+		return super().__new__(cls, keys)
+
+
+type SetLike[K: Hashable, V: Boolean] = Iterable[K | Edge[K]] | Mapping[K | Edge[K], V] | Boolean | bool
 type Operator[V: Boolean] = Callable[[V, V], V]
 type Relation = Callable[[Boolean, Boolean], bool]
 
@@ -413,7 +419,7 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 
 		return factory, (dict(self),)
 
-	def __contains__(self, key: K, /) -> bool:
+	def __contains__(self, key: K | Edge[K], /) -> bool:
 		return bool(self[key])
 
 	def __iter__(self, /) -> Iterator[K]:
@@ -427,10 +433,35 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 	def __bool__(self, /) -> bool:
 		return self.complement or any(map(bool, self.values()))
 
-	def __setitem__(self, key: K, value: object, /):
-		cls = type(self)
+	@classmethod
+	def arity(cls) -> int:
+		return 1 + cls.truth.arity() if issubclass(cls.truth, Set) else 1
 
-		super().__setitem__(key, cls.truth(value))  # pyright: ignore[reportCallIssue]
+	def route(self, key: K | Edge[K], /) -> tuple[Set[K, Any, Any], K]:
+		if not isinstance(key, Edge):
+			return self, key
+
+		if not 0 < len(key) <= self.arity():
+			raise KeyError(f"{type(self).__qualname__} takes up to {self.arity()} coordinates, not {len(key)}")
+
+		head, *rest = key
+
+		return cast(Set[K, Any, Any], self[head]).route(Edge(*rest)) if rest else (self, head)
+
+	def __getitem__(self, key: K | Edge[K], /) -> V:
+		holder, last = self.route(key)
+
+		return cast(V, dict.__getitem__(holder, last))
+
+	def __setitem__(self, key: K | Edge[K], value: object, /):
+		holder, last = self.route(key)
+
+		dict.__setitem__(holder, last, holder.truth(value))  # pyright: ignore[reportCallIssue]
+
+	def __delitem__(self, key: K | Edge[K], /):
+		holder, last = self.route(key)
+
+		dict.__delitem__(holder, last)
 
 	def __abs__(self) -> T:
 		measures = [abs(value if self.complement else ~value) for value in self.values()]
@@ -491,17 +522,19 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 	def complement(self) -> bool:
 		return bool(self.default)
 
-	def add    (self, key: K, /): self[key] = self.truth.minimum()
-	def discard(self, key: K, /): self[key] = self.truth.maximum()
-	def remove (self, key: K, /):
+	def add    (self, key: K | Edge[K], /): self[key] = self.truth.minimum()
+	def discard(self, key: K | Edge[K], /): self[key] = self.truth.maximum()
+	def remove (self, key: K | Edge[K], /):
 		if key not in self:
 			raise KeyError(key)
 
 		self.discard(key)
 
-	def pop(self, key: K, default: V | None = None, /) -> V:
-		if key in self.keys():
-			return super().pop(key)
+	def pop(self, key: K | Edge[K], default: V | None = None, /) -> V:
+		holder, last = self.route(key)
+
+		if last in holder.keys():
+			return cast(V, dict.pop(holder, last))
 
 		if default is None:
 			raise KeyError(key)
@@ -518,11 +551,15 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 
 	__copy__ = copy
 
-	def get(self, key: K, default: V | None = None, /) -> V:
-		return super().get(key, self.default if default is None else default)
+	def get(self, key: K | Edge[K], default: V | None = None, /) -> V:
+		holder, last = self.route(key)
 
-	def setdefault(self, key: K, default: V | None = None, /) -> V:
-		if default is not None and key not in self.keys(): self[key] = default
+		return cast(V, dict.get(holder, last, holder.default if default is None else default))
+
+	def setdefault(self, key: K | Edge[K], default: V | None = None, /) -> V:
+		holder, last = self.route(key)
+
+		if default is not None and last not in holder.keys(): self[key] = default
 
 		return self[key]
 
