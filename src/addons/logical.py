@@ -7,7 +7,7 @@ from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
 from functools import partial, reduce
 from math import gcd, inf
 from operator import eq, ge, le
-from typing import Any, Literal, Self, cast, final, overload
+from typing import Any, Self, cast, final
 
 
 type pair[T] = tuple[T, T]
@@ -180,7 +180,7 @@ class Coded(Boolean, ABC):
 		return self.decode()
 
 
-type SetLike[K: Hashable, V: Boolean] = Iterable[K] | Mapping[K, V] | Boolean
+type SetLike[K: Hashable, V: Boolean] = Iterable[K] | Mapping[K, V] | Boolean | bool
 type Operator[V: Boolean] = Callable[[V, V], V]
 type Relation = Callable[[Boolean, Boolean], bool]
 
@@ -379,14 +379,14 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 	def __init__(self, iterable: SetLike[K, V] = (), /, *,
 		default: V | None = None,
 	):
-		if default is None:
-			default = (
-				iterable.default     if isinstance(iterable, Set    ) else
-				self.truth(iterable) if isinstance(iterable, Boolean) else  # pyright: ignore[reportCallIssue]
-				self.truth.maximum()
-			)
+		background = not isinstance(iterable, Iterable)
+		foreground =     isinstance(iterable, Set     )
 
-		if isinstance(iterable, Boolean) and not isinstance(iterable, Set):
+		if default is None:
+			default = iterable.default \
+				if foreground else self.truth(iterable) if background else self.truth.maximum()  # pyright: ignore[reportCallIssue]
+
+		if background:
 			iterable = ()
 
 		super().__init__(partial(self.truth, default))
@@ -573,12 +573,6 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 		return relation(self.default, other.default) and all(relation(self[key], other[key]) for key in self.keys() | other.keys())
 
 
-@final
-class UnweightedDeepSet:
-
-	...
-
-
 class DeepSet[V: Hashable, E: Coded = Bool](Set[V, E, "DeepSet[V, E] | E"]):
 
 	registry: pair[list[type[DeepSet[Any, Any]]]] = (
@@ -586,64 +580,30 @@ class DeepSet[V: Hashable, E: Coded = Bool](Set[V, E, "DeepSet[V, E] | E"]):
 		[],
 	)
 
-#	A declared rung IS the factory's product for that slot, so that `class X(DeepSet, ...)` and
-#	`X = DeepSet.of(...)` name one class and never two. Everything below it is built on the way,
-#	which is also what leaves the slot free to claim: a rung can only ever be spoken for once.
 	def __init_subclass__(cls, *args,
+		truth: type[Boolean] | None = None,
 		weighted: bool | None = None,
 		depth: int | None = None,
 	**kwargs):
-		if weighted is None and depth is None:
-			super().__init_subclass__(*args, **kwargs)
-
-			return
-
+		rung = weighted is not None or depth is not None
 		weighted, depth = bool(weighted), depth or 0
-		kwargs.setdefault("truth", cls.of(weighted, depth - 1) if depth else Prob if weighted else Bool)
-
-		super().__init_subclass__(*args, **kwargs)
-
 		registry = cls.registry[weighted]
 
-		if len(registry) != depth:
-			raise TypeError(f"{registry[depth].__qualname__} already holds depth {depth}, {cls.__name__} cannot")
+		if rung and len(registry) != depth:
+			qual_cls = registry[depth].__qualname__
+			message = f"{qual_cls} already holds it" if depth < len(registry) else f"only {len(registry)} rungs stand under it"
 
-		registry.append(cls)
+			raise TypeError(f"{cls.__name__} cannot take depth {depth}: {message}")
 
-#	`weighted` is a runtime switch that decides a type, and `Literal` is the one case where that
-#	is expressible: two overloads, so the weighted family stops being annotated as the crisp one.
-	@overload
-	@classmethod
-	def of(cls, weighted: Literal[False] = False, depth: int = 0, /) -> type[DeepSet[Any, Bool]]: ...
+		if rung and truth is None:
+			truth = registry[depth - 1] if depth else Prob if weighted else Bool
 
-	@overload
-	@classmethod
-	def of(cls, weighted: Literal[True], depth: int = 0, /) -> type[DeepSet[Any, Prob]]: ...
+		super().__init_subclass__(*args,
+			truth = truth,
+		**kwargs)
 
-	@classmethod
-	def of(cls, weighted: bool = False, depth: int = 0, /) -> type[DeepSet[Any, Any]]:
-		if depth < 0:
-			raise ValueError(f"{cls.__name__} depth must be non-negative, got {depth}")
-
-		registry = cls.registry[weighted]
-
-		while (level := len(registry)) <= depth:
-			@final
-			class Level(DeepSet,
-				truth = cls.of(weighted, level - 1) if level else Prob if weighted else Bool
-			):
-				...
-
-			holders = (UnweightedDeepSet, DeepSet)
-			holder = holders[weighted]
-
-			Level.__name__ = str(level)
-			Level.__qualname__ = f"{holder.__qualname__}.{Level.__name__}"
-
-			setattr(holder, Level.__name__, Level)
-			registry.append(Level)
-
-		return registry[depth]
+		if rung:
+			registry.append(cls)
 
 
 class IndexSet[I: Hashable](DeepSet[I, Bool],
@@ -655,7 +615,7 @@ class IndexSet[I: Hashable](DeepSet[I, Bool],
 
 
 class FuzzySet[I: Hashable](DeepSet[I, Prob],
-	weighted = False,
+	weighted = True,
 	depth = 0,
 ):
 
@@ -664,7 +624,7 @@ class FuzzySet[I: Hashable](DeepSet[I, Prob],
 
 class UnweightedGraph[V: Hashable](DeepSet[V, Bool],
 	weighted = False,
-	depth = 0,
+	depth = 1,
 ):
 
 	...
