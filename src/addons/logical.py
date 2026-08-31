@@ -182,20 +182,24 @@ class Coded(Boolean, ABC):
 		return self.decode()
 
 
-class Path[K: Hashable](tuple[K | None | slice, ...]):
+type Coordinate[K: Hashable] = K | None | slice
+type Address[K: Hashable] = Coordinate[K] | tuple[Coordinate[K], ...]
 
-	def __new__(cls, *coordinates: K | None | slice) -> Self:
+
+class Path[K: Hashable](tuple[Coordinate[K], ...]):
+
+	def __new__(cls, *coordinates: Coordinate[K]) -> Self:
 		for coordinate in coordinates:
 			if isinstance(coordinate, slice) and coordinate != slice(None):
 				raise KeyError(f"only an unbounded slice contracts an axis, not {coordinate!r}")
 
 		return super().__new__(cls, coordinates)
 
-	def __getnewargs__(self) -> tuple[K | None | slice, ...]:
+	def __getnewargs__(self) -> tuple[Coordinate[K], ...]:
 		return tuple(self)
 
 	@classmethod
-	def read(cls, key: K | Path[K], /) -> Path[K]:
+	def read(cls, key: Address[K], /) -> Path[K]:
 		return key if isinstance(key, Path) else cls(*key) if isinstance(key, tuple) else cls(key)
 
 	@classmethod
@@ -216,7 +220,7 @@ class Edge[K: Hashable](Path[K]):
 		return {cls(*keys) for keys in permutations(self)}
 
 
-type NodeLike[K: Hashable, V: Boolean] = Iterable[K | Path[K]] | Mapping[K | Path[K], V] | Boolean | bool
+type NodeLike[K: Hashable, V: Boolean] = Iterable[Address[K]] | Mapping[Address[K], V] | Boolean | bool
 type Operator[V: Boolean] = Callable[[V, V], V]
 type Relation = Callable[[Boolean, Boolean], bool]
 
@@ -449,7 +453,7 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 
 		return factory, (dict(self),)
 
-	def __contains__(self, key: K | Path[K], /) -> bool:
+	def __contains__(self, key: Address[K], /) -> bool:
 		return bool(self[key])
 
 	def __iter__(self, /) -> Iterator[K]:
@@ -478,11 +482,14 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 
 		return result if self.complement else ~result
 
-	def locate(self, key: K | Path[K], /) -> tuple[Node[K, T, V], K]:
+	def locate(self, key: Address[K], /) -> tuple[Node[K, T, V], K]:
 		path = Path.read(key)
 
 		if not path:
 			raise KeyError(f"{type(self).__qualname__} cannot store at an empty path")
+
+		if len(path) > self.arity():
+			raise KeyError(f"{type(self).__qualname__} takes up to {self.arity()} coordinates, not {len(path)}")
 
 		if path.contracting:
 			raise KeyError(f"{type(self).__qualname__} cannot store at a contracted axis: {key!r}")
@@ -491,7 +498,7 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 
 		return cast(Node[K, T, V], self[Path(*head)]) if head else self, cast(K, last)
 
-	def __getitem__(self, key: K | Path[K], /) -> V:
+	def __getitem__(self, key: Address[K], /) -> V:
 		path = Path.read(key)
 
 		if len(path) > self.arity():
@@ -505,12 +512,12 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 
 		return cast(Node[K, T, V], value)[Path(*rest)] if rest else value
 
-	def __setitem__(self, key: K | Path[K], value: NodeLike[K, V] | int, /):
+	def __setitem__(self, key: Address[K], value: NodeLike[K, V] | int, /):
 		holder, last = self.locate(key)
 
 		dict.__setitem__(holder, last, holder.truth(value))  # pyright: ignore[reportCallIssue]
 
-	def __delitem__(self, key: K | Path[K], /):
+	def __delitem__(self, key: Address[K], /):
 		holder, last = self.locate(key)
 
 		dict.__delitem__(holder, last)
@@ -574,15 +581,15 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 	def complement(self) -> bool:
 		return bool(self.default)
 
-	def add    (self, key: K | Path[K], /): self[key] = self.truth.minimum()
-	def discard(self, key: K | Path[K], /): self[key] = self.truth.maximum()
-	def remove (self, key: K | Path[K], /):
+	def add    (self, key: Address[K], /): self[key] = self.truth.minimum()
+	def discard(self, key: Address[K], /): self[key] = self.truth.maximum()
+	def remove (self, key: Address[K], /):
 		if key not in self:
 			raise KeyError(key)
 
 		self.discard(key)
 
-	def pop(self, key: K | Path[K], default: V | None = None, /) -> V:
+	def pop(self, key: Address[K], default: V | None = None, /) -> V:
 		holder, last = self.locate(key)
 
 		if last in holder.keys():
@@ -603,12 +610,12 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 
 	__copy__ = copy
 
-	def get(self, key: K | Path[K], default: V | None = None, /) -> V:
+	def get(self, key: Address[K], default: V | None = None, /) -> V:
 		holder, last = self.locate(key)
 
 		return cast(V, dict.get(holder, last, holder.default if default is None else default))
 
-	def setdefault(self, key: K | Path[K], default: V | None = None, /) -> V:
+	def setdefault(self, key: Address[K], default: V | None = None, /) -> V:
 		holder, last = self.locate(key)
 
 		if default is not None and last not in holder.keys(): self[key] = default
@@ -679,8 +686,8 @@ class Set[V: Hashable, E: Coded = Bool](Node[V, E, "Set[V, E] | E"]):
 		registry = cls.registry[weighted]
 
 		if rung and len(registry) != depth:
-			qual_cls = registry[depth].__qualname__
-			message = f"{qual_cls} already holds it" if depth < len(registry) else f"only {len(registry)} rungs stand under it"
+			held = 0 <= depth < len(registry)
+			message = f"{registry[depth].__qualname__} already holds it" if held else f"only {len(registry)} rungs stand under it"
 
 			raise TypeError(f"{cls.__name__} cannot take depth {depth}: {message}")
 
@@ -701,7 +708,7 @@ class Set[V: Hashable, E: Coded = Bool](Node[V, E, "Set[V, E] | E"]):
 
 class Undirected[K: Hashable, T: Coded = Bool, V: Boolean = T](Node[K, T, V]):
 
-	def __setitem__(self, key: K | Path[K], value: NodeLike[K, V] | int, /):
+	def __setitem__(self, key: Address[K], value: NodeLike[K, V] | int, /):
 		if isinstance(key, tuple):
 			for edge in Edge(*key).permutations:
 				super().__setitem__(edge, value)
@@ -709,7 +716,7 @@ class Undirected[K: Hashable, T: Coded = Bool, V: Boolean = T](Node[K, T, V]):
 		else:
 			super().__setitem__(key, value)
 
-	def __delitem__(self, key: K | Path[K], /):
+	def __delitem__(self, key: Address[K], /):
 		if isinstance(key, tuple):
 			for edge in Edge(*key).permutations:
 				super().__delitem__(edge)

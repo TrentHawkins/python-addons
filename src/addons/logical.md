@@ -634,6 +634,8 @@ With the graded family withdrawn there is a single container to mix into, so thi
 
 ## 9. Known open ends
 
+**Test suite.** `tests/` holds $487$ tests across ten modules, written as the *laws* of this document rather than as examples: the `Coded` round trip, De Morgan on every carrier, `abs(Node(x)) == x` for every rung, the $\oplus$-fold and its parallel-conductance reading, monotonicity and order-independence, the rank law, closure, the $S_n$-orbit, and a $256$-pair sweep of the lattice and ordering against builtin `set`. The documented *failures* are characterisation tests, so the day one is fixed the suite says so.
+
 **Implementation status.** §4's `contracted` and all of §6 are built and verified: tuple-as-path, the rank law across nine forms, both sentinel spellings, bounded-slice rejection, sentinel rejection on writes and deletes, `Undirected` mirroring plain tuples, and every worked example in §7 and §8 running in the notation as written. `route` is gone. Pyright reports $0$ errors and pylint $10.00/10$.
 
 **Orientation is out of scope, deliberately.** An *oriented* complex assigns $\pm 1$ by permutation parity, and boundary maps need that sign. `Prob` and `Bool` are a bounded lattice and a projective line — **neither has negation** — so orientation, boundary maps and anything homological are not expressible without a second, signed carrier.
@@ -700,4 +702,16 @@ del s[edge]   removes every present ordering of the orbit
 
 Two-phase — collect the present orderings with `dict.__contains__`, then delete — which buys atomicity and order-independence together, and lets the error name the edge the caller passed.
 
-**Repository debt.** `tests/` is empty; the whole verification suite (256-pair sweep against builtin `set`, `abs` self-duality, the symmetric set-vs-scalar comparison pairs, copy/deepcopy/pickle, and now the contraction laws of §4) lives in throwaway scripts. `src/addons/__init__.py` is empty.
+**Three bugs the suite found on its first run.** All fixed, all recorded here because each was invisible to every check that existed before:
+
+| bug | why nothing caught it |
+| --- | --- |
+| `Edge` did not survive pickling | a varargs `__new__` on a `tuple` subclass needs `__getnewargs__`; `Node.__reduce__` stores vertex keys, never paths, so no round trip ever touched one |
+| an over-long **write** path raised `AttributeError: 'Prob' object has no attribute 'truth'` | `__getitem__` carried the arity guard and `locate` did not |
+| the "gap" branch of the rung guard was unreachable | `registry[depth].__qualname__` was computed *before* the test that bounds `depth`, so a gap raised `IndexError` instead of its own `TypeError` |
+
+A fourth was an annotation, not a bug: `key: K \| Path[K]` rejected the plain-tuple notation §6 defines, because `tuple` is a *supertype* of `Path`. The accessors now take `Address[K] = Coordinate[K] | tuple[Coordinate[K], ...]`.
+
+**Mixing `Undirected` into a rung needs explicit parameters.** Bare `Undirected` defaults to `Node[K, Bool, Bool]`, which is not a rung's `Node[V, Prob, Set | Prob]`, so pyright calls the bases incompatible. `class UndirectedGraph[V](Undirected[V, Prob, "Set[V, Prob] | Prob"], Graph[V])` typechecks; the bare form runs but does not check.
+
+**Repository debt.** `src/addons/__init__.py` is empty, and `README.md` and `docs/logical-foundations.md` still document a `Real` type and a `.dist` projection that no longer exist.
