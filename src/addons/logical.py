@@ -182,10 +182,32 @@ class Coded(Boolean, ABC):
 		return self.decode()
 
 
-class Edge[K: Hashable](tuple[K, ...]):
+class Path[K: Hashable](tuple[K | None | slice, ...]):
 
-	def __new__(cls, *keys: K) -> Self:
-		return super().__new__(cls, keys)
+	def __new__(cls, *coordinates: K | None | slice) -> Self:
+		for coordinate in coordinates:
+			if isinstance(coordinate, slice) and coordinate != slice(None):
+				raise KeyError(f"only an unbounded slice contracts an axis, not {coordinate!r}")
+
+		return super().__new__(cls, coordinates)
+
+	def __getnewargs__(self) -> tuple[K | None | slice, ...]:
+		return tuple(self)
+
+	@classmethod
+	def read(cls, key: K | Path[K], /) -> Path[K]:
+		return key if isinstance(key, Path) else cls(*key) if isinstance(key, tuple) else cls(key)
+
+	@classmethod
+	def contracts(cls, coordinate: object, /) -> bool:
+		return coordinate is None or isinstance(coordinate, slice)
+
+	@property
+	def contracting(self) -> bool:
+		return any(map(self.contracts, self))
+
+
+class Edge[K: Hashable](Path[K]):
 
 	@property
 	def permutations(self) -> set[Self]:
@@ -194,7 +216,7 @@ class Edge[K: Hashable](tuple[K, ...]):
 		return {cls(*keys) for keys in permutations(self)}
 
 
-type SetLike[K: Hashable, V: Boolean] = Iterable[K | Edge[K]] | Mapping[K | Edge[K], V] | Boolean | bool
+type NodeLike[K: Hashable, V: Boolean] = Iterable[K | Path[K]] | Mapping[K | Path[K], V] | Boolean | bool
 type Operator[V: Boolean] = Callable[[V, V], V]
 type Relation = Callable[[Boolean, Boolean], bool]
 
@@ -378,7 +400,7 @@ class Bool(Frac):
 		)
 
 
-class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, defaultdict[K , V]):
+class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, defaultdict[K , V]):
 
 	truth: type[V]
 
@@ -390,11 +412,11 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 		if truth is not None:
 			cls.truth = cast(type[V], truth)
 
-	def __init__(self, iterable: SetLike[K, V] = (), /, *,
+	def __init__(self, iterable: NodeLike[K, V] = (), /, *,
 		default: V | None = None,
 	):
 		background = not isinstance(iterable, Iterable)
-		foreground =     isinstance(iterable, Set     )
+		foreground =     isinstance(iterable, Node     )
 
 		if default is None:
 			default = iterable.default \
@@ -419,7 +441,7 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 
 		return body if not sign else f"~{body}" if sign == self.truth.minimum() else f"{sign!r}~{body}"
 
-	def __reduce__(self) -> tuple[Callable[[SetLike[K, V]], Self], tuple[dict[K, V]]]:
+	def __reduce__(self) -> tuple[Callable[[NodeLike[K, V]], Self], tuple[dict[K, V]]]:
 		cls = type(self)
 		factory = partial(cls,
 			default = self.default,
@@ -427,7 +449,7 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 
 		return factory, (dict(self),)
 
-	def __contains__(self, key: K | Edge[K], /) -> bool:
+	def __contains__(self, key: K | Path[K], /) -> bool:
 		return bool(self[key])
 
 	def __iter__(self, /) -> Iterator[K]:
@@ -445,27 +467,51 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 	def arity(cls) -> int:
 		return 1
 
-	def route(self, key: K | Edge[K], /) -> tuple[Set[K, T, V], K]:
-		if not isinstance(key, Edge):
-			return self, key
+	@property
+	def contracted(self) -> V:
+		values = [value if self.complement else ~value for value in self.values()]
 
-		if len(key) != self.arity():
-			raise KeyError(f"{type(self).__qualname__} takes {self.arity()} coordinate, not {len(key)}")
+		if not values:
+			return self.default
 
-		return self, key[0]
+		result = cast(V, sum(values, self.truth.minimum()))
 
-	def __getitem__(self, key: K | Edge[K], /) -> V:
-		holder, last = self.route(key)
+		return result if self.complement else ~result
 
-		return cast(V, dict.__getitem__(holder, last))
+	def locate(self, key: K | Path[K], /) -> tuple[Node[K, T, V], K]:
+		path = Path.read(key)
 
-	def __setitem__(self, key: K | Edge[K], value: SetLike[K, V] | int, /):
-		holder, last = self.route(key)
+		if not path:
+			raise KeyError(f"{type(self).__qualname__} cannot store at an empty path")
+
+		if path.contracting:
+			raise KeyError(f"{type(self).__qualname__} cannot store at a contracted axis: {key!r}")
+
+		*head, last = path
+
+		return cast(Node[K, T, V], self[Path(*head)]) if head else self, cast(K, last)
+
+	def __getitem__(self, key: K | Path[K], /) -> V:
+		path = Path.read(key)
+
+		if len(path) > self.arity():
+			raise KeyError(f"{type(self).__qualname__} takes up to {self.arity()} coordinates, not {len(path)}")
+
+		if not path:
+			return cast(V, self)
+
+		head, *rest = path
+		value = self.contracted if Path.contracts(head) else cast(V, dict.__getitem__(self, cast(K, head)))
+
+		return cast(Node[K, T, V], value)[Path(*rest)] if rest else value
+
+	def __setitem__(self, key: K | Path[K], value: NodeLike[K, V] | int, /):
+		holder, last = self.locate(key)
 
 		dict.__setitem__(holder, last, holder.truth(value))  # pyright: ignore[reportCallIssue]
 
-	def __delitem__(self, key: K | Edge[K], /):
-		holder, last = self.route(key)
+	def __delitem__(self, key: K | Path[K], /):
+		holder, last = self.locate(key)
 
 		dict.__delitem__(holder, last)
 
@@ -493,20 +539,20 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 			default = self.default * times,
 		)
 
-	def __add__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__add__)
-	def __and__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__and__)
-	def  __or__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth. __or__)
-	def __sub__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__sub__)
-	def __xor__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__xor__)
+	def __add__(self, other: NodeLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__add__)
+	def __and__(self, other: NodeLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__and__)
+	def  __or__(self, other: NodeLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth. __or__)
+	def __sub__(self, other: NodeLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__sub__)
+	def __xor__(self, other: NodeLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__xor__)
 
-	def __ior__ (self, other: SetLike[K, V], /) -> Self: self.update                     (other); return self
-	def __iand__(self, other: SetLike[K, V], /) -> Self: self.intersection_update        (other); return self
-	def __isub__(self, other: SetLike[K, V], /) -> Self: self.difference_update          (other); return self
-	def __ixor__(self, other: SetLike[K, V], /) -> Self: self.symmetric_difference_update(other); return self
+	def __ior__ (self, other: NodeLike[K, V], /) -> Self: self.update                     (other); return self
+	def __iand__(self, other: NodeLike[K, V], /) -> Self: self.intersection_update        (other); return self
+	def __isub__(self, other: NodeLike[K, V], /) -> Self: self.difference_update          (other); return self
+	def __ixor__(self, other: NodeLike[K, V], /) -> Self: self.symmetric_difference_update(other); return self
 
-	def __le__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, le)
-	def __ge__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, ge)
-	def __eq__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, eq)
+	def __le__(self, other: NodeLike[K, V], /) -> bool: return self.relate(other, le)
+	def __ge__(self, other: NodeLike[K, V], /) -> bool: return self.relate(other, ge)
+	def __eq__(self, other: NodeLike[K, V], /) -> bool: return self.relate(other, eq)
 
 	@classmethod
 	def fromkeys(cls, iterable: Iterable[K], value: V | None = None, /) -> Self:
@@ -528,16 +574,16 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 	def complement(self) -> bool:
 		return bool(self.default)
 
-	def add    (self, key: K | Edge[K], /): self[key] = self.truth.minimum()
-	def discard(self, key: K | Edge[K], /): self[key] = self.truth.maximum()
-	def remove (self, key: K | Edge[K], /):
+	def add    (self, key: K | Path[K], /): self[key] = self.truth.minimum()
+	def discard(self, key: K | Path[K], /): self[key] = self.truth.maximum()
+	def remove (self, key: K | Path[K], /):
 		if key not in self:
 			raise KeyError(key)
 
 		self.discard(key)
 
-	def pop(self, key: K | Edge[K], default: V | None = None, /) -> V:
-		holder, last = self.route(key)
+	def pop(self, key: K | Path[K], default: V | None = None, /) -> V:
+		holder, last = self.locate(key)
 
 		if last in holder.keys():
 			return cast(V, dict.pop(holder, last))
@@ -557,34 +603,34 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 
 	__copy__ = copy
 
-	def get(self, key: K | Edge[K], default: V | None = None, /) -> V:
-		holder, last = self.route(key)
+	def get(self, key: K | Path[K], default: V | None = None, /) -> V:
+		holder, last = self.locate(key)
 
 		return cast(V, dict.get(holder, last, holder.default if default is None else default))
 
-	def setdefault(self, key: K | Edge[K], default: V | None = None, /) -> V:
-		holder, last = self.route(key)
+	def setdefault(self, key: K | Path[K], default: V | None = None, /) -> V:
+		holder, last = self.locate(key)
 
 		if default is not None and last not in holder.keys(): self[key] = default
 
 		return self[key]
 
-	def update(self, *others: SetLike[K, V]):
+	def update(self, *others: NodeLike[K, V]):
 		cls = type(self)
 
 		self.become(self.union(*map(cls, others)))
 
-	def intersection_update(self, *others: SetLike[K, V]):
+	def intersection_update(self, *others: NodeLike[K, V]):
 		cls = type(self)
 
 		self.become(self.intersection(*map(cls, others)))
 
-	def difference_update(self, *others: SetLike[K, V]):
+	def difference_update(self, *others: NodeLike[K, V]):
 		cls = type(self)
 
 		self.become(self.difference(*map(cls, others)))
 
-	def symmetric_difference_update(self, other: SetLike[K, V], /):
+	def symmetric_difference_update(self, other: NodeLike[K, V], /):
 		cls = type(self)
 
 		self.become(self.symmetric_difference(cls(other)))
@@ -597,7 +643,7 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 		dict.clear(self)
 		dict.update(self, items)
 
-	def operate(self, other: SetLike[K, V], /, operator: Operator[V]) -> Self:
+	def operate(self, other: NodeLike[K, V], /, operator: Operator[V]) -> Self:
 		cls = type(self)
 		other = cls(other)
 
@@ -605,10 +651,10 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 			default = operator(self.default, other.default),
 		)
 
-	def relate(self, other: SetLike[K, V], /, relation: Relation) -> bool:
+	def relate(self, other: NodeLike[K, V], /, relation: Relation) -> bool:
 		cls = type(self)
 
-		if isinstance(other, Boolean) and not isinstance(other, Set):
+		if isinstance(other, Boolean) and not isinstance(other, Node):
 			return relation(abs(self), other)
 
 		other = cls(other)
@@ -616,9 +662,9 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 		return relation(self.default, other.default) and all(relation(self[key], other[key]) for key in self.keys() | other.keys())
 
 
-class SimplexSet[V: Hashable, E: Coded = Bool](Set[V, E, "SimplexSet[V, E] | E"]):
+class Set[V: Hashable, E: Coded = Bool](Node[V, E, "Set[V, E] | E"]):
 
-	registry: pair[list[type[SimplexSet[V, E]]]] = (
+	registry: pair[list[type[Set[V, E]]]] = (
 		[],
 		[],
 	)
@@ -650,40 +696,29 @@ class SimplexSet[V: Hashable, E: Coded = Bool](Set[V, E, "SimplexSet[V, E] | E"]
 
 	@classmethod
 	def arity(cls) -> int:
-		return 1 + cls.truth.arity() if issubclass(cls.truth, SimplexSet) else 1
-
-	def route(self, key: V | Edge[V], /) -> tuple[SimplexSet[V, E], V]:
-		if not isinstance(key, Edge):
-			return self, key
-
-		if not 0 < len(key) <= self.arity():
-			raise KeyError(f"{type(self).__qualname__} takes up to {self.arity()} coordinates, not {len(key)}")
-
-		head, *rest = key
-
-		return cast(SimplexSet[V, E], self[head]).route(Edge(*rest)) if rest else (self, head)
+		return 1 + cls.truth.arity() if issubclass(cls.truth, Set) else 1
 
 
-class Undirected[K: Hashable, T: Coded = Bool, V: Boolean = T](Set[K, T, V]):
+class Undirected[K: Hashable, T: Coded = Bool, V: Boolean = T](Node[K, T, V]):
 
-	def __setitem__(self, key: K | Edge[K], value: SetLike[K, V] | int, /):
-		if isinstance(key, Edge):
-			for edge in key.permutations:
+	def __setitem__(self, key: K | Path[K], value: NodeLike[K, V] | int, /):
+		if isinstance(key, tuple):
+			for edge in Edge(*key).permutations:
 				super().__setitem__(edge, value)
 
 		else:
 			super().__setitem__(key, value)
 
-	def __delitem__(self, key: K | Edge[K], /):
-		if isinstance(key, Edge):
-			for edge in key.permutations:
+	def __delitem__(self, key: K | Path[K], /):
+		if isinstance(key, tuple):
+			for edge in Edge(*key).permutations:
 				super().__delitem__(edge)
 
 		else:
 			super().__delitem__(key)
 
 
-class IndexSet[I: Hashable](SimplexSet[I, Bool],
+class IndexSet[I: Hashable](Set[I, Bool],
 	weighted = False,
 	depth = 0,
 ):
@@ -691,7 +726,7 @@ class IndexSet[I: Hashable](SimplexSet[I, Bool],
 	...
 
 
-class FuzzySet[I: Hashable](SimplexSet[I, Prob],
+class FuzzySet[I: Hashable](Set[I, Prob],
 	weighted = True,
 	depth = 0,
 ):
@@ -699,7 +734,7 @@ class FuzzySet[I: Hashable](SimplexSet[I, Prob],
 	...
 
 
-class UnweightedGraph[V: Hashable](SimplexSet[V, Bool],
+class UnweightedGraph[V: Hashable](Set[V, Bool],
 	weighted = False,
 	depth = 1,
 ):
@@ -707,7 +742,7 @@ class UnweightedGraph[V: Hashable](SimplexSet[V, Bool],
 	...
 
 
-class Graph[V: Hashable](SimplexSet[V, Prob],
+class Graph[V: Hashable](Set[V, Prob],
 	weighted = True,
 	depth = 1,
 ):
