@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 
+from fractions import Fraction
 from math import inf
 
 import pytest
@@ -136,3 +137,60 @@ class TestGuards:
 
 	def test_coordinates_are_reduced(self):
 		assert Dist(2, 4).decoded == Dist(1, 2).decoded
+
+
+class TestCoordinateRelation:
+
+	@pytest.mark.parametrize("numer, denom", [(1, 4), (1, 2), (3, 4), (1, 3), (7, 8)])
+	def test_difficulty_is_the_odds_against(self, numer: int, denom: int):
+		"""`d = (1 - p) / p`, so `Dist` is the odds against and `Prob` the probability."""
+		probability = Fraction(numer, denom)
+		odds = (1 - probability) / probability
+
+		assert Fraction(*Dist(Prob(numer, denom)).decoded) == odds
+
+	@pytest.mark.parametrize("numer, denom", [(1, 4), (1, 2), (3, 4), (2, 5)])
+	def test_the_relation_inverts(self, numer: int, denom: int):
+		difficulty = Fraction(numer, denom)
+		probability = 1 / (1 + difficulty)
+
+		assert Fraction(*Prob(Dist(numer, denom)).decoded) == Fraction(*Prob(probability.numerator, probability.denominator).decoded)
+
+	def test_the_distinguished_values_read_across_carriers(self):
+		assert (float(Dist.minimum()), float(Prob.minimum())) == (0.0, 1.0)
+		assert (float(Dist.midimum()), float(Prob.midimum())) == (1.0, 0.5)
+		assert (float(Dist.maximum()), float(Prob.maximum())) == (inf, 0.0)
+
+	def test_the_crisp_restriction_has_nowhere_to_put_the_reference_point(self):
+		assert Bool.midimum() == Bool.minimum() == Bool(True)
+
+
+class TestOperationAuthority:
+
+	@pytest.mark.parametrize("left, right", [(1, 4), (1, 2), (3, 4), (2, 5), (7, 8)])
+	def test_addition_transports_to_the_hamacher_product(self, left: int, right: int):
+		"""`Dist` addition, read in `Prob`, is `pq / (p + q - pq)` — parameter-zero Hamacher."""
+		p, q = Fraction(left, 8), Fraction(right, 8)
+		expected = p * q / (p + q - p * q)
+
+		total = Prob(p.numerator, p.denominator) + Prob(q.numerator, q.denominator)
+
+		assert Fraction(*total.decoded) == Fraction(*Prob(expected.numerator, expected.denominator).decoded)
+
+	def test_conjunction_is_the_ordinary_product_and_addition_is_not(self):
+		assert Prob(1, 2) & Prob(1, 2) == Prob(1, 4)
+		assert Prob(1, 2) + Prob(1, 2) != Prob(1, 4)
+
+	def test_the_identity_of_path_extension_is_the_certain_value(self):
+		for value in (Prob(1, 4), Prob(1, 2), Prob(3, 4)):
+			assert value + Prob.minimum() == value
+
+	def test_an_absent_path_absorbs(self):
+		for value in (Prob(1, 4), Prob(1, 2), Prob(3, 4)):
+			assert value + Prob.maximum() == Prob.maximum()
+
+	def test_multiplication_is_integer_repetition_of_addition(self):
+		value = Prob(1, 2)
+
+		assert value * 2 == value + value
+		assert value * 3 == value + value + value

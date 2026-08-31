@@ -9,7 +9,7 @@ import pytest
 
 from addons.logical import Bool, Edge, FuzzySet, Graph, IndexSet, Path, Prob
 
-from .conftest import ARITY, RUNGS, Hyper, rank, sample
+from .conftest import ARITY, RUNGS, Hyper, carrier, rank, sample
 
 
 SENTINELS = [None, slice(None)]
@@ -143,13 +143,14 @@ class TestWrites:
 
 		assert node["u", "v"] == Prob(1, 2)
 
-	def test_a_scalar_written_to_a_deep_rung_becomes_a_background(self):
+	def test_a_scalar_written_to_a_deep_rung_becomes_a_crisp_background(self):
+		"""It names a polarity, not a uniform grade — graded backgrounds are gone."""
 		node: Graph[str] = Graph()
 		node["u"] = Prob(1, 2)
 
 		neighbourhood = node["u"]
 
-		assert isinstance(neighbourhood, FuzzySet) and neighbourhood.default == Prob(1, 2)
+		assert isinstance(neighbourhood, FuzzySet) and neighbourhood.default == Prob.minimum()
 
 	def test_deletion_forgets_the_record(self):
 		node: Graph[str] = Graph()
@@ -219,3 +220,50 @@ class TestEdgeAndSentinelDoNotMix:
 
 	def test_a_sentinel_path_is_written_as_a_bare_tuple_or_with_none(self, graph: Any):
 		assert graph[0, :] == graph[Edge(0, None)] == graph[Path(0, None)]
+
+
+class TestResolution:
+	"""`__getitem__` evaluates a path; `locate` resolves the slot one names. Different questions."""
+
+	def test_address_is_the_shared_precondition(self):
+		node: Graph[str] = Graph()
+
+		assert tuple(node.address("u")) == ("u",)
+		assert tuple(node.address(("u", "v"))) == ("u", "v")
+
+	@pytest.mark.parametrize("cls", RUNGS)
+	def test_the_rank_guard_lives_in_one_place(self, cls: Any):
+		"""It was once duplicated, and the copy in `locate` went missing — hence AttributeError."""
+		node = cls()
+		over = (0,) * (ARITY[cls] + 1)
+
+		for attempt in (lambda: node[over], lambda: node.__setitem__(over, carrier(cls).minimum()), lambda: node.locate(over)):
+			with pytest.raises(KeyError, match = "coordinates"):
+				attempt()
+
+	def test_a_contracted_path_denotes_a_value_but_names_no_slot(self):
+		node: Graph[int] = Graph()
+		node[0, 1] = Prob(1, 2)
+
+		assert node[0, :] == abs(node[0]), "it denotes"
+
+		with pytest.raises(KeyError, match = "no slot"):
+			node.locate((0, slice(None)))
+
+	def test_the_message_names_the_path_not_the_operation(self):
+		node: Graph[int] = Graph()
+
+		with pytest.raises(KeyError, match = "no slot at a contracted axis"):
+			node.get((0, slice(None)))
+
+		with pytest.raises(KeyError, match = "no slot at an empty path"):
+			node.locate(())
+
+	def test_every_slot_caller_needs_a_place_not_a_value(self):
+		node: Graph[str] = Graph()
+		node["u", "v"] = Prob(3, 4)
+
+		holder, last = node.locate(("u", "v"))
+
+		assert holder is node["u"] and last == "v"
+		assert dict.__contains__(holder, last), "presence is testable only against the holder"

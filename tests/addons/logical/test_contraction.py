@@ -16,8 +16,9 @@ from addons.logical import Bool, Dist, FuzzySet, Graph, IndexSet, Node, Prob
 from .conftest import CRISP_RUNGS, GRADED_RUNGS, Hyper, RUNGS, carrier, oplus, rank, sample
 
 
-CRISP_BACKGROUNDS = (None, Prob.minimum(), Prob.maximum())
-GRADED_BACKGROUNDS = (Prob(1, 3), Prob(2, 5), Prob(3, 4))
+BACKGROUNDS = (None, Prob.minimum(), Prob.maximum())
+CRISP_BACKGROUNDS = BACKGROUNDS
+GRADED_BACKGROUNDS = (Prob(1, 3), Prob(2, 5), Prob(3, 4))   # crisped on construction
 
 
 def iterate(node: Any) -> Any:
@@ -128,11 +129,12 @@ class TestTheSinglePass:
 			assert iterate(node) == abs(node)
 
 
-class TestTheDivergence:
+class TestTheSinglePassAgreesEverywhere:
+	"""With graded backgrounds eliminated, the single pass reaches `abs` at every background."""
 
 	@pytest.mark.parametrize("cls", CRISP_RUNGS + GRADED_RUNGS)
 	@pytest.mark.parametrize("background", ["false", "true"])
-	def test_crisp_backgrounds_always_agree(self, cls: Any, background: str):
+	def test_every_rung_and_polarity_agrees(self, cls: Any, background: str):
 		grounding = carrier(cls).minimum() if background == "true" else None
 
 		for seed in range(30):
@@ -140,24 +142,126 @@ class TestTheDivergence:
 
 			assert iterate(node) == abs(node)
 
-	def test_rank_one_agrees_even_when_graded(self):
+	def test_a_would_be_graded_background_agrees_because_it_is_crisped(self):
 		for background in GRADED_BACKGROUNDS:
-			for seed in range(50):
-				node = sample(FuzzySet, 1, seed = seed, background = background)
+			for seed in range(60):
+				for cls, arity in ((FuzzySet, 1), (Graph, 2)):
+					node = sample(cls, arity, seed = seed, background = background)
 
-				assert iterate(node) == abs(node)
+					assert iterate(node) == abs(node)
 
-	def test_a_graded_background_at_rank_two_diverges(self):
-		"""Folding containers compounds their backgrounds; `abs` scalarises each child first."""
-		divergent = [
-			seed
-			for background in GRADED_BACKGROUNDS
-			for seed in range(60)
-			if iterate(sample(Graph, 2, seed = seed, background = background)) != abs(sample(Graph, 2, seed = seed, background = background))
-		]
-
-		assert divergent, "the divergence is documented in §4 and must not vanish silently"
-
-	def test_which_is_why_abs_is_not_defined_through_the_single_pass(self):
-		assert Node.__abs__ is not None
+	def test_abs_is_still_defined_directly_rather_than_through_the_single_pass(self):
 		assert "contracted" not in Node.__abs__.__code__.co_names
+
+
+class TestSeriesAndParallel:
+
+	def test_addition_composes_difficulties_in_series(self):
+		assert Dist(1, 2) + Dist(1, 3) == Dist(5, 6)
+
+	def test_oplus_composes_conductances_in_parallel(self):
+		"""`1/d = 1/d1 + 1/d2` — the De Morgan dual of series, which is what parallel is."""
+		assert oplus(Dist(1, 2), Dist(1, 3)) == Dist(1, 5)
+
+	def test_the_two_are_dual(self):
+		for a, b in ((Dist(1, 2), Dist(1, 3)), (Dist(2, 1), Dist(3, 1)), (Dist(1, 1), Dist(4, 5))):
+			assert oplus(a, b) == ~(~a + ~b)
+
+	def test_the_four_aggregations_are_genuinely_distinct(self):
+		a, b = Prob(1, 2), Prob(1, 2)
+
+		extension = a + b
+		parallel = oplus(a, b)
+		disjunction = a | b
+		choice = max(a, b)
+
+		assert len({extension, parallel, disjunction, choice}) == 4
+
+	def test_abs_is_the_parallel_bundle_not_the_best_route(self):
+		node = FuzzySet({0: Prob(1, 2), 1: Prob(1, 4)})
+
+		assert abs(node) == oplus(Prob(1, 2), Prob(1, 4))
+		assert abs(node) != max(node.values())
+
+
+class TestSelfDuality:
+	"""`abs(~s) == ~abs(s)`, now unconditional — the branch is the De Morgan switch."""
+
+	@pytest.mark.parametrize("background", BACKGROUNDS + GRADED_BACKGROUNDS)
+	def test_it_holds_at_every_background(self, background: Prob | None):
+		for seed in range(60):
+			node = sample(Graph, 2, seed = seed, background = background)
+
+			assert abs(~node) == ~abs(node)
+
+	@pytest.mark.parametrize("cls", RUNGS)
+	def test_it_holds_for_every_rung(self, cls: Any):
+		node = sample(cls, cls.arity(), seed = 53)
+
+		assert abs(~node) == ~abs(node)
+
+	@pytest.mark.parametrize("scalar", [Prob.minimum(), Prob.maximum(), Prob(1, 3), Prob(3, 4)])
+	def test_complement_always_flips_because_the_background_is_crisp(self, scalar: Prob):
+		node = FuzzySet(scalar)
+
+		assert node.complement is not (~node).complement
+
+
+class TestTheBranchOnComplement:
+	"""Why `__abs__` branches: each fold has the background as its identity."""
+
+	def test_a_recorded_non_deviation_is_invisible_to_the_measure(self):
+		plain: FuzzySet[str] = FuzzySet()
+		before = abs(plain)
+		plain["x"] = Prob.maximum()
+
+		assert abs(plain) == before
+
+		complemented = ~IndexSet()
+		before = abs(complemented)
+		complemented["x"] = Bool.minimum()
+
+		assert abs(complemented) == before
+
+	def test_it_holds_under_reads_for_a_crisp_background(self):
+		"""Which is what makes `abs` stable, since reads autovivify."""
+		for background in (Prob.maximum(), Prob.minimum()):
+			node = FuzzySet(background)
+			before = abs(node)
+
+			for key in "abcd":
+				_ = node[key]
+
+			assert len(node) == 4 and abs(node) == before
+
+	def test_abs_respects_equality(self):
+		"""`abs` is a function on the algebra, so equal values must have equal measures."""
+		bare, padded = FuzzySet(Prob.minimum()), FuzzySet(Prob.minimum())
+
+		for key in "abc":
+			_ = padded[key]
+
+		assert abs(bare) == abs(padded)
+		assert len(bare) != len(padded), "they differ only in redundant coverage"
+
+	def test_comparison_may_vivify_but_cannot_change_a_value(self):
+		"""Vivification records the background, which is the fold's identity — structurally inert."""
+		left, right = FuzzySet(Prob.minimum()), FuzzySet({"a": Prob(1, 4)})
+		before = (abs(left), abs(right))
+
+		_ = left == right
+		_ = left | right
+		_ = left & right
+
+		assert (abs(left), abs(right)) == before
+
+	def test_the_identities_are_the_two_crisp_backgrounds(self):
+		assert Prob.maximum() == Prob.maximum() | Prob.maximum()
+		assert Prob.minimum() + Prob.minimum() == Prob.minimum()
+
+	def test_abs_and_bool_disagree_on_a_complemented_set_with_holes(self):
+		"""Characterisation of the §9 defect: `bool` asks *any*, `abs` under a complement asks *all*."""
+		assert bool(~IndexSet(["a"])) and not bool(abs(~IndexSet(["a"])))
+
+		for node in (IndexSet(["a"]), IndexSet(), ~IndexSet()):
+			assert bool(node) == bool(abs(node)), "they agree everywhere else"

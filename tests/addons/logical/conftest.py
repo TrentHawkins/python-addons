@@ -102,9 +102,12 @@ def probs(rng: random.Random, count: int, *, denominator: int = 8) -> list[Prob]
 
 
 def sample(cls: Any, arity: int, *, seed: int, keys: int = 3, density: float = 0.6, background: Any = None) -> Any:
-	"""A pseudo-random tensor of the given rung, filled to `density`."""
+	"""A pseudo-random tensor of the given rung, filled to `density`.
+
+	`background` is any scalar; only its polarity survives, since backgrounds are crisp.
+	"""
 	rng = random.Random(seed)
-	node = cls(default = background)
+	node = cls(complement = bool(background))
 	crisp = cls in CRISP_RUNGS
 
 	for coordinates in _coordinates(arity, keys):

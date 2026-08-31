@@ -38,15 +38,26 @@ class TestConstruction:
 
 		assert FuzzySet(node) == node
 
-	def test_from_a_scalar_is_the_background_it_is(self):
-		assert FuzzySet(Prob(1, 2)).default == Prob(1, 2)
-		assert abs(FuzzySet(Prob(1, 2))) == Prob(1, 2)
+	def test_from_a_scalar_is_the_polarity_it_carries(self):
+		"""A background is crisp: a scalar names which of the two, nothing finer."""
+		assert FuzzySet(Prob.maximum()).default == Prob.maximum()
+		assert FuzzySet(Prob.minimum()).default == Prob.minimum()
+		assert FuzzySet(Prob(1, 2)).default == Prob.minimum(), "a true-ish scalar is the universal set"
 
 	def test_an_empty_iterable_and_no_argument_agree(self):
 		assert IndexSet([]) == IndexSet()
 
-	def test_an_explicit_background_is_honoured(self):
-		assert FuzzySet(default = Prob(1, 3)).default == Prob(1, 3)
+	def test_the_polarity_is_a_flag_not_a_value(self):
+		"""`complement` is the API; `default` is that one bit wearing the carrier's clothes."""
+		assert FuzzySet(complement = False).default == Prob.maximum()
+		assert FuzzySet(complement = True).default == Prob.minimum()
+
+		assert not FuzzySet(complement = False).complement
+		assert FuzzySet(complement = True).complement
+
+	def test_the_flag_overrides_the_iterable(self):
+		assert FuzzySet(["a"], complement = True).complement
+		assert not FuzzySet(Prob.minimum(), complement = False).complement
 
 	def test_fromkeys(self):
 		assert set(IndexSet.fromkeys(["a", "b"])) == {"a", "b"}
@@ -62,10 +73,12 @@ class TestBackground:
 		assert IndexSet.minimum().complement and not IndexSet.maximum().complement
 		assert IndexSet.maximum() == IndexSet()
 
-	def test_a_background_may_be_graded(self):
-		node = FuzzySet(Prob(1, 2))
+	def test_a_background_is_never_graded(self):
+		"""Eliminated deliberately: a uniform grade over an infinite key space has no measure."""
+		for scalar in (Prob(1, 3), Prob(1, 2), Prob(3, 4)):
+			assert FuzzySet(scalar).default in (Prob.minimum(), Prob.maximum())
 
-		assert node["anything"] == Prob(1, 2) and abs(node) == Prob(1, 2)
+		assert FuzzySet(Prob(1, 2))["anything"] == Prob.minimum()
 
 	@pytest.mark.parametrize("cls", RUNGS)
 	def test_the_seam_round_trips_for_every_rung(self, cls: Any):
@@ -94,8 +107,9 @@ class TestRepresentation:
 	def test_a_complement_is_marked(self):
 		assert repr(~IndexSet(["a"])).startswith("~")
 
-	def test_a_graded_background_is_shown(self):
-		assert repr(FuzzySet(Prob(1, 2))).startswith("0.5~")
+	def test_the_representation_carries_only_the_polarity(self):
+		assert repr(FuzzySet(Prob(1, 2))) == "~{}"
+		assert repr(FuzzySet()) == "{}"
 
 
 class TestSetAlgebra:
@@ -159,7 +173,8 @@ class TestScalarComparison:
 
 	@pytest.mark.parametrize("grade", [Prob(0, 1), Prob(1, 4), Prob(1, 2), Prob(3, 4), Prob(1, 1)])
 	def test_a_node_meets_a_scalar_at_its_measure(self, grade: Prob):
-		node = FuzzySet(grade)
+		"""The seam lives in the recorded values now that backgrounds are crisp."""
+		node = FuzzySet({"a": grade})
 
 		assert node == grade and grade == node
 		assert (node <= grade) and (node >= grade)
@@ -207,7 +222,7 @@ class TestStorageProtocols:
 
 	def test_get_falls_back_to_the_background(self):
 		assert IndexSet().get("a") == Bool(False)
-		assert FuzzySet(Prob(1, 3)).get("a") == Prob(1, 3)
+		assert FuzzySet(Prob(1, 3)).get("a") == Prob.minimum()
 
 	def test_setdefault_records_only_when_absent(self):
 		node = FuzzySet({"a": Prob(1, 2)})
@@ -298,3 +313,45 @@ class TestIdentity:
 		neighbourhood["w"] = Prob(1, 2)  # pyright: ignore[reportIndexIssue]
 
 		assert node["u", "w"] == Prob(1, 2)
+
+
+class TestCoverageSemantics:
+
+	def test_a_recorded_entry_equal_to_the_background_is_still_recorded(self):
+		"""Coverage is what the set knows, not which values differ — this is why `del` != `discard`."""
+		node: IndexSet[str] = IndexSet()
+		node.discard("a")
+
+		assert len(node) == 1 and dict(node) == {"a": Bool(False)}
+
+	def test_del_and_discard_coincide_only_on_a_false_background(self):
+		plain, complemented = IndexSet(["a", "b"]), ~IndexSet(["a", "b"])
+
+		for node in (plain, complemented):
+			forgotten, absent = node.copy(), node.copy()
+
+			del forgotten["a"]
+			absent.discard("a")
+
+			assert (bool(forgotten["a"]) == bool(absent["a"])) is (not node.complement)
+
+	def test_complement_is_effective_not_materialised(self):
+		node = FuzzySet({"a": Prob(1, 4)})
+		flipped = ~node
+
+		assert len(flipped) == len(node), "no universe was enumerated"
+		assert flipped.default == ~node.default
+		assert flipped["a"] == ~node["a"]
+		assert flipped["unrecorded"] == ~node["unrecorded"]
+
+	def test_len_counts_coverage_not_measure(self):
+		node = FuzzySet({"a": Prob(1, 4), "b": Prob(3, 4)})
+
+		assert len(node) == 2
+		assert abs(node) != Prob(2, 2)
+
+	@pytest.mark.parametrize("cls", RUNGS)
+	def test_the_bounds_are_the_universal_and_empty_sets(self, cls: Any):
+		assert cls.minimum().complement and not cls.maximum().complement
+		assert cls.maximum() == cls()
+		assert abs(cls.minimum()) == carrier(cls).minimum()

@@ -68,6 +68,44 @@ Two laws separate `Coded` from `Boolean`, and the distinction is load-bearing:
 
 **Bound naming.** `minimum()` is the *truest* end and `maximum()` the falsest — the `Dist` orientation, where zero difficulty is certainty. Worth stating because it reads backwards against `float`: `Prob.minimum() == 1.0` and `Prob.maximum() == 0.0`, while `Prob(3,4) >= Prob(1,2)` is `True`.
 
+### The coordinate relation
+
+One logical strength, two readings, related by
+
+$$d \;=\; \frac{1 - p}{p}, \qquad p \;=\; \frac{1}{1 + d}$$
+
+so $d$ is the **odds against** — the difficulty of the thing succeeding — and $p$ its probability. That is exactly `Prob.encode(a, b) = (b : b + a)` read as a formula. `Bool` is the crisp restriction of either to the two endpoints.
+
+| meaning | `Dist` | `Prob` | `Bool` |
+| --- | ---: | ---: | ---: |
+| certain, zero difficulty — `minimum()` | $0$ | $1$ | `True` |
+| the reference point — `midimum()` | $1$ | $\tfrac12$ | `True` — it has nowhere else to land |
+| absent, infinite difficulty — `maximum()` | $\infty$ | $0$ | `False` |
+
+For containers this lifts directly: `Node.minimum()` is the **universal** set and `Node.maximum()` the **empty** one.
+
+**Why there is no logit coordinate.** An earlier design carried a third carrier, `Real`, holding the score $x$ with $d = e^{-x}$. It is gone, and the reason is the exactness commitment of §1: $\log$ and $\exp$ of a rational are not rational, so a logit coordinate cannot live on $\mathbb{P}^1(\mathbb{Q})$ at all. It would have to be floating point, and one float in the carrier would cost every exact law in this document.
+
+### Operation authority
+
+Each operation has **one** authoritative coordinate and is transported to the others. This is the algebra, not a mandatory call path:
+
+| operation | authority | meaning |
+| --- | --- | --- |
+| `a + b` | `Dist` addition | **series** — consecutive path difficulty |
+| `a & b` | `Prob` multiplication | independent probabilistic conjunction, $pq$ |
+| `a \| b` | De Morgan dual of `&` | probabilistic disjunction, $1 - (1-p)(1-q)$ |
+| `~a` | complement, $1 - p$ | swaps the two coordinates |
+| `a * n` | `Dist` scaling by an **integer** | repeated `+`, not a binary operation on values |
+
+The distinctions matter away from the Boolean endpoints. `+` transported into `Prob` is **not** addition, and is not `&` either — it is the Hamacher product with parameter zero, verified over 300 random pairs:
+
+$$p + q \;=\; \frac{pq}{p + q - pq}$$
+
+So `Prob.minimum()` ($1$) is the identity of path extension and `Prob.maximum()` ($0$) is an absent path. Ordinary probabilistic conjunction is `&`, and nothing else.
+
+`*` takes an `int`. It is repetition of `+`, so `Prob(1,2) * 2 == Prob(1,2) + Prob(1,2)`; passing a value instead is a type error that is not currently caught at runtime.
+
 ---
 
 ## 4. The contraction
@@ -96,6 +134,33 @@ n=2 of 0.5  ->  abs 0.666667    noisy-or 0.750000
 n=3 of 0.5  ->  abs 0.750000    noisy-or 0.875000
 n=4 of 0.5  ->  abs 0.800000    noisy-or 0.937500
 ```
+
+### Series and parallel
+
+The `Dist` reading makes $\oplus$ inevitable rather than arbitrary. Difficulty behaves as **resistance**:
+
+| composition | operation | law |
+| --- | --- | --- |
+| **series** — one path after another | `+` | difficulties add, $d = d_1 + d_2$ |
+| **parallel** — either of two paths | $\oplus$ | *conductances* add, $1/d = 1/d_1 + 1/d_2$ |
+
+```txt
+Dist(1/2) + Dist(1/3)        0.8333…      series
+oplus(Dist(1/2), Dist(1/3))  0.2          parallel
+```
+
+And $\oplus := \neg(\neg a + \neg b)$ is precisely the De Morgan dual of series, which is what parallel combination *is* — invert, add, invert back. So `abs`, being the $\oplus$-fold over everything a node holds, answers exactly: **how hard is it to get there by any route at all.** That is the sense in which it is an "any", and it is why the `Dist` reading is the natural one for a carrier whose stored coordinates are difficulties.
+
+**Four aggregations, all distinct — the trap for anyone writing graph algorithms:**
+
+| | operation | aggregates |
+| --- | --- | --- |
+| extension | `+` | one path after another |
+| parallel / contraction | $\oplus$, `abs` | all routes at once |
+| independent disjunction | `\|` | the probability at least one of several independent events occurs |
+| choice | `min` / `max` on a projection | the single best alternative |
+
+Choosing the best of several paths is **not** `\|`, and it is not `abs` either. Shortest-path style algorithms want extension plus choice; `abs` gives the whole bundle's strength, and `\|` an independence assumption that a path structure does not license. Keeping the four apart is the difference between a correct traversal and a plausible-looking wrong one.
 
 **`abs` is deliberately not the or-fold.** `|` on `Prob` is noisy-or, $1 - \prod(1 - p_i)$ — the probability that at least one of several *independent* events occurs. `abs` is the parallel combination of difficulties. The two agree on `Bool` and diverge on `Prob`, and `abs` is the chosen one: it is already the declared seam, it is what makes the borders compose (below), and its `Dist` reading — many easy routes make the whole easy — is the natural aggregation for a carrier whose stored coordinates *are* difficulties. `abs` does **not** distribute over `|`, and nothing in the design asks it to.
 
@@ -147,7 +212,20 @@ g.contracted.contracted == abs(g)          True
 
 Note the neighbouring name: `Path.contracting` is a **state** (does an axis contract), while `Node.contracted` is a **value**. Present participle for the question, past participle for the result — one word could not carry both. `Frac.contract` is a third thing again, an existing `@final @classmethod` doing scalar coercion, which is why neither of these is called `contract`.
 
-**It must respect the background.** A naive $\oplus$-fold of the recorded values ignores `default` and disagrees with `abs` on every complemented set — $0/43$ in a sweep. `contracted` mirrors `__abs__`'s own shape instead, inverting around the complement:
+**The branch on `complement` is not arbitrary: it picks the fold whose identity *is* the background.**
+
+| background | fold | its identity |
+| --- | --- | --- |
+| false — `maximum()` | $\oplus$, parallel | `maximum()` |
+| true — `minimum()` | $\Sigma$, series | `minimum()` |
+
+Because the background is **always one of those two** (§5), the fold's identity always *is* it, and that single fact carries the whole design:
+
+- **vivification is the identity on the value.** A missed key records the background, and the background is the fold's identity, so recording it changes nothing. This is structural — no filter, no special case.
+- **`abs` is a function of the value, not of the storage.** Two equal `Node`s differing only in which redundant keys happen to be recorded measure the same, as `Boolean.__abs__` requires.
+- **the two branches are exact.** `complement` is `bool(self.default)`, and a crisp background makes that reading lossless: exactly one of $s$ and $\lnot s$ is complemented.
+
+`contracted` mirrors `__abs__`'s shape, inverting around the complement:
 
 ```python
 values = [value if self.complement else ~value for value in self.values()]
@@ -157,14 +235,14 @@ result = sum(values, self.truth.minimum())
 return result if self.complement else ~result
 ```
 
-**Where it agrees with `abs`, exactly:**
+**It agrees with `abs` everywhere.** Iterating the single pass reproduces `abs` exactly — $400/400$ across every rung, both polarities, and every scalar offered as a background:
 
-| | crisp background | graded background |
-| --- | --- | --- |
-| rank $1$ | $300/300$ | $300/300$ |
-| rank $2$ | $300/300$ | $186/300$ |
+```txt
+contracted iterated == abs      400/400
+abs(~s) == ~abs(s)              400/400
+```
 
-The one divergence is a **graded background at rank $\geq 2$**. There, the values being folded are themselves containers carrying their own graded backgrounds, and a pointwise sum compounds them once per recorded key, while `abs` scalarises each child first so each background contributes once. Neither is wrong — they are two readings of an infinite implicit family — but they are not the same, so `__abs__` stays the declared seam and `contracted` is not used to define it.
+An earlier draft of this file recorded both of these as *crisp-only*, with a rank-$2$ divergence and a self-duality failure. Both were consequences of graded backgrounds, and both vanished with them.
 
 ### Ragged rungs
 
@@ -206,8 +284,11 @@ To keep the word unambiguous, the prose below says **vertex** for a key and rese
 `Node[K, T: Coded = Bool, V: Boolean = T]` over `defaultdict[K, V]`.
 
 - `truth: type[V]` — the carrier. What an unrecorded key is, and what any value becomes.
-- **A `Node` is a background plus recorded deviations.** `default` is the background; `complement` is a *reading* of it (`bool(self.default)`), not separate state.
-- A background can be **graded**, not just a bound: `FuzzySet(Prob(1,2))` is the half-present set, and `abs` brings it back exactly.
+- **A `Node` is a polarity plus recorded deviations.** The polarity is one bit — `complement` — and `default` is that bit expressed in the carrier: `truth.minimum()` when complemented, `truth.maximum()` when not. They are a coercion apart, so `complement` is what the constructor takes and `default` is what the algebra reads.
+- **The background is never graded.** A scalar offered as one names a *polarity*, not a grade: `FuzzySet(Prob(1,2))` is the universal set, not a half-present one.
+- **A recorded entry equal to the background is still recorded.** Coverage is a fact about what the set *knows*, not about which values differ, which is what makes `del` (forget the record) genuinely distinct from `discard` (record absence) — they coincide only when the background is `maximum()`.
+- **Complement is effective, never materialised.** `~` flips every recorded value *and* the background, so it needs no universe and costs one pass over the recorded keys. A complemented set is not a set of everything-minus-something; it is a background plus the same deviations, read the other way up.
+- **`len` counts coverage, not cardinality.** It is the number of recorded keys — never a fuzzy measure, which is what `abs` is for.
 
 ### The seam, both directions
 
@@ -216,11 +297,31 @@ To keep the word unambiguous, the prose below says **vertex** for a key and rese
 | `Node` → scalar | `abs` — the contraction of §4 | `Boolean.__abs__` |
 | scalar → `Node` | the background it *is* | `Node.__init__` |
 
-The round trip is exact for every scalar $x$:
+`Node(complement = True)` is the universal set and `Node()` the empty one; the two spellings below are the same object, and every derived construction states the bit directly — `__invert__` passes `not self.complement`, `__mul__` and `operate` let the carrier's own lattice compute it and coerce the result.
 
-$$\bigl\lvert\, \mathrm{Node}(x) \,\bigr\rvert = x$$
+```python
+FuzzySet(complement = True)     # the flag
+FuzzySet(Prob.minimum())        # the carrier's value for it
+```
 
-Comparisons are authority-free — a set meets a scalar at the measure — so `set OP scalar` and `scalar OP.reflected set` always agree.
+The round trip is exact for the two bounds, and a graded scalar is crisped to the polarity it carries:
+
+$$\bigl\lvert\, \mathrm{Node}(x) \,\bigr\rvert = x \quad\text{for } x \in \{\,\bot, \top\,\}$$
+
+The content of the seam is therefore in the **recorded values**, not the background: `FuzzySet({'a': Prob(1,4)}) == Prob(1,4)`. Comparisons are authority-free — a set meets a scalar at the measure — so `set OP scalar` and `scalar OP.reflected set` always agree.
+
+### Why the background is crisp
+
+A `Node` is a function on the whole key space (§1), so a background is a value taken at **infinitely many** keys. Aggregating that is only finite when the background is the aggregation's identity — and for a graded background it is not:
+
+```txt
+n copies of 1/2 under (+)     0.5 -> 0.667 -> 0.8 -> 0.889 -> 0.970 -> 1.0    the TOP
+n copies of 1/2 under Sigma   0.5 -> 0.333 -> 0.2 -> 0.111 -> 0.030 -> 0.0    the BOTTOM
+```
+
+Neither limit is $\tfrac12$. So the fold reading of §4 and the seam's round trip **cannot both hold** for a graded background — the specification was inconsistent, not the implementation. Two further symptoms followed from it: `abs` drifted on a bare read, since vivification records the background; and `abs` ignored the background entirely once any deviation existed, so it was discontinuous in it.
+
+Eliminating graded backgrounds removes all of that at once. What it gives up is the claim to have defined a *fuzzy complement* — a set that is uniformly half-present is not expressible, and is not pretended to be. Grades live in the recorded values, where they are finite and mean something.
 
 ### The tower
 
@@ -363,7 +464,26 @@ holder = self[tuple(head)] if head else self
 dict.__setitem__(holder, last, holder.truth(value))
 ```
 
-so there is no second resolution to keep in step with the first. In the code this is `Node.locate`, which is write-only: it rejects a sentinel, refuses an empty path, and hands back the stored `(holder, coordinate)` pair that `__setitem__`, `__delitem__`, `get`, `setdefault` and `pop` all share.
+so there is no second resolution to keep in step with the first.
+
+### Denotation and location are different questions
+
+`__getitem__` and `Node.locate` are not two ways of doing one thing — they are the **rvalue** and **lvalue** readings of a path:
+
+| | asks | may fail | answers with |
+| --- | --- | --- | --- |
+| `__getitem__` | what does this path *denote* | no — it always evaluates | a **value**, possibly derived |
+| `locate` | which slot does this path *name* | yes — not every value has a place | a **place**, `(holder, coordinate)` |
+
+Not every expression that denotes a value names one: `g[:, 'v']` denotes the border at `'v'` and names nothing at all. That is the whole reason both exist, and it is why they validate differently — a contracted axis is ordinary for reading and fatal for locating.
+
+`locate` earns its keep because **five callers need a place, not a value**: `__setitem__` and `__delitem__` obviously, and `get`, `setdefault` and `pop` because testing presence without autovivifying is only possible against the holder. A value cannot be written into, removed from, or asked whether it is there.
+
+**It belongs on `Node`, not on `Path`.** `Path` is the lower layer — pure notation, knowing nothing about containers — and `Node` depends on it. Moving `locate` onto `Path` would invert that, and its answer is about storage, which is the container's business.
+
+**One precondition is shared, and it is factored.** Both questions require the path to fit the node's rank, so that check lives in `Node.address` and both call it. It was once written out twice, the copy in `locate` went missing, and an over-long *write* died with `AttributeError: 'Prob' object has no attribute 'truth'` instead of a clean `KeyError` — see §9.
+
+`locate`'s messages name the **path**, never the operation, since the failure is that no slot exists at all: `Graph has no slot at a contracted axis`. An earlier draft said *cannot store*, which was wrong for `get`.
 
 **A bare sentinel is not a tuple**, so `g[:]` and `g[None]` would autovivify a vertex under `slice(None)` if they reached the key path. `Path.read` normalises them to a one-coordinate path first, which is what removes the special case rather than guarding it.
 
@@ -634,7 +754,7 @@ With the graded family withdrawn there is a single container to mix into, so thi
 
 ## 9. Known open ends
 
-**Test suite.** `tests/` holds $487$ tests across ten modules, written as the *laws* of this document rather than as examples: the `Coded` round trip, De Morgan on every carrier, `abs(Node(x)) == x` for every rung, the $\oplus$-fold and its parallel-conductance reading, monotonicity and order-independence, the rank law, closure, the $S_n$-orbit, and a $256$-pair sweep of the lattice and ordering against builtin `set`. The documented *failures* are characterisation tests, so the day one is fixed the suite says so.
+**Test suite.** `tests/` mirrors the source — `tests/addons/test_base.py` and `tests/addons/logical/` — and holds $554$ tests across ten modules, written as the *laws* of this document rather than as examples: the `Coded` round trip, De Morgan on every carrier, `abs(Node(x)) == x` for every rung, the $\oplus$-fold and its parallel-conductance reading, monotonicity and order-independence, the rank law, closure, the $S_n$-orbit, and a $256$-pair sweep of the lattice and ordering against builtin `set`. The documented *failures* are characterisation tests, so the day one is fixed the suite says so.
 
 **Implementation status.** §4's `contracted` and all of §6 are built and verified: tuple-as-path, the rank law across nine forms, both sentinel spellings, bounded-slice rejection, sentinel rejection on writes and deletes, `Undirected` mirroring plain tuples, and every worked example in §7 and §8 running in the notation as written. `route` is gone. Pyright reports $0$ errors and pylint $10.00/10$.
 
@@ -702,6 +822,33 @@ del s[edge]   removes every present ordering of the orbit
 
 Two-phase — collect the present orderings with `dict.__contains__`, then delete — which buys atomicity and order-independence together, and lets the error name the edge the caller passed.
 
+**Graded backgrounds are gone, and with them two open ends this file used to carry.** Earlier drafts recorded self-duality and `contracted`-iterated-equals-`abs` as crisp-only, and a drift in `abs` under bare reads. All three were consequences of a background that was not the fold's identity; §5 records why such a background could never have had a measure. Nothing replaced them — they simply do not arise.
+
+**`abs` and `__bool__` disagree on a complemented set with holes**, and this one is a genuine defect rather than a limit:
+
+```txt
+       bool(s)   abs(s)
+{a}    True      True     agree
+~{a}   True      False    DISAGREE
+{}     False     False    agree
+~{}    True      True     agree
+```
+
+`__bool__` is `complement or any(values)` — an **any** reading. `abs` under a true background is a series fold — an **all** reading, so it answers *is everything present* and says `False` because $a$ is missing. Both questions are meaningful; one object answering both ways is not. Whichever way it is resolved, `bool(abs(s)) == bool(s)` should hold afterwards.
+
+Resolving it means choosing which question `abs` answers on a complemented set. Making it *any* — a single $\oplus$ fold seeded at the background — would make the two agree and remove the branch, at the cost of self-duality and of `~{a}` becoming indistinguishable from `~{}`, since the top absorbs $\oplus$. Making `__bool__` defer to `abs` instead keeps the branch and costs `~{a}` its truthiness. A decision, not a bug, and the only one left in this area.
+
+**Superseded designs, recorded so they are not re-proposed.** All of these were in `docs/logical-foundations.md`, now folded into this file and deleted:
+
+| what | why it went |
+| --- | --- |
+| a `Real` logit carrier, $d = e^{-x}$ | $\log$/$\exp$ of a rational is irrational, so it cannot live on $\mathbb{P}^1(\mathbb{Q})$ — see §3 |
+| comparisons returning `Prob` — "relation strengths, not predicates" | they return `bool` now, which is what makes the scalars soundly **hashable**; the fuzzy-comparison design made them unhashable and gave no usable total order |
+| `.indices`, a separate view of covered keys | `dict.keys()` already is it |
+| `truth.coerce` as a named normaliser | it is `truth(value)` — the constructor *is* the coercion |
+| a separate vertex registry for isolated vertices | §7 answers it: a vertex with no incident edge is **invisible by design**, not a gap to patch |
+| `Graph[I, T](Set[I, T, Set[I, T]])` as the public abstraction | the registry tower names one class per rung instead |
+
 **Three bugs the suite found on its first run.** All fixed, all recorded here because each was invisible to every check that existed before:
 
 | bug | why nothing caught it |
@@ -714,4 +861,4 @@ A fourth was an annotation, not a bug: `key: K \| Path[K]` rejected the plain-tu
 
 **Mixing `Undirected` into a rung needs explicit parameters.** Bare `Undirected` defaults to `Node[K, Bool, Bool]`, which is not a rung's `Node[V, Prob, Set | Prob]`, so pyright calls the bases incompatible. `class UndirectedGraph[V](Undirected[V, Prob, "Set[V, Prob] | Prob"], Graph[V])` typechecks; the bare form runs but does not check.
 
-**Repository debt.** `src/addons/__init__.py` is empty, and `README.md` and `docs/logical-foundations.md` still document a `Real` type and a `.dist` projection that no longer exist.
+**Repository debt.** `src/addons/__init__.py` is empty, and `README.md` still documents a `Real` type and a `.dist` projection that no longer exist. `docs/logical-foundations.md` has been folded into this file and deleted.

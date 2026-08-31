@@ -203,7 +203,7 @@ class Path[K: Hashable](tuple[Coordinate[K], ...]):
 		return key if isinstance(key, Path) else cls(*key) if isinstance(key, tuple) else cls(key)
 
 	@classmethod
-	def contracts(cls, coordinate: object, /) -> bool:
+	def contracts(cls, coordinate: Coordinate[K], /) -> bool:
 		return coordinate is None or isinstance(coordinate, slice)
 
 	@property
@@ -220,9 +220,9 @@ class Edge[K: Hashable](Path[K]):
 		return {cls(*keys) for keys in permutations(self)}
 
 
-type NodeLike[K: Hashable, V: Boolean] = Iterable[Address[K]] | Mapping[Address[K], V] | Boolean | bool
+type NodeLike[K: Hashable, V: Boolean] = Iterable[Address[K]] | Mapping[Address[K], V] | V
 type Operator[V: Boolean] = Callable[[V, V], V]
-type Relation = Callable[[Boolean, Boolean], bool]
+type Relation[V: Boolean] = Callable[[V, V], bool]
 
 
 class Frac(Coded, Total, ABC):
@@ -417,19 +417,18 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 			cls.truth = cast(type[V], truth)
 
 	def __init__(self, iterable: NodeLike[K, V] = (), /, *,
-		default: V | None = None,
+		complement: bool | None = None,
 	):
 		background = not isinstance(iterable, Iterable)
-		foreground =     isinstance(iterable, Node     )
+		foreground =     isinstance(iterable, Node    )
 
-		if default is None:
-			default = iterable.default \
-				if foreground else self.truth(iterable) if background else self.truth.maximum()  # pyright: ignore[reportCallIssue]
+		if complement is None:
+			complement = iterable.complement if foreground else bool(iterable) if background else False
 
 		if background:
 			iterable = ()
 
-		super().__init__(partial(self.truth, default))
+		super().__init__(partial(self.truth, self.truth.minimum() if complement else self.truth.maximum()))
 
 		items = iterable.items() if isinstance(iterable, Mapping) else ((key, ~self.default) for key in iterable)
 
@@ -441,14 +440,14 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 		items = {key: value for key, value in shown.items() if value}
 
 		body = repr(set(items)) if items and all(value == self.truth.minimum() for value in items.values()) else repr(items)
-		sign = self.default
 
-		return body if not sign else f"~{body}" if sign == self.truth.minimum() else f"{sign!r}~{body}"
+		return f"~{body}" if self.complement else body
 
 	def __reduce__(self) -> tuple[Callable[[NodeLike[K, V]], Self], tuple[dict[K, V]]]:
 		cls = type(self)
+
 		factory = partial(cls,
-			default = self.default,
+			complement = self.complement,
 		)
 
 		return factory, (dict(self),)
@@ -467,42 +466,8 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 	def __bool__(self, /) -> bool:
 		return self.complement or any(map(bool, self.values()))
 
-	@classmethod
-	def arity(cls) -> int:
-		return 1
-
-	@property
-	def contracted(self) -> V:
-		values = [value if self.complement else ~value for value in self.values()]
-
-		if not values:
-			return self.default
-
-		result = cast(V, sum(values, self.truth.minimum()))
-
-		return result if self.complement else ~result
-
-	def locate(self, key: Address[K], /) -> tuple[Node[K, T, V], K]:
-		path = Path.read(key)
-
-		if not path:
-			raise KeyError(f"{type(self).__qualname__} cannot store at an empty path")
-
-		if len(path) > self.arity():
-			raise KeyError(f"{type(self).__qualname__} takes up to {self.arity()} coordinates, not {len(path)}")
-
-		if path.contracting:
-			raise KeyError(f"{type(self).__qualname__} cannot store at a contracted axis: {key!r}")
-
-		*head, last = path
-
-		return cast(Node[K, T, V], self[Path(*head)]) if head else self, cast(K, last)
-
 	def __getitem__(self, key: Address[K], /) -> V:
-		path = Path.read(key)
-
-		if len(path) > self.arity():
-			raise KeyError(f"{type(self).__qualname__} takes up to {self.arity()} coordinates, not {len(path)}")
+		path = self.address(key)
 
 		if not path:
 			return cast(V, self)
@@ -536,14 +501,14 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 		cls = type(self)
 
 		return cls({key: ~value for key, value in self.items()},
-			default = ~self.default,
+			complement = not self.complement,
 		)
 
 	def __mul__(self, times: int, /) -> Self:
 		cls = type(self)
 
 		return cls({key: self[key] * times for key in self.keys()},
-			default = self.default * times,
+			complement = bool(self.default * times),
 		)
 
 	def __add__(self, other: NodeLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__add__)
@@ -557,9 +522,9 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 	def __isub__(self, other: NodeLike[K, V], /) -> Self: self.difference_update          (other); return self
 	def __ixor__(self, other: NodeLike[K, V], /) -> Self: self.symmetric_difference_update(other); return self
 
-	def __le__(self, other: NodeLike[K, V], /) -> bool: return self.relate(other, le)
-	def __ge__(self, other: NodeLike[K, V], /) -> bool: return self.relate(other, ge)
-	def __eq__(self, other: NodeLike[K, V], /) -> bool: return self.relate(other, eq)
+	def __le__(self, other: NodeLike[K, V], /) -> bool: cls = type(self); return self.relate(other, cls.truth.__le__)
+	def __ge__(self, other: NodeLike[K, V], /) -> bool: cls = type(self); return self.relate(other, cls.truth.__ge__)
+	def __eq__(self, other: NodeLike[K, V], /) -> bool: cls = type(self); return self.relate(other, cls.truth.__eq__)
 
 	@classmethod
 	def fromkeys(cls, iterable: Iterable[K], value: V | None = None, /) -> Self:
@@ -573,6 +538,21 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 	def maximum(cls) -> Self:
 		return cls(cls.truth.maximum())
 
+	@classmethod
+	def arity(cls) -> int:
+		return 1
+
+	@property
+	def contracted(self) -> V:
+		values = [value if self.complement else ~value for value in self.values()]
+
+		if not values:
+			return self.default
+
+		result = cast(V, sum(values, self.truth.minimum()))
+
+		return result if self.complement else ~result
+
 	@property
 	def default(self) -> V:
 		return self.default_factory()  # pyright: ignore[reportOptionalCall]
@@ -580,6 +560,24 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 	@property
 	def complement(self) -> bool:
 		return bool(self.default)
+
+	def address(self, key: Address[K], /) -> Path[K]:
+		path = Path.read(key)
+
+		if len(path) > self.arity():
+			raise KeyError(f"{type(self).__qualname__} takes up to {self.arity()} coordinates, not {len(path)}")
+
+		return path
+
+	def locate(self, key: Address[K], /) -> tuple[Node[K, T, V], K]:
+		path = self.address(key)
+
+		if not path            : raise KeyError(f"{type(self).__qualname__} has no slot at an empty path")
+		if     path.contracting: raise KeyError(f"{type(self).__qualname__} has no slot at a contracted axis: {key!r}")
+
+		*head, last = path
+
+		return cast(Node[K, T, V], self[Path(*head)]) if head else self, cast(K, last)
 
 	def add    (self, key: Address[K], /): self[key] = self.truth.minimum()
 	def discard(self, key: Address[K], /): self[key] = self.truth.maximum()
@@ -655,7 +653,7 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 		other = cls(other)
 
 		return cls({key: operator(self[key], other[key]) for key in self.keys() | other.keys()},
-			default = operator(self.default, other.default),
+			complement = bool(operator(self.default, other.default)),
 		)
 
 	def relate(self, other: NodeLike[K, V], /, relation: Relation) -> bool:
