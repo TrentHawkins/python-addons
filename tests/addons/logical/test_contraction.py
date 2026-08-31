@@ -11,7 +11,7 @@ from typing import Any
 
 import pytest
 
-from addons.logical import Bool, Dist, FuzzySet, Graph, IndexSet, Node, Prob
+from addons.logical import Bool, Dist, FuzzySet, Graph, IndexSet, Node, Operable, Prob
 
 from .conftest import CRISP_RUNGS, GRADED_RUNGS, Hyper, RUNGS, carrier, oplus, rank, sample
 
@@ -265,3 +265,47 @@ class TestTheBranchOnComplement:
 
 		for node in (IndexSet(["a"]), IndexSet(), ~IndexSet()):
 			assert bool(node) == bool(abs(node)), "they agree everywhere else"
+
+
+class TestAdditiveIdentity:
+
+	@pytest.mark.parametrize("cls", RUNGS)
+	def test_multiplying_by_zero_gives_the_additive_identity(self, cls: Any):
+		"""Which is the *universal* set — `Additive.sum` starts there, and zero terms sum to it."""
+		node = sample(cls, cls.arity(), seed = 67)
+
+		assert node * 0 == cls.minimum()
+		assert cls.sum([]) == cls.minimum()
+
+	@pytest.mark.parametrize("cls", RUNGS)
+	def test_multiplying_by_one_is_the_identity(self, cls: Any):
+		node = sample(cls, cls.arity(), seed = 71)
+
+		assert node * 1 == node
+
+	@pytest.mark.parametrize("cls", RUNGS)
+	@pytest.mark.parametrize("complement", [False, True])
+	def test_the_empty_branch_of_abs_agrees_with_the_general_path(self, cls: Any, complement: bool):
+		"""It survives for readability; with crisp backgrounds it can no longer disagree."""
+		node = cls(complement = complement)
+		measures = [abs(value if node.complement else ~value) for value in node.values()]
+		general = sum(measures, abs(carrier(cls).minimum()))
+
+		assert abs(node.default) == (general if node.complement else ~general)
+
+
+class TestContractGuards:
+
+	def test_operable_demands_a_concrete_conjunction(self):
+		"""`|` is the De Morgan dual of `&`; without one of them they recur into each other."""
+		class Naked(Operable):
+			def __invert__(self) -> "Naked": return self
+
+			@classmethod
+			def minimum(cls) -> "Naked": return cls()
+
+			@classmethod
+			def maximum(cls) -> "Naked": return cls()
+
+		with pytest.raises(TypeError, match = "__and__"):
+			Naked()  # pylint: disable=abstract-class-instantiated  # pyright: ignore[reportAbstractUsage]

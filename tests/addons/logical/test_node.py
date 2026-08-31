@@ -179,6 +179,24 @@ class TestScalarComparison:
 		assert node == grade and grade == node
 		assert (node <= grade) and (node >= grade)
 
+	@pytest.mark.parametrize("cls", RUNGS)
+	def test_it_works_at_every_depth_not_just_the_ground_rung(self, cls: Any):
+		"""`relate` compares a *measure* against the scalar, so the relation must be carrier-free.
+
+		Using `cls.truth.__le__` here breaks every rung above depth 0, because the measure is a
+		`T` and the truth of a deep rung is a `Node`: `AttributeError: 'Prob' has no 'relate'`.
+		"""
+		node = sample(cls, cls.arity(), seed = 61)
+		measure = abs(node)
+
+		assert node == measure and measure == node
+		assert node <= measure and node >= measure
+
+	@pytest.mark.parametrize("cls", RUNGS)
+	def test_an_empty_node_meets_the_false_scalar(self, cls: Any):
+		assert cls() == carrier(cls).maximum()
+		assert cls(complement = True) == carrier(cls).minimum()
+
 	def test_comparison_is_authority_free(self):
 		node, scalar = FuzzySet({"a": Prob(1, 2)}), Prob(1, 4)
 

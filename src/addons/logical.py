@@ -222,7 +222,7 @@ class Edge[K: Hashable](Path[K]):
 
 type NodeLike[K: Hashable, V: Boolean] = Iterable[Address[K]] | Mapping[Address[K], V] | V
 type Operator[V: Boolean] = Callable[[V, V], V]
-type Relation[V: Boolean] = Callable[[V, V], bool]
+type Relation = Callable[[Boolean, Boolean], bool]
 
 
 class Frac(Coded, Total, ABC):
@@ -522,9 +522,9 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 	def __isub__(self, other: NodeLike[K, V], /) -> Self: self.difference_update          (other); return self
 	def __ixor__(self, other: NodeLike[K, V], /) -> Self: self.symmetric_difference_update(other); return self
 
-	def __le__(self, other: NodeLike[K, V], /) -> bool: cls = type(self); return self.relate(other, cls.truth.__le__)
-	def __ge__(self, other: NodeLike[K, V], /) -> bool: cls = type(self); return self.relate(other, cls.truth.__ge__)
-	def __eq__(self, other: NodeLike[K, V], /) -> bool: cls = type(self); return self.relate(other, cls.truth.__eq__)
+	def __le__(self, other: NodeLike[K, V], /) -> bool: return self.relate(other, le)
+	def __ge__(self, other: NodeLike[K, V], /) -> bool: return self.relate(other, ge)
+	def __eq__(self, other: NodeLike[K, V], /) -> bool: return self.relate(other, eq)
 
 	@classmethod
 	def fromkeys(cls, iterable: Iterable[K], value: V | None = None, /) -> Self:
