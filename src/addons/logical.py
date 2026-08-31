@@ -37,8 +37,11 @@ class Invertible(ABC):
 
 class Operable(Invertible, Bounded):
 
+	@abstractmethod
+	def __and__(self, other: Operable, /) -> Self:
+		...
+
 	def  __or__(self, other: Operable, /) -> Self: return ~(~self & ~other)
-	def __and__(self, other: Operable, /) -> Self: return ~(~self | ~other)
 	def __sub__(self, other: Operable, /) -> Self: return    self & ~other
 	def __xor__(self, other: Operable, /) -> Self:
 		return (self | other) - (self & other)
@@ -488,14 +491,7 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 		dict.__delitem__(holder, last)
 
 	def __abs__(self) -> T:
-		measures = [abs(value if self.complement else ~value) for value in self.values()]
-
-		if not measures:
-			return cast(T, abs(self.default))
-
-		result = cast(T, sum(measures, abs(self.truth.minimum())))
-
-		return result if self.complement else ~result
+		return cast(T, ~sum((~abs(value) for value in self.values()), ~abs(self.default)))
 
 	def __invert__(self) -> Self:
 		cls = type(self)
@@ -544,14 +540,7 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 
 	@property
 	def contracted(self) -> V:
-		values = [value if self.complement else ~value for value in self.values()]
-
-		if not values:
-			return self.default
-
-		result = cast(V, sum(values, self.truth.minimum()))
-
-		return result if self.complement else ~result
+		return cast(V, ~sum((~value for value in self.values()), ~self.default))
 
 	@property
 	def default(self) -> V:

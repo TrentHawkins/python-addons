@@ -212,37 +212,35 @@ g.contracted.contracted == abs(g)          True
 
 Note the neighbouring name: `Path.contracting` is a **state** (does an axis contract), while `Node.contracted` is a **value**. Present participle for the question, past participle for the result — one word could not carry both. `Frac.contract` is a third thing again, an existing `@final @classmethod` doing scalar coercion, which is why neither of these is called `contract`.
 
-**The branch on `complement` is not arbitrary: it picks the fold whose identity *is* the background.**
+**`abs` is existential, and that is why it does not branch.** The fold asks *is anything here*, so the background is folded in as an ordinary value:
 
-| background | fold | its identity |
+$$\lvert s \rvert \;=\; \lvert d \rvert \,\oplus\, \bigoplus_{v} \lvert v \rvert$$
+
+Both crisp backgrounds are inert under it, for different reasons — and that is what makes vivification the identity on the value, structurally:
+
+| background | its role in $\oplus$ | effect of recording it |
 | --- | --- | --- |
-| false — `maximum()` | $\oplus$, parallel | `maximum()` |
-| true — `minimum()` | $\Sigma$, series | `minimum()` |
+| `maximum()` — the bottom | **identity** | none |
+| `minimum()` — the top | **absorber** | none |
 
-Because the background is **always one of those two** (§5), the fold's identity always *is* it, and that single fact carries the whole design:
+`contracted` has the same shape, one axis instead of all of them, and iterating it still reproduces `abs` exactly.
 
-- **vivification is the identity on the value.** A missed key records the background, and the background is the fold's identity, so recording it changes nothing. This is structural — no filter, no special case.
-- **`abs` is a function of the value, not of the storage.** Two equal `Node`s differing only in which redundant keys happen to be recorded measure the same, as `Boolean.__abs__` requires.
-- **the two branches are exact.** `complement` is `bool(self.default)`, and a crisp background makes that reading lossless: exactly one of $s$ and $\lnot s$ is complemented.
+### Why it is not self-dual
 
-`contracted` mirrors `__abs__`'s shape, inverting around the complement:
-
-```python
-values = [value if self.complement else ~value for value in self.values()]
-
-result = sum(values, self.truth.minimum())
-
-return result if self.complement else ~result
-```
-
-**It agrees with `abs` everywhere.** Iterating the single pass reproduces `abs` exactly — $400/400$ across every rung, both polarities, and every scalar offered as a background:
+An earlier design branched on `complement` and computed the De Morgan dual — a *series* fold over the recorded values — for a complemented set. That made $\lvert \lnot s\rvert = \lnot \lvert s \rvert$ hold by construction, and it was wrong:
 
 ```txt
-contracted iterated == abs      400/400
-abs(~s) == ~abs(s)              400/400
+|{a}|   = True     something is in it
+|~{a}|  = False    <- the universe minus one element, called empty
 ```
 
-An earlier draft of this file recorded both of these as *crisp-only*, with a rank-$2$ divergence and a self-duality failure. Both were consequences of graded backgrounds, and both vanished with them.
+**Existential quantifiers do not dualise.** $\lnot \exists x.\,P(x)$ is $\forall x.\,\lnot P(x)$, so $\lnot\lvert s\rvert$ asserts *nothing is in $s$* — a universal claim, not the existential one about $\lnot s$. Self-duality would therefore say
+
+$$\text{something is in } \lnot s \iff \text{nothing is in } s$$
+
+which is false whenever both are non-empty, which is the ordinary case. The branch also put `abs` in contradiction with `__bool__`, which had always answered *any*.
+
+Dropping it fixes both at once. What it gives up is the ability to tell `~{a}` from `~{}`: the top absorbs, so every complemented set measures the top. That is the correct answer for *is anything here* over an infinite key space, and `abs` is a lossy projection by declaration (§2).
 
 ### Ragged rungs
 
@@ -754,7 +752,7 @@ With the graded family withdrawn there is a single container to mix into, so thi
 
 ## 9. Known open ends
 
-**Test suite.** `tests/` mirrors the source — `tests/addons/test_base.py` and `tests/addons/logical/` — and holds $591$ tests across ten modules, written as the *laws* of this document rather than as examples: the `Coded` round trip, De Morgan on every carrier, `abs(Node(x)) == x` for every rung, the $\oplus$-fold and its parallel-conductance reading, monotonicity and order-independence, the rank law, closure, the $S_n$-orbit, and a $256$-pair sweep of the lattice and ordering against builtin `set`. The documented *failures* are characterisation tests, so the day one is fixed the suite says so.
+**Test suite.** `tests/` mirrors the source — `tests/addons/test_base.py` and `tests/addons/logical/` — and holds $598$ tests across ten modules, written as the *laws* of this document rather than as examples: the `Coded` round trip, De Morgan on every carrier, `abs(Node(x)) == x` for every rung, the $\oplus$-fold and its parallel-conductance reading, monotonicity and order-independence, the rank law, closure, the $S_n$-orbit, and a $256$-pair sweep of the lattice and ordering against builtin `set`. The documented *failures* are characterisation tests, so the day one is fixed the suite says so.
 
 **Implementation status.** §4's `contracted` and all of §6 are built and verified: tuple-as-path, the rank law across nine forms, both sentinel spellings, bounded-slice rejection, sentinel rejection on writes and deletes, `Undirected` mirroring plain tuples, and every worked example in §7 and §8 running in the notation as written. `route` is gone. Pyright reports $0$ errors and pylint $10.00/10$.
 
@@ -822,21 +820,9 @@ del s[edge]   removes every present ordering of the orbit
 
 Two-phase — collect the present orderings with `dict.__contains__`, then delete — which buys atomicity and order-independence together, and lets the error name the edge the caller passed.
 
-**Graded backgrounds are gone, and with them two open ends this file used to carry.** Earlier drafts recorded self-duality and `contracted`-iterated-equals-`abs` as crisp-only, and a drift in `abs` under bare reads. All three were consequences of a background that was not the fold's identity; §5 records why such a background could never have had a measure. Nothing replaced them — they simply do not arise.
+**Graded backgrounds are gone, and with them two open ends this file used to carry.** Earlier drafts recorded `contracted`-iterated-equals-`abs` as crisp-only, and a drift in `abs` under bare reads. Both were consequences of a background that was not the fold's identity; §5 records why such a background could never have had a measure. Nothing replaced them — they simply do not arise. Self-duality was withdrawn separately and for a different reason (§4): it was never the right law.
 
-**`abs` and `__bool__` disagree on a complemented set with holes**, and this one is a genuine defect rather than a limit:
-
-```txt
-       bool(s)   abs(s)
-{a}    True      True     agree
-~{a}   True      False    DISAGREE
-{}     False     False    agree
-~{}    True      True     agree
-```
-
-`__bool__` is `complement or any(values)` — an **any** reading. `abs` under a true background is a series fold — an **all** reading, so it answers *is everything present* and says `False` because $a$ is missing. Both questions are meaningful; one object answering both ways is not. Whichever way it is resolved, `bool(abs(s)) == bool(s)` should hold afterwards.
-
-Resolving it means choosing which question `abs` answers on a complemented set. Making it *any* — a single $\oplus$ fold seeded at the background — would make the two agree and remove the branch, at the cost of self-duality and of `~{a}` becoming indistinguishable from `~{}`, since the top absorbs $\oplus$. Making `__bool__` defer to `abs` instead keeps the branch and costs `~{a}` its truthiness. A decision, not a bug, and the only one left in this area.
+**`abs` and `__bool__` now agree everywhere.** They once disagreed on a complemented set with holes — `bool(~{a})` was `True` and `abs(~{a})` was `False` — because `__bool__` asked *any* and `abs`, under its complement branch, asked *all*. The branch is gone (§4) and `bool(abs(s)) == bool(s)` holds at every rung and polarity.
 
 **Superseded designs, recorded so they are not re-proposed.** All of these were in `docs/logical-foundations.md`, now folded into this file and deleted:
 

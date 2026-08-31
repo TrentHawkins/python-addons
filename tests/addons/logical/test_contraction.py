@@ -184,21 +184,38 @@ class TestSeriesAndParallel:
 		assert abs(node) != max(node.values())
 
 
-class TestSelfDuality:
-	"""`abs(~s) == ~abs(s)`, now unconditional — the branch is the De Morgan switch."""
+class TestItIsExistential:
+	"""`abs` asks *is anything here*. Existentials do not dualise, so it is not self-dual."""
 
-	@pytest.mark.parametrize("background", BACKGROUNDS + GRADED_BACKGROUNDS)
-	def test_it_holds_at_every_background(self, background: Prob | None):
-		for seed in range(60):
-			node = sample(Graph, 2, seed = seed, background = background)
-
-			assert abs(~node) == ~abs(node)
+	def test_a_complemented_set_measures_true(self):
+		"""The universe minus one element still holds infinitely many."""
+		assert abs(~IndexSet(["a"])) == Bool(True)
+		assert abs(~IndexSet(["a", "b", "c"])) == Bool(True)
 
 	@pytest.mark.parametrize("cls", RUNGS)
-	def test_it_holds_for_every_rung(self, cls: Any):
-		node = sample(cls, cls.arity(), seed = 53)
+	def test_bool_and_abs_agree_everywhere(self, cls: Any):
+		for node in (cls(), cls(complement = True), sample(cls, cls.arity(), seed = 73)):
+			assert bool(node) == bool(abs(node))
 
-		assert abs(~node) == ~abs(node)
+	def test_it_is_deliberately_not_self_dual(self):
+		"""`~|s|` says *nothing is in s* — a universal claim, not the existential one about `~s`."""
+		node = IndexSet(["a"])
+
+		assert bool(node) and bool(~node), "both are non-empty"
+		assert abs(~node) != ~abs(node), "so the dual law would have to call one of them empty"
+
+	@pytest.mark.parametrize("cls", RUNGS)
+	def test_the_background_is_folded_in_as_a_value(self, cls: Any):
+		"""No branch: the bottom is the fold's identity and the top its absorber."""
+		assert abs(cls()) == carrier(cls).maximum()
+		assert abs(cls(complement = True)) == carrier(cls).minimum()
+
+	@pytest.mark.parametrize("cls", RUNGS)
+	def test_a_complemented_set_absorbs_its_holes(self, cls: Any):
+		node = cls(complement = True)
+		node["a"] = carrier(cls).maximum()
+
+		assert abs(node) == carrier(cls).minimum()
 
 	@pytest.mark.parametrize("scalar", [Prob.minimum(), Prob.maximum(), Prob(1, 3), Prob(3, 4)])
 	def test_complement_always_flips_because_the_background_is_crisp(self, scalar: Prob):
@@ -207,8 +224,8 @@ class TestSelfDuality:
 		assert node.complement is not (~node).complement
 
 
-class TestTheBranchOnComplement:
-	"""Why `__abs__` branches: each fold has the background as its identity."""
+class TestTheFoldIsBranchFree:
+	"""One existential fold, with the background folded in as an ordinary value."""
 
 	def test_a_recorded_non_deviation_is_invisible_to_the_measure(self):
 		plain: FuzzySet[str] = FuzzySet()
@@ -255,16 +272,9 @@ class TestTheBranchOnComplement:
 
 		assert (abs(left), abs(right)) == before
 
-	def test_the_identities_are_the_two_crisp_backgrounds(self):
-		assert Prob.maximum() == Prob.maximum() | Prob.maximum()
-		assert Prob.minimum() + Prob.minimum() == Prob.minimum()
-
-	def test_abs_and_bool_disagree_on_a_complemented_set_with_holes(self):
-		"""Characterisation of the §9 defect: `bool` asks *any*, `abs` under a complement asks *all*."""
-		assert bool(~IndexSet(["a"])) and not bool(abs(~IndexSet(["a"])))
-
-		for node in (IndexSet(["a"]), IndexSet(), ~IndexSet()):
-			assert bool(node) == bool(abs(node)), "they agree everywhere else"
+	def test_the_bottom_is_the_identity_and_the_top_the_absorber(self):
+		assert oplus(Prob.maximum(), Prob(1, 4)) == Prob(1, 4)
+		assert oplus(Prob.minimum(), Prob(1, 4)) == Prob.minimum()
 
 
 class TestAdditiveIdentity:
