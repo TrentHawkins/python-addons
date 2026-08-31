@@ -555,7 +555,10 @@ class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, de
 
 	@property
 	def default(self) -> V:
-		return self.default_factory()  # pyright: ignore[reportOptionalCall]
+		if (default := self.default_factory) is None:
+			raise TypeError(f"{type(self).__qualname__}.default_factory() returned None, expected a value of type {V.__name__}")
+
+		return default()
 
 	@property
 	def complement(self) -> bool:
