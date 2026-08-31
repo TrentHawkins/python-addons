@@ -34,12 +34,28 @@ Each names one responsibility, and the concrete types get their behaviour by der
 | --- | --- | --- |
 | `Bounded` | there is a top and a bottom | `minimum`, `maximum` |
 | `Invertible` | negation exists | `__invert__` |
-| `Operable` | the lattice | `&` **abstract**; `\|`, `-`, `^` by De Morgan, plus `union`/`intersection`/… |
+| `Operable` | the lattice | `\|`, `&`, `-`, `^` by De Morgan, `union`/`intersection`/… |
 | `Additive` | the sum | `__add__`, `__mul__`, `sum` |
 | `Order` / `Partial` / `Total` | how two compare | `__eq__`, `__ne__`, `__lt__`, `__gt__` derived from `__le__`/`__ge__` |
 | `Separable` | am I true | `__bool__`, `isdisjoint` |
 | `Coded` | **I am a point on $\mathbb{P}^1(\mathbb{Q})$, faithfully** | `encode`, `decode`, `decoded` |
 | `Boolean[T: Coded]` | I am in the algebra, and I contract to a point | `__abs__ -> T` |
+
+### Every derivation closes exactly one cycle
+
+The contracts are written so a subclass may override **whichever hook it likes** and get the rest for free. That is deliberate, and it means each family of derivations must form a *single* cycle rather than several:
+
+| contract | the cycle | override any one of |
+| --- | --- | --- |
+| `Operable` | $a \lor b = \lnot(\lnot a \land \lnot b)$ and its dual | `__and__`, `__or__` |
+| `Partial` | reflection to the other operand | `__le__`, `__ge__` |
+| `Total` | negation links `<=` to `>`; reflection links that to `>=` and `<` | `__le__`, `__ge__`, `__lt__`, `__gt__` |
+
+`Order` is the exception, and on purpose: it declares `__le__`/`__ge__` **abstract** and derives only `__eq__`, `__ne__`, `__lt__`, `__gt__`. It is the bare requirement — *there is an ordering* — and `Partial` and `Total` are the two derivations that discharge it. A class inheriting `Order` alone gets a clear `TypeError`; one inheriting `Partial` or `Total` gets the freedom.
+
+**`Total` used to have two cycles**, `{<=, >}` and `{>=, <}`, both closed by negation alone. Overriding a single hook left the other pair recurring, so it silently demanded one from each. Linking them by reflection — `a > b` as `b < a`, `a >= b` as `b <= a` — makes it one cycle of four, both statements true of any total order.
+
+**The cost is uniform and accepted:** a subclass that overrides *nothing* recurses rather than failing cleanly. Marking one hook abstract would trade that for a good error message, at the price of the freedom; the freedom is judged worth more.
 
 Two laws separate `Coded` from `Boolean`, and the distinction is load-bearing:
 
@@ -752,7 +768,7 @@ With the graded family withdrawn there is a single container to mix into, so thi
 
 ## 9. Known open ends
 
-**Test suite.** `tests/` mirrors the source — `tests/addons/test_base.py` and `tests/addons/logical/` — and holds $598$ tests across ten modules, written as the *laws* of this document rather than as examples: the `Coded` round trip, De Morgan on every carrier, `abs(Node(x)) == x` for every rung, the $\oplus$-fold and its parallel-conductance reading, monotonicity and order-independence, the rank law, closure, the $S_n$-orbit, and a $256$-pair sweep of the lattice and ordering against builtin `set`. The documented *failures* are characterisation tests, so the day one is fixed the suite says so.
+**Test suite.** `tests/` mirrors the source — `tests/addons/test_base.py` and `tests/addons/logical/` — and holds $606$ tests across ten modules, written as the *laws* of this document rather than as examples: the `Coded` round trip, De Morgan on every carrier, `abs(Node(x)) == x` for every rung, the $\oplus$-fold and its parallel-conductance reading, monotonicity and order-independence, the rank law, closure, the $S_n$-orbit, and a $256$-pair sweep of the lattice and ordering against builtin `set`. The documented *failures* are characterisation tests, so the day one is fixed the suite says so.
 
 **Implementation status.** §4's `contracted` and all of §6 are built and verified: tuple-as-path, the rank law across nine forms, both sentinel spellings, bounded-slice rejection, sentinel rejection on writes and deletes, `Undirected` mirroring plain tuples, and every worked example in §7 and §8 running in the notation as written. `route` is gone. Pyright reports $0$ errors and pylint $10.00/10$.
 
@@ -844,8 +860,6 @@ UnweightedGraph() <= Bool(True)    AttributeError: 'Bool' object has no attribut
 ```
 
 So the relation passed to `relate` must be **carrier-free**. `TestScalarComparison` originally used only `FuzzySet`, so the suite could not see it; it is now parametrised over every rung, and reintroducing the change fails four tests.
-
-**`Operable` demanded neither `&` nor `\|`**, deriving each from the other, so a subclass defining neither recurred until the stack ran out. `__and__` is now `@abstractmethod` — both concrete carriers already define it — and the trap is a clear `TypeError` at instantiation instead.
 
 **Three bugs the suite found on its first run.** All fixed, all recorded here because each was invisible to every check that existed before:
 

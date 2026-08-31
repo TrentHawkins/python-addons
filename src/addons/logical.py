@@ -37,11 +37,8 @@ class Invertible(ABC):
 
 class Operable(Invertible, Bounded):
 
-	@abstractmethod
-	def __and__(self, other: Operable, /) -> Self:
-		...
-
 	def  __or__(self, other: Operable, /) -> Self: return ~(~self & ~other)
+	def __and__(self, other: Operable, /) -> Self: return ~(~self | ~other)
 	def __sub__(self, other: Operable, /) -> Self: return    self & ~other
 	def __xor__(self, other: Operable, /) -> Self:
 		return (self | other) - (self & other)
@@ -141,10 +138,10 @@ class Partial(Order):
 class Total(Order):
 
 	def __le__(self, other: Order, /) -> bool: return not self > other
-	def __ge__(self, other: Order, /) -> bool: return not self < other
+	def __gt__(self, other: Order, /) -> bool: return     other < self
 
 	def __lt__(self, other: Order, /) -> bool: return not self >= other
-	def __gt__(self, other: Order, /) -> bool: return not self <= other
+	def __ge__(self, other: Order, /) -> bool: return     other <= self
 
 
 class Separable(Operable, ABC):

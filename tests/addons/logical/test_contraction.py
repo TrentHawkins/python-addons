@@ -7,11 +7,11 @@ import random
 
 from fractions import Fraction
 from functools import reduce
-from typing import Any
+from typing import Any, Self, cast
 
 import pytest
 
-from addons.logical import Bool, Dist, FuzzySet, Graph, IndexSet, Node, Operable, Prob
+from addons.logical import Bool, Dist, FuzzySet, Graph, IndexSet, Node, Operable, Order, Partial, Prob, Total
 
 from .conftest import CRISP_RUNGS, GRADED_RUNGS, Hyper, RUNGS, carrier, oplus, rank, sample
 
@@ -304,18 +304,83 @@ class TestAdditiveIdentity:
 		assert abs(node.default) == (general if node.complement else ~general)
 
 
-class TestContractGuards:
+class AndOnly(Operable):
+	def __invert__(self) -> Self: return self
+	def __and__(self, other: Operable, /) -> Self: return self
 
-	def test_operable_demands_a_concrete_conjunction(self):
-		"""`|` is the De Morgan dual of `&`; without one of them they recur into each other."""
-		class Naked(Operable):
-			def __invert__(self) -> "Naked": return self
+	@classmethod
+	def minimum(cls) -> Self: return cls()
 
-			@classmethod
-			def minimum(cls) -> "Naked": return cls()
+	@classmethod
+	def maximum(cls) -> Self: return cls()
 
-			@classmethod
-			def maximum(cls) -> "Naked": return cls()
 
-		with pytest.raises(TypeError, match = "__and__"):
-			Naked()  # pylint: disable=abstract-class-instantiated  # pyright: ignore[reportAbstractUsage]
+class OrOnly(Operable):
+	def __invert__(self) -> Self: return self
+	def __or__(self, other: Operable, /) -> Self: return self
+
+	@classmethod
+	def minimum(cls) -> Self: return cls()
+
+	@classmethod
+	def maximum(cls) -> Self: return cls()
+
+
+class Ranked:
+	def __init__(self, value: int): self.value = value
+
+
+class LeTotal(Ranked, Total):
+	def __le__(self, other: Order, /) -> bool: return self.value <= cast(LeTotal, other).value
+
+
+class GeTotal(Ranked, Total):
+	def __ge__(self, other: Order, /) -> bool: return self.value >= cast(GeTotal, other).value
+
+
+class LtTotal(Ranked, Total):
+	def __lt__(self, other: Order, /) -> bool: return self.value < cast(LtTotal, other).value
+
+
+class GtTotal(Ranked, Total):
+	def __gt__(self, other: Order, /) -> bool: return self.value > cast(GtTotal, other).value
+
+
+class LePartial(Ranked, Partial):
+	def __le__(self, other: Order, /) -> bool: return self.value <= cast(LePartial, other).value
+
+
+class GePartial(Ranked, Partial):
+	def __ge__(self, other: Order, /) -> bool: return self.value >= cast(GePartial, other).value
+
+
+class TestHookFreedom:
+	"""Every derivation closes a single cycle, so a subclass may override whichever hook it likes."""
+
+	@pytest.mark.parametrize("cls", [AndOnly, OrOnly])
+	def test_operable_takes_either_conjunction_or_disjunction(self, cls: type[Operable]):
+		one, two = cls(), cls()
+
+		assert (one | two) is one and (one & two) is one
+		assert (one - two) is one and (one ^ two) is one
+
+	@pytest.mark.parametrize("cls", [LeTotal, GeTotal, LtTotal, GtTotal])
+	def test_total_takes_any_one_of_the_four(self, cls: type[Ranked]):
+		"""They form one cycle: negation links `<=` to `>`, reflection links that to `>=` and `<`."""
+		one, two = cls(1), cls(2)
+
+		assert (one <= two, one >= two, one < two, one > two, one == two) == (True, False, True, False, False)  # pyright: ignore[reportOperatorIssue]
+
+	@pytest.mark.parametrize("cls", [LePartial, GePartial])
+	def test_partial_takes_either_of_its_two(self, cls: type[Ranked]):
+		one, two = cls(1), cls(2)
+
+		assert (one <= two, one >= two, one < two, one > two) == (True, False, True, False)  # pyright: ignore[reportOperatorIssue]
+
+	def test_order_itself_demands_a_primitive(self):
+		"""`Order` is the bare requirement; `Partial` and `Total` are the derivations that free you."""
+		class Bare(Order):
+			...
+
+		with pytest.raises(TypeError, match = "abstract"):
+			Bare()  # pylint: disable=abstract-class-instantiated  # pyright: ignore[reportAbstractUsage]
