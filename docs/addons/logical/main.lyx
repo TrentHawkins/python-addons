@@ -1,0 +1,4918 @@
+#LyX 2.5 created this file. For more info see https://www.lyx.org/
+\lyxformat 643
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass scrartcl
+\begin_preamble
+%\usepackage{bm}
+\usepackage{bbm}
+\usepackage{xcolor}
+\usepackage{cleveref}
+%\usepackage{csquotes}
+%\usepackage{textcomp}
+%\usepackage{textgreek}
+%\usepackage{pdflscape}
+
+\definecolor{red}{rgb}{0.8,0.0,0.0}
+\definecolor{green}{rgb}{0.2,0.6,0.0}
+\definecolor{blue}{rgb}{0.2,0.4,1.0}
+\definecolor{magenta}{rgb}{0.6,0.2,0.8}
+\addtokomafont{disposition}{\rmfamily}
+\addtokomafont{descriptionlabel}{\rmfamily}
+%\setlength{\columnseprule}{0.4pt}
+\renewcommand{\arraystretch}{1.5}
+\relpenalty=10000
+\binoppenalty=10000
+% Float policy: at most one figure/table per text page, and avoid small float-only pages.
+\setcounter{topnumber}{1}
+\setcounter{bottomnumber}{0}
+\setcounter{totalnumber}{1}
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0}
+\renewcommand{\textfraction}{0.10}
+\renewcommand{\floatpagefraction}{0.75}
+
+\usepackage[framemethod=TikZ]{mdframed}
+
+\definecolor{code}{HTML}{EEEEEE}
+\definecolor{codeborder}{HTML}{DDDDDD}
+
+\mdfdefinestyle{codebox}{
+    backgroundcolor=code,
+    linecolor=codeborder,
+    linewidth=0.5pt,
+    roundcorner=5pt,
+    innerleftmargin=5pt,
+    innerrightmargin=5pt,
+    innertopmargin=5pt,
+    innerbottommargin=5pt,
+    skipabove=5pt,
+    skipbelow=5pt
+}
+
+\surroundwithmdframed[style=codebox]{minted}
+
+\usepackage{tcolorbox}
+
+\AtBeginDocument{%
+  \setmintedinline{
+    bgcolor=none,
+    breaklines=false
+  }%
+
+  \renewcommand{\FancyVerbFormatInline}[1]{%
+    \tcbox[
+      on line,
+      tcbox raise=-2.5pt,
+      colback=code,
+      colframe=codeborder,
+      boxrule=0.5pt,
+      arc=1.75pt,
+      outer arc=2.25pt,
+      boxsep=0pt,
+      left=1.5pt,
+      right=1.5pt,
+      top=1.0pt,
+      bottom=0.5pt
+    ]{\strut\smash{#1}}%
+  }%
+}
+\end_preamble
+\use_default_options true
+\begin_modules
+fix-cm
+fixme
+theorems-ams-bytype
+theorems-sec-bytype
+eqs-within-sections
+\end_modules
+\maintain_unincluded_children no
+\language english
+\language_package default
+\inputencoding utf8
+\fontencoding auto
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "ADOBESourceCodePro" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_roman_osf false
+\font_sans_osf false
+\font_typewriter_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 1
+\bibtex_command biber
+\index_command default
+\float_placement H
+\float_alignment center
+\paperfontsize 9
+\spacing single
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks true
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize letter
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine biblatex
+\cite_engine_type authoryear
+\biblio_style plain
+\biblio_options maxbibnames=99
+\biblatex_bibstyle numeric
+\biblatex_citestyle numeric
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date true
+\justification false
+\crossref_package refstyle
+\use_formatted_ref 0
+\use_minted 1
+\use_lineno 0
+\backgroundcolor none
+\fontcolor none
+\notefontcolor lightgray
+\boxbgcolor red
+\table_border_color default
+\table_odd_row_color default
+\table_even_row_color default
+\table_alt_row_colors_start 1
+\index Index
+\shortcut idx
+\color #006600
+\end_index
+\leftmargin 0.5in
+\topmargin 1in
+\rightmargin 0.5in
+\bottommargin 1in
+\headheight 0.5in
+\headsep 0.5in
+\footskip 0.5in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation skip
+\defskip halfline
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 1
+\papercolumns 1
+\papersides 1
+\paperpagestyle headings
+\tablestyle No_Borders
+\listings_params "style=friendly"
+\bullet 1 0 9 -1
+\bullet 3 0 7 -1
+\tracking_changes false
+\output_changes false
+\change_bars false
+\postpone_fragile_content false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\docbook_table_output 0
+\docbook_mathml_prefix 1
+\docbook_mathml_version 0
+\end_header
+
+\begin_body
+
+\begin_layout Section
+Types and structures
+\end_layout
+
+\begin_layout Standard
+In what follows,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ serves as the display language wherever a construction is stated more clearly as code than as prose.
+ Nothing below depends on that choice:
+ every fragment shown is a transcription of a definition given in the text,
+ and it is the definition that carries the argument.
+\end_layout
+
+\begin_layout Standard
+The correspondence between mathematics and types is easiest to state if three questions are kept apart:
+ which objects there are,
+ which operations act on them,
+ and which constants they distinguish.
+ A structure is then a choice of all three at once,
+ together with the laws binding them,
+ and the four tables below follow exactly that division.
+\end_layout
+
+\begin_layout Subsection
+Objects
+\end_layout
+
+\begin_layout Standard
+Classical mathematics,
+ and set theory in particular,
+ keeps a container and its contents apart:
+ a set on one side,
+ its elements on the other.
+ The separation does not survive the addition of structure.
+ In topology,
+ in order theory,
+ in algebra,
+ it is the elements that acquire the properties —
+ they are added,
+ compared,
+ inverted,
+ taken limits of —
+ and the set is characterised by what its elements admit rather than by which of them happen to lie inside it.
+\end_layout
+
+\begin_layout Standard
+Type theory takes that as its starting point.
+ A type is a collection of admissible values together with the operations those values admit;
+ a value is an inhabitant of a type carrying a state,
+ which is what mathematics would call a representation.
+ Object-oriented programming reads the same way,
+ and adds the observation that closes the picture:
+ since a set may itself be an element of another set,
+ a container is a value too,
+ and therefore a type.
+ Scalars,
+ tuples,
+ sets and maps are then all types,
+ distinguished only by the operations they carry and not by their standing as container or content;
+ the correspondence for the constructions used below is collected in 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "tab:objects"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+tuple "list"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Two provisos travel with the table.
+ The first is immutability.
+ A mathematical object does not change:
+ 
+\begin_inset Formula $\{1,2\}$
+\end_inset
+
+ is not a container whose contents may later differ,
+ it is the set.
+ Python distinguishes the two readings —
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+list
+\end_layout
+
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+set
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+dict
+\end_layout
+
+\end_inset
+
+ are mutable and therefore unhashable,
+ while 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+tuple
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+frozenset
+\end_layout
+
+\end_inset
+
+ are immutable and hashable —
+ and only a hashable value may serve as an element of a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+set
+\end_layout
+
+\end_inset
+
+ or as a key of a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+dict
+\end_layout
+
+\end_inset
+
+.
+ Wherever the correspondence is read as an identification rather than as an implementation,
+ the immutable member of the pair is the one meant.
+\end_layout
+
+\begin_layout Standard
+The second is exactness.
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+int
+\end_layout
+
+\end_inset
+
+ represents 
+\begin_inset Formula $\mathbb{Z}$
+\end_inset
+
+ faithfully and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Fraction
+\end_layout
+
+\end_inset
+
+ represents 
+\begin_inset Formula $\mathbb{Q}$
+\end_inset
+
+ faithfully,
+ both to arbitrary precision.
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+float
+\end_layout
+
+\end_inset
+
+ is not a representation of 
+\begin_inset Formula $\mathbb{R}$
+\end_inset
+
+:
+ it is a finite set of dyadic rationals,
+ closed exactly under none of its own arithmetic,
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+complex
+\end_layout
+
+\end_inset
+
+ is a pair of those.
+ Those two rows are approximations where the others are identifications,
+ and every construction below is arranged so as not to need them.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="15" columns="3">
+<features booktabs="true" tabularvalignment="middle">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+mathematical object
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+example
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $b\in\mathbb{B}=\{\bot,\top\}$
+\end_inset
+
+,
+ the two-element Boolean algebra
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+bool
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+True
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $n\in\mathbb{Z}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+int
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+-7
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $q\in\mathbb{Q}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Fraction
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Fraction(3,
+ 4)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $x\in\mathbb{R}$
+\end_inset
+
+,
+ approximated
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+float
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0.75
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $z\in\mathbb{C}$
+\end_inset
+
+,
+ approximated
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+complex
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0.75+1j
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+an element of a product 
+\begin_inset Formula $X_{0}\times\cdots\times X_{n-1}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+tuple[X0,
+ ...,
+ Xn]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+(1,
+ 'a',
+ True)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a vector 
+\begin_inset Formula $v\in V$
+\end_inset
+
+ over a field 
+\begin_inset Formula $F$
+\end_inset
+
+,
+ in a chosen basis
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+tuple[F,
+ ...]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+(1,
+ 0,
+ 0)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a finite family 
+\begin_inset Formula $(x_{i})_{i<n}$
+\end_inset
+
+ of elements of 
+\begin_inset Formula $X$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+list[X]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+[1,
+ 2,
+ 3]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a finite subset 
+\begin_inset Formula $A\subseteq I$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+frozenset[I]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+frozenset({'a',
+ 'b'})
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a relation 
+\begin_inset Formula $R\subseteq K\times K$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+set[tuple[K,
+ K]]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+{('a',
+ 'b')}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a map 
+\begin_inset Formula $f\colon K\to V$
+\end_inset
+
+ of finite support
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+dict[K,
+ V]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+{'a':
+ 1,
+ 'b':
+ 2}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+an indicator 
+\begin_inset Formula $\chi_{A}\colon I\to\mathbb{B}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+dict[I,
+ bool]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+{'a':
+ True,
+ 'b':
+ False}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a multiset 
+\begin_inset Formula $m\colon I\to\mathbb{N}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+dict[I,
+ int]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+{'a':
+ 2,
+ 'b':
+ 1}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a graded set 
+\begin_inset Formula $w\colon I\to W$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+dict[I,
+ W]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+{'a':
+ Fraction(1,
+ 2)}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:objects"
+
+\end_inset
+
+ Mathematical objects and the 
+\family typewriter
+python
+\family default
+ types that carry them,
+ by group:
+ scalars,
+ then finite products and collections,
+ then maps.
+ In mathematics every element is immutable and hence 
+\family typewriter
+Hashable
+\family default
+,
+ so where a mutable and an immutable spelling both exist it is the immutable one that corresponds.
+ Only the two marked rows are approximations rather than identifications.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Operations
+\end_layout
+
+\begin_layout Standard
+Python names its operations in the data model:
+ a fixed vocabulary of special methods,
+ written with leading and trailing underscores,
+ each bound to a piece of surface syntax.
+ Implementing the method is what makes the syntax available on a new carrier,
+ so a type declares its operations by supplying names from that vocabulary and by nothing else.
+ 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "tab:operators"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+tuple "list"
+
+\end_inset
+
+ is the resulting dictionary.
+\end_layout
+
+\begin_layout Standard
+The dictionary is one-to-one on spelling and silent on meaning.
+ Python fixes how an operation is written;
+ the carrier fixes what it does.
+ The symbol 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+|
+\end_layout
+
+\end_inset
+
+ is set union on a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+set
+\end_layout
+
+\end_inset
+
+,
+ bitwise disjunction on an 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+int
+\end_layout
+
+\end_inset
+
+,
+ and a lattice join on the carriers built below,
+ and nothing in the syntax chooses between them —
+ which is precisely why the same operator may be reused rather than a new notation invented.
+ The reverse translation is equally free:
+ mathematics writes 
+\begin_inset Formula $\wedge$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\vee$
+\end_inset
+
+ and 
+\begin_inset Formula $\lnot$
+\end_inset
+
+ where the keyboard offers 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+&
+\end_layout
+
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+|
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+~
+\end_layout
+
+\end_inset
+
+,
+ a typographic difference and not a mathematical one.
+\end_layout
+
+\begin_layout Standard
+Two entries repay a second look.
+ The reflected forms —
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__rmul__
+\end_layout
+
+\end_inset
+
+ and its siblings —
+ exist because a binary operation must be dispatched on one of its operands,
+ and the left one may know nothing of the right;
+ they are what allows a scalar action 
+\begin_inset Formula $\lambda\cdot v$
+\end_inset
+
+ to be written with the scalar first while the vector supplies the definition.
+ And mathematics overloads 
+\begin_inset Formula $\left|\cdot\right|$
+\end_inset
+
+ for both a projection onto a magnitude and the cardinality of a set,
+ where Python separates them into 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+abs
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+len
+\end_layout
+
+\end_inset
+
+ —
+ a distinction worth keeping,
+ since the two coincide for no carrier used here.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="21" columns="3">
+<features booktabs="true" tabularvalignment="middle">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+mathematics
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+special method
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\wedge b$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a & b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__and__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\vee b$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a | b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__or__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\lnot a$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+~a
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__invert__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\setminus b$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a - b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__sub__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\mathbin{\triangle}b$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a ^ b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__xor__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a+b$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a + b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__add__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $-a$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+-a
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__neg__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\cdot b$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a * b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__mul__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\lambda\cdot v$
+\end_inset
+
+,
+ a left action
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+lam * v
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__rmul__
+\end_layout
+
+\end_inset
+
+,
+ on 
+\begin_inset Formula $v$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $ab^{-1}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a / b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__truediv__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\leq b$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a <= b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__le__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a<b$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a < b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__lt__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a=b$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a == b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__eq__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\neq b$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a != b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__ne__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\neq\bot$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+bool(a)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__bool__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\left|a\right|$
+\end_inset
+
+,
+ a projection
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+abs(a)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__abs__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $x\in A$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+x in A
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__contains__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\#A$
+\end_inset
+
+,
+ cardinality
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+len(A)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__len__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $A_{i}$
+\end_inset
+
+,
+ or 
+\begin_inset Formula $f(i)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+A[i]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__getitem__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+the family 
+\begin_inset Formula $(x)_{x\in A}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+iter(A)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__iter__
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:operators"
+
+\end_inset
+
+ Operations,
+ by group:
+ the lattice,
+ the additive and multiplicative,
+ comparison,
+ and the projections out of a carrier.
+ The middle column is the surface syntax and the right-hand one the method that implements it;
+ the left-hand column is notation only,
+ and commits the carrier to nothing.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Constants
+\end_layout
+
+\begin_layout Standard
+An operation is rarely presented alone.
+ For a binary 
+\begin_inset Formula $\ast$
+\end_inset
+
+ on 
+\begin_inset Formula $S$
+\end_inset
+
+,
+ an element 
+\begin_inset Formula $e$
+\end_inset
+
+ is an identity when 
+\begin_inset Formula $e\ast a=a\ast e=a$
+\end_inset
+
+ for every 
+\begin_inset Formula $a$
+\end_inset
+
+,
+ and 
+\begin_inset Formula $z$
+\end_inset
+
+ is absorbing when 
+\begin_inset Formula $z\ast a=a\ast z=z$
+\end_inset
+
+;
+ each is unique when it exists.
+ Written as literals the familiar ones are short:
+ 
+\begin_inset Formula $\top$
+\end_inset
+
+ and 
+\begin_inset Formula $\bot$
+\end_inset
+
+ are 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+True
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+False
+\end_layout
+
+\end_inset
+
+,
+ the additive and multiplicative units are 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+
+,
+ the empty set is 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+frozenset()
+\end_layout
+
+\end_inset
+
+,
+ and the unattainable end of an unbounded order is 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+math.inf
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Constants are not decoration,
+ and 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "tab:constants"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+tuple "list"
+
+\end_inset
+
+ says why.
+ Aggregating an operation over a family is a fold,
+ and a fold over the empty family has nothing to combine,
+ so it must return something chosen in advance;
+ the only choice that keeps the fold consistent with itself is the identity,
+ since adjoining an empty family to any other must leave the result alone.
+ Python has already committed to this:
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+sum(())
+\end_layout
+
+\end_inset
+
+ is 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+math.prod(())
+\end_layout
+
+\end_inset
+
+ is 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+all(())
+\end_layout
+
+\end_inset
+
+ is 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+True
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+any(())
+\end_layout
+
+\end_inset
+
+ is 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+False
+\end_layout
+
+\end_inset
+
+,
+ each of them the identity of the operation being folded and none of them a special case in the implementation.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+min
+\end_layout
+
+\end_inset
+
+ is the exception that states the rule.
+ Taking a minimum is a meet,
+ and its identity would be the greatest element of the order;
+ but 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+min
+\end_layout
+
+\end_inset
+
+ is defined over carriers that assume no such element,
+ so the empty case has nothing to return and raises instead.
+ Boundedness is exactly the hypothesis that makes finite aggregation total,
+ which is why it is carried as part of the contract below rather than left to the caller.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="9" columns="4">
+<features booktabs="true" tabularvalignment="middle">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+operation
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+identity 
+\begin_inset Formula $e$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+absorbing 
+\begin_inset Formula $z$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+the empty fold
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\wedge b$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a & b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\top$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+True
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\bot$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+False
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+all(())
+\end_layout
+
+\end_inset
+
+ is 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+True
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\vee b$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a | b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\bot$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+False
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\top$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+True
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+any(())
+\end_layout
+
+\end_inset
+
+ is 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+False
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\mathbin{\triangle}b$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a ^ b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\bot$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+False
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+none
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+reduce(xor,
+ (),
+ False)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a+b$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a + b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $0$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+none,
+ unless trivial
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+sum(())
+\end_layout
+
+\end_inset
+
+ is 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\cdot b$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a * b
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $1$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $0$
+\end_inset
+
+,
+ in a ring
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+math.prod(())
+\end_layout
+
+\end_inset
+
+ is 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\cap b$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a & b
+\end_layout
+
+\end_inset
+
+ on sets
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+the universe
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\varnothing$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+frozenset()
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+none —
+ the universe is not a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+frozenset
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\cup b$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a | b
+\end_layout
+
+\end_inset
+
+ on sets
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\varnothing$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+frozenset()
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+the universe
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+frozenset().union()
+\end_layout
+
+\end_inset
+
+ is 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+frozenset()
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\min(a,b)$
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+min
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+the greatest element,
+ if any
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+the least element
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+min(())
+\end_layout
+
+\end_inset
+
+ raises 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+ValueError
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:constants"
+
+\end_inset
+
+ Identities,
+ absorbing elements,
+ and what a fold over the empty family returns.
+ Reading the first rows against the last two shows the pattern:
+ where the identity is at hand the empty fold is total and returns it,
+ and where it is unavailable —
+ no greatest element assumed,
+ no universe representable —
+ the operation must refuse.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Structures
+\end_layout
+
+\begin_layout Standard
+An algebraic structure is a carrier set together with operations on it,
+ constants it distinguishes,
+ and laws they satisfy;
+ a type is a carrier together with the methods it implements.
+ 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "tab:structures"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+tuple "list"
+
+\end_inset
+
+ lists the standard structures against the operations that generate them.
+ It names no methods,
+ deliberately:
+ the spelling of 
+\begin_inset Formula $\wedge$
+\end_inset
+
+ or of 
+\begin_inset Formula $\leq$
+\end_inset
+
+ is 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "tab:operators"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+tuple "list"
+
+\end_inset
+
+'s business,
+ and composing the two tables gives the declaration a carrier has to make.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="16" columns="3">
+<features booktabs="true" tabularvalignment="middle">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+structure
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+what it adds
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+generated by
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+magma 
+\begin_inset Formula $(S,\ast)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a binary operation,
+ closed on 
+\begin_inset Formula $S$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\ast$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+semigroup
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+associativity
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\ast$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+monoid 
+\begin_inset Formula $(S,\ast,e)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a two-sided identity
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\ast$
+\end_inset
+
+,
+ 
+\begin_inset Formula $e$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+group 
+\begin_inset Formula $(S,\ast,e,{}^{-1})$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+inverses
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\ast$
+\end_inset
+
+,
+ 
+\begin_inset Formula $e$
+\end_inset
+
+,
+ 
+\begin_inset Formula $^{-1}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+abelian group 
+\begin_inset Formula $(S,+,0,-)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+commutativity,
+ written additively
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $+$
+\end_inset
+
+,
+ 
+\begin_inset Formula $0$
+\end_inset
+
+,
+ 
+\begin_inset Formula $-$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+ring 
+\begin_inset Formula $(R,+,\cdot,0,1)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a second monoid,
+ distributing over the first
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $+$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\cdot$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+module over 
+\begin_inset Formula $R$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+an action of 
+\begin_inset Formula $R$
+\end_inset
+
+ on an abelian group
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $+$
+\end_inset
+
+,
+ and 
+\begin_inset Formula $\cdot$
+\end_inset
+
+ mixing the two
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+preorder 
+\begin_inset Formula $(S,\leq)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+reflexivity and transitivity
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\leq$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+partial order
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+antisymmetry
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\leq$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+total order
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+comparability of any two
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\leq$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+lattice 
+\begin_inset Formula $(S,\vee,\wedge)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a join and a meet for every pair
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\vee$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\wedge$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+bounded lattice
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+a least and a greatest element
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\vee$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\wedge$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\bot$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\top$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+distributive lattice
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\wedge$
+\end_inset
+
+ distributing over 
+\begin_inset Formula $\vee$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\vee$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\wedge$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+complemented lattice
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $a\vee\lnot a=\top$
+\end_inset
+
+ and 
+\begin_inset Formula $a\wedge\lnot a=\bot$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\vee$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\wedge$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\bot$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\top$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\lnot$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Boolean algebra
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+bounded,
+ distributive and complemented
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\wedge$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\lnot$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\bot$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\top$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:structures"
+
+\end_inset
+
+ Standard structures and their generators,
+ by group:
+ the multiplicative tower,
+ the order tower,
+ and the lattice tower.
+ Each group is cumulative downwards,
+ a monoid carrying whatever a magma does.
+ The right-hand column is a generating set and not an inventory:
+ a Boolean algebra offers 
+\begin_inset Formula $\vee$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\setminus$
+\end_inset
+
+ and 
+\begin_inset Formula $\mathbin{\triangle}$
+\end_inset
+
+ as well,
+ all of them definable from the four listed.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The middle column of that table is the one a type cannot express.
+ A type can declare that an operation exists,
+ and what it consumes and returns;
+ it cannot declare that the operation is associative,
+ that complementation is an involution,
+ or that meet distributes over join.
+ Signatures are checked mechanically,
+ laws are not.
+ Two consequences follow,
+ and both organise what comes later.
+\end_layout
+
+\begin_layout Standard
+The first is that the laws have to be discharged elsewhere —
+ by proof,
+ and by tests standing in for proof.
+ A structure presented as a type is therefore a contract:
+ a small set of operations that a carrier must supply,
+ together with a body of laws it is asserted to satisfy and against which it is exercised.
+\end_layout
+
+\begin_layout Standard
+The second is more productive.
+ Once the laws are granted they may be used,
+ because a law relating two operations is a definition of either one in terms of the other.
+ De Morgan's laws 
+\begin_inset Formula 
+\[
+a\vee b=\lnot(\lnot a\wedge\lnot b),\qquad a\wedge b=\lnot(\lnot a\vee\lnot b)
+\]
+
+\end_inset
+
+are theorems in a Boolean algebra;
+ read as code they are a pair of default implementations,
+ and a carrier supplying 
+\begin_inset Formula $\lnot$
+\end_inset
+
+ together with either one of 
+\begin_inset Formula $\vee$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\wedge$
+\end_inset
+
+ obtains the other at no cost.
+ That is the whole content of the last row of 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "tab:structures"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+tuple "list"
+
+\end_inset
+
+.
+ A partial order needs only 
+\begin_inset Formula $\leq$
+\end_inset
+
+,
+ since 
+\begin_inset Formula $a\geq b$
+\end_inset
+
+ is the reflection 
+\begin_inset Formula $b\leq a$
+\end_inset
+
+ and 
+\begin_inset Formula $=$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\neq$
+\end_inset
+
+,
+ 
+\begin_inset Formula $<$
+\end_inset
+
+,
+ 
+\begin_inset Formula $>$
+\end_inset
+
+ follow from the two.
+ A bounded structure needs only its two constants for finite joins and meets to be defined by folding,
+ with the bounds serving as the empty cases of 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "tab:constants"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+tuple "list"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+An abstract type in this reading holds the generators of a structure as its abstract methods and the theorems as its concrete ones.
+ Defining a new carrier means choosing a generating set of operations and supplying exactly those;
+ the rest is inherited,
+ and inherited correctly,
+ because the inherited definitions are the laws themselves.
+ Where a family of derivations closes a cycle —
+ 
+\begin_inset Formula $\vee$
+\end_inset
+
+ from 
+\begin_inset Formula $\wedge$
+\end_inset
+
+ and 
+\begin_inset Formula $\wedge$
+\end_inset
+
+ from 
+\begin_inset Formula $\vee$
+\end_inset
+
+ —
+ any one member may be supplied and the others follow,
+ which leaves the choice of generators with the carrier instead of fixing it in the structure.
+\end_layout
+
+\begin_layout Subsection
+Indicators,
+ and what generalises
+\end_layout
+
+\begin_layout Standard
+One entry of 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "tab:objects"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+tuple "list"
+
+\end_inset
+
+ deserves separate mention,
+ since what follows is a generalisation of it and of nothing else.
+ A subset 
+\begin_inset Formula $A\subseteq I$
+\end_inset
+
+ is determined by its indicator function 
+\begin_inset Formula 
+\[
+\chi_{A}\colon I\to\mathbb{B},\qquad\chi_{A}(i)=\top\iff i\in A
+\]
+
+\end_inset
+
+so that 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+frozenset[I]
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+dict[I,
+ bool]
+\end_layout
+
+\end_inset
+
+ carry the same information:
+ membership is a Boolean value,
+ and the container is a map into a Boolean algebra.
+ The set operations transport across the identification pointwise —
+ union to 
+\begin_inset Formula $\vee$
+\end_inset
+
+,
+ intersection to 
+\begin_inset Formula $\wedge$
+\end_inset
+
+,
+ complement to 
+\begin_inset Formula $\lnot$
+\end_inset
+
+ —
+ so the two agree not merely as data but as algebras,
+ and the two set rows of 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "tab:constants"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+tuple "list"
+
+\end_inset
+
+ are its first two rows read through 
+\begin_inset Formula $\chi$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Written that way,
+ nothing requires the codomain to be 
+\begin_inset Formula $\mathbb{B}$
+\end_inset
+
+.
+ Replace it by any carrier 
+\begin_inset Formula $W$
+\end_inset
+
+ meeting the same contract and the same pointwise definitions produce a graded set,
+ one in which membership is a matter of degree;
+ take 
+\begin_inset Formula $W=\mathbb{B}$
+\end_inset
+
+ and the ordinary notion is recovered exactly,
+ which is the sense in which the generalisation is conservative.
+ Allow 
+\begin_inset Formula $W$
+\end_inset
+
+ to be the type of the container itself and the construction closes under nesting:
+ a map 
+\begin_inset Formula $I\to(I\to W)$
+\end_inset
+
+ is a weighted adjacency matrix,
+ its rows are neighbourhoods,
+ and one further level is a hypergraph.
+ The sections that follow build the carrier 
+\begin_inset Formula $W$
+\end_inset
+
+ first and the containers on top of it.
+\end_layout
+
+\end_body
+\end_document
