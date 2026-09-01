@@ -5,12 +5,14 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
 from functools import partial, reduce
+from itertools import permutations
 from math import gcd, inf
 from operator import eq, ge, le
-from typing import Any, Self, cast, final
+from typing import Self, cast, final
 
 
 type pair[T] = tuple[T, T]
+type frozenlist[T] = tuple[T, ...]
 
 
 class Bounded(ABC):
@@ -136,10 +138,10 @@ class Partial(Order):
 class Total(Order):
 
 	def __le__(self, other: Order, /) -> bool: return not self > other
-	def __ge__(self, other: Order, /) -> bool: return not self < other
+	def __gt__(self, other: Order, /) -> bool: return     other < self
 
 	def __lt__(self, other: Order, /) -> bool: return not self >= other
-	def __gt__(self, other: Order, /) -> bool: return not self <= other
+	def __ge__(self, other: Order, /) -> bool: return     other <= self
 
 
 class Separable(Operable, ABC):
@@ -180,7 +182,45 @@ class Coded(Boolean, ABC):
 		return self.decode()
 
 
-type SetLike[K: Hashable, V: Boolean] = Iterable[K] | Mapping[K, V] | Boolean | bool
+type Coordinate[K: Hashable] = K | None | slice
+type Address[K: Hashable] = Coordinate[K] | tuple[Coordinate[K], ...]
+
+
+class Path[K: Hashable](tuple[Coordinate[K], ...]):
+
+	def __new__(cls, *coordinates: Coordinate[K]) -> Self:
+		for coordinate in coordinates:
+			if isinstance(coordinate, slice) and coordinate != slice(None):
+				raise KeyError(f"only an unbounded slice contracts an axis, not {coordinate!r}")
+
+		return super().__new__(cls, coordinates)
+
+	def __getnewargs__(self) -> tuple[Coordinate[K], ...]:
+		return tuple(self)
+
+	@classmethod
+	def read(cls, key: Address[K], /) -> Path[K]:
+		return key if isinstance(key, Path) else cls(*key) if isinstance(key, tuple) else cls(key)
+
+	@classmethod
+	def contracts(cls, coordinate: Coordinate[K], /) -> bool:
+		return coordinate is None or isinstance(coordinate, slice)
+
+	@property
+	def contracting(self) -> bool:
+		return any(map(self.contracts, self))
+
+
+class Edge[K: Hashable](Path[K]):
+
+	@property
+	def permutations(self) -> set[Self]:
+		cls = type(self)
+
+		return {cls(*keys) for keys in permutations(self)}
+
+
+type NodeLike[K: Hashable, V: Boolean] = Iterable[Address[K]] | Mapping[Address[K], V] | V
 type Operator[V: Boolean] = Callable[[V, V], V]
 type Relation = Callable[[Boolean, Boolean], bool]
 
@@ -364,7 +404,7 @@ class Bool(Frac):
 		)
 
 
-class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, defaultdict[K , V]):
+class Node[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, defaultdict[K , V]):
 
 	truth: type[V]
 
@@ -376,20 +416,19 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 		if truth is not None:
 			cls.truth = cast(type[V], truth)
 
-	def __init__(self, iterable: SetLike[K, V] = (), /, *,
-		default: V | None = None,
+	def __init__(self, iterable: NodeLike[K, V] = (), /, *,
+		complement: bool | None = None,
 	):
 		background = not isinstance(iterable, Iterable)
-		foreground =     isinstance(iterable, Set     )
+		foreground =     isinstance(iterable, Node    )
 
-		if default is None:
-			default = iterable.default \
-				if foreground else self.truth(iterable) if background else self.truth.maximum()  # pyright: ignore[reportCallIssue]
+		if complement is None:
+			complement = iterable.complement if foreground else bool(iterable) if background else False
 
 		if background:
 			iterable = ()
 
-		super().__init__(partial(self.truth, default))
+		super().__init__(partial(self.truth, self.truth.minimum() if complement else self.truth.maximum()))
 
 		items = iterable.items() if isinstance(iterable, Mapping) else ((key, ~self.default) for key in iterable)
 
@@ -401,19 +440,19 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 		items = {key: value for key, value in shown.items() if value}
 
 		body = repr(set(items)) if items and all(value == self.truth.minimum() for value in items.values()) else repr(items)
-		sign = self.default
 
-		return body if not sign else f"~{body}" if sign == self.truth.minimum() else f"{sign!r}~{body}"
+		return f"~{body}" if self.complement else body
 
-	def __reduce__(self) -> tuple[Callable[[SetLike[K, V]], Self], tuple[dict[K, V]]]:
+	def __reduce__(self) -> tuple[Callable[[NodeLike[K, V]], Self], tuple[dict[K, V]]]:
 		cls = type(self)
+
 		factory = partial(cls,
-			default = self.default,
+			complement = self.complement,
 		)
 
 		return factory, (dict(self),)
 
-	def __contains__(self, key: K, /) -> bool:
+	def __contains__(self, key: Address[K], /) -> bool:
 		return bool(self[key])
 
 	def __iter__(self, /) -> Iterator[K]:
@@ -427,49 +466,58 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 	def __bool__(self, /) -> bool:
 		return self.complement or any(map(bool, self.values()))
 
-	def __setitem__(self, key: K, value: object, /):
-		cls = type(self)
+	def __getitem__(self, key: Address[K], /) -> V:
+		path = self.address(key)
 
-		super().__setitem__(key, cls.truth(value))  # pyright: ignore[reportCallIssue]
+		if not path:
+			return cast(V, self)
+
+		head, *rest = path
+		value = self.contracted if Path.contracts(head) else cast(V, dict.__getitem__(self, cast(K, head)))
+
+		return cast(Node[K, T, V], value)[Path(*rest)] if rest else value
+
+	def __setitem__(self, key: Address[K], value: NodeLike[K, V] | int, /):
+		holder, last = self.locate(key)
+
+		dict.__setitem__(holder, last, holder.truth(value))  # pyright: ignore[reportCallIssue]
+
+	def __delitem__(self, key: Address[K], /):
+		holder, last = self.locate(key)
+
+		dict.__delitem__(holder, last)
 
 	def __abs__(self) -> T:
-		measures = [abs(value if self.complement else ~value) for value in self.values()]
-
-		if not measures:
-			return cast(T, abs(self.default))
-
-		result = cast(T, sum(measures, abs(self.truth.minimum())))
-
-		return result if self.complement else ~result
+		return cast(T, ~sum((~abs(value) for value in self.values()), ~abs(self.default)))
 
 	def __invert__(self) -> Self:
 		cls = type(self)
 
 		return cls({key: ~value for key, value in self.items()},
-			default = ~self.default,
+			complement = not self.complement,
 		)
 
 	def __mul__(self, times: int, /) -> Self:
 		cls = type(self)
 
 		return cls({key: self[key] * times for key in self.keys()},
-			default = self.default * times,
+			complement = bool(self.default * times),
 		)
 
-	def __add__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__add__)
-	def __and__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__and__)
-	def  __or__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth. __or__)
-	def __sub__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__sub__)
-	def __xor__(self, other: SetLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__xor__)
+	def __add__(self, other: NodeLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__add__)
+	def __and__(self, other: NodeLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__and__)
+	def  __or__(self, other: NodeLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth. __or__)
+	def __sub__(self, other: NodeLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__sub__)
+	def __xor__(self, other: NodeLike[K, V], /) -> Self: cls = type(self); return self.operate(other, cls.truth.__xor__)
 
-	def __ior__ (self, other: SetLike[K, V], /) -> Self: self.update                     (other); return self
-	def __iand__(self, other: SetLike[K, V], /) -> Self: self.intersection_update        (other); return self
-	def __isub__(self, other: SetLike[K, V], /) -> Self: self.difference_update          (other); return self
-	def __ixor__(self, other: SetLike[K, V], /) -> Self: self.symmetric_difference_update(other); return self
+	def __ior__ (self, other: NodeLike[K, V], /) -> Self: self.update                     (other); return self
+	def __iand__(self, other: NodeLike[K, V], /) -> Self: self.intersection_update        (other); return self
+	def __isub__(self, other: NodeLike[K, V], /) -> Self: self.difference_update          (other); return self
+	def __ixor__(self, other: NodeLike[K, V], /) -> Self: self.symmetric_difference_update(other); return self
 
-	def __le__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, le)
-	def __ge__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, ge)
-	def __eq__(self, other: SetLike[K, V], /) -> bool: return self.relate(other, eq)
+	def __le__(self, other: NodeLike[K, V], /) -> bool: return self.relate(other, le)
+	def __ge__(self, other: NodeLike[K, V], /) -> bool: return self.relate(other, ge)
+	def __eq__(self, other: NodeLike[K, V], /) -> bool: return self.relate(other, eq)
 
 	@classmethod
 	def fromkeys(cls, iterable: Iterable[K], value: V | None = None, /) -> Self:
@@ -483,25 +531,56 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 	def maximum(cls) -> Self:
 		return cls(cls.truth.maximum())
 
+	@classmethod
+	def arity(cls) -> int:
+		return 1
+
+	@property
+	def contracted(self) -> V:
+		return cast(V, ~sum((~value for value in self.values()), ~self.default))
+
 	@property
 	def default(self) -> V:
-		return self.default_factory()  # pyright: ignore[reportOptionalCall]
+		if (default := self.default_factory) is None:
+			raise TypeError(f"{type(self).__qualname__}.default_factory() returned None, expected a value of type {V.__name__}")
+
+		return default()
 
 	@property
 	def complement(self) -> bool:
 		return bool(self.default)
 
-	def add    (self, key: K, /): self[key] = self.truth.minimum()
-	def discard(self, key: K, /): self[key] = self.truth.maximum()
-	def remove (self, key: K, /):
+	def address(self, key: Address[K], /) -> Path[K]:
+		path = Path.read(key)
+
+		if len(path) > self.arity():
+			raise KeyError(f"{type(self).__qualname__} takes up to {self.arity()} coordinates, not {len(path)}")
+
+		return path
+
+	def locate(self, key: Address[K], /) -> tuple[Node[K, T, V], K]:
+		path = self.address(key)
+
+		if not path            : raise KeyError(f"{type(self).__qualname__} has no slot at an empty path")
+		if     path.contracting: raise KeyError(f"{type(self).__qualname__} has no slot at a contracted axis: {key!r}")
+
+		*head, last = path
+
+		return cast(Node[K, T, V], self[Path(*head)]) if head else self, cast(K, last)
+
+	def add    (self, key: Address[K], /): self[key] = self.truth.minimum()
+	def discard(self, key: Address[K], /): self[key] = self.truth.maximum()
+	def remove (self, key: Address[K], /):
 		if key not in self:
 			raise KeyError(key)
 
 		self.discard(key)
 
-	def pop(self, key: K, default: V | None = None, /) -> V:
-		if key in self.keys():
-			return super().pop(key)
+	def pop(self, key: Address[K], default: V | None = None, /) -> V:
+		holder, last = self.locate(key)
+
+		if last in holder.keys():
+			return cast(V, dict.pop(holder, last))
 
 		if default is None:
 			raise KeyError(key)
@@ -518,30 +597,34 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 
 	__copy__ = copy
 
-	def get(self, key: K, default: V | None = None, /) -> V:
-		return super().get(key, self.default if default is None else default)
+	def get(self, key: Address[K], default: V | None = None, /) -> V:
+		holder, last = self.locate(key)
 
-	def setdefault(self, key: K, default: V | None = None, /) -> V:
-		if default is not None and key not in self.keys(): self[key] = default
+		return cast(V, dict.get(holder, last, holder.default if default is None else default))
+
+	def setdefault(self, key: Address[K], default: V | None = None, /) -> V:
+		holder, last = self.locate(key)
+
+		if default is not None and last not in holder.keys(): self[key] = default
 
 		return self[key]
 
-	def update(self, *others: SetLike[K, V]):
+	def update(self, *others: NodeLike[K, V]):
 		cls = type(self)
 
 		self.become(self.union(*map(cls, others)))
 
-	def intersection_update(self, *others: SetLike[K, V]):
+	def intersection_update(self, *others: NodeLike[K, V]):
 		cls = type(self)
 
 		self.become(self.intersection(*map(cls, others)))
 
-	def difference_update(self, *others: SetLike[K, V]):
+	def difference_update(self, *others: NodeLike[K, V]):
 		cls = type(self)
 
 		self.become(self.difference(*map(cls, others)))
 
-	def symmetric_difference_update(self, other: SetLike[K, V], /):
+	def symmetric_difference_update(self, other: NodeLike[K, V], /):
 		cls = type(self)
 
 		self.become(self.symmetric_difference(cls(other)))
@@ -554,18 +637,18 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 		dict.clear(self)
 		dict.update(self, items)
 
-	def operate(self, other: SetLike[K, V], /, operator: Operator[V]) -> Self:
+	def operate(self, other: NodeLike[K, V], /, operator: Operator[V]) -> Self:
 		cls = type(self)
 		other = cls(other)
 
 		return cls({key: operator(self[key], other[key]) for key in self.keys() | other.keys()},
-			default = operator(self.default, other.default),
+			complement = bool(operator(self.default, other.default)),
 		)
 
-	def relate(self, other: SetLike[K, V], /, relation: Relation) -> bool:
+	def relate(self, other: NodeLike[K, V], /, relation: Relation) -> bool:
 		cls = type(self)
 
-		if isinstance(other, Boolean) and not isinstance(other, Set):
+		if isinstance(other, Boolean) and not isinstance(other, Node):
 			return relation(abs(self), other)
 
 		other = cls(other)
@@ -573,9 +656,9 @@ class Set[K: Hashable, T: Coded = Bool, V: Boolean = T](Boolean[T], Partial, def
 		return relation(self.default, other.default) and all(relation(self[key], other[key]) for key in self.keys() | other.keys())
 
 
-class DeepSet[V: Hashable, E: Coded = Bool](Set[V, E, "DeepSet[V, E] | E"]):
+class Set[V: Hashable, E: Coded = Bool](Node[V, E, "Set[V, E] | E"]):
 
-	registry: pair[list[type[DeepSet[Any, Any]]]] = (
+	registry: pair[list[type[Set[V, E]]]] = (
 		[],
 		[],
 	)
@@ -590,8 +673,8 @@ class DeepSet[V: Hashable, E: Coded = Bool](Set[V, E, "DeepSet[V, E] | E"]):
 		registry = cls.registry[weighted]
 
 		if rung and len(registry) != depth:
-			qual_cls = registry[depth].__qualname__
-			message = f"{qual_cls} already holds it" if depth < len(registry) else f"only {len(registry)} rungs stand under it"
+			held = 0 <= depth < len(registry)
+			message = f"{registry[depth].__qualname__} already holds it" if held else f"only {len(registry)} rungs stand under it"
 
 			raise TypeError(f"{cls.__name__} cannot take depth {depth}: {message}")
 
@@ -605,8 +688,31 @@ class DeepSet[V: Hashable, E: Coded = Bool](Set[V, E, "DeepSet[V, E] | E"]):
 		if rung:
 			registry.append(cls)
 
+	@classmethod
+	def arity(cls) -> int:
+		return 1 + cls.truth.arity() if issubclass(cls.truth, Set) else 1
 
-class IndexSet[I: Hashable](DeepSet[I, Bool],
+
+class Undirected[K: Hashable, T: Coded = Bool, V: Boolean = T](Node[K, T, V]):
+
+	def __setitem__(self, key: Address[K], value: NodeLike[K, V] | int, /):
+		if isinstance(key, tuple):
+			for edge in Edge(*key).permutations:
+				super().__setitem__(edge, value)
+
+		else:
+			super().__setitem__(key, value)
+
+	def __delitem__(self, key: Address[K], /):
+		if isinstance(key, tuple):
+			for edge in Edge(*key).permutations:
+				super().__delitem__(edge)
+
+		else:
+			super().__delitem__(key)
+
+
+class IndexSet[I: Hashable](Set[I, Bool],
 	weighted = False,
 	depth = 0,
 ):
@@ -614,7 +720,7 @@ class IndexSet[I: Hashable](DeepSet[I, Bool],
 	...
 
 
-class FuzzySet[I: Hashable](DeepSet[I, Prob],
+class FuzzySet[I: Hashable](Set[I, Prob],
 	weighted = True,
 	depth = 0,
 ):
@@ -622,7 +728,7 @@ class FuzzySet[I: Hashable](DeepSet[I, Prob],
 	...
 
 
-class UnweightedGraph[V: Hashable](DeepSet[V, Bool],
+class UnweightedGraph[V: Hashable](Set[V, Bool],
 	weighted = False,
 	depth = 1,
 ):
@@ -630,7 +736,7 @@ class UnweightedGraph[V: Hashable](DeepSet[V, Bool],
 	...
 
 
-class Graph[V: Hashable](DeepSet[V, Prob],
+class Graph[V: Hashable](Set[V, Prob],
 	weighted = True,
 	depth = 1,
 ):
