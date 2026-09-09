@@ -1,6 +1,6 @@
 from typing import Self
 
-from .preorder import Preorder
+from . import Preorder
 
 
 class Partial(Preorder):

@@ -54,6 +54,23 @@
     skipbelow=\glueexpr 6.25pt - \parskip\relax
 }
 \surroundwithmdframed[style=codebox]{minted}
+% Listings included from files arrive as \inputminted, a command rather than an
+% environment, so the hook above never sees them. Give them the same box, and the
+% trailing blank line a pasted listing carried, without adding a newline to the
+% source file. fancyvrb runs formatcom right after selecting the listing's font, so
+% the line height is recorded there and one such line is added after the listing,
+% at whatever size it was actually set in. Deferred, because LyX loads minted after
+% this preamble.
+\newlength{\ListingTrailer}
+\AtBeginDocument{%
+  \setminted{formatcom=\global\setlength{\ListingTrailer}{\baselineskip}}%
+  \let\PlainInputMinted\inputminted
+  \renewcommand{\inputminted}[3][]{%
+    \begin{mdframed}[style=codebox]%
+      \PlainInputMinted[#1]{#2}{#3}%
+      \par\vspace*{\ListingTrailer}%
+    \end{mdframed}}%
+}
 
 \usepackage{tcolorbox}
 \usepackage{scalefnt}
@@ -796,7 +813,7 @@ The complete correspondence can be stated directly as a class hierarchy.
 \begin_inset CommandInset include
 LatexCommand lstinputlisting
 filename "listings/structures.py"
-lstparams "language=Python,fontfamily=tt,fontsize={\footnotesize},breaklines=true,tabsize=4"
+lstparams "language=Python,fontfamily=tt,fontsize={\\tiny},breaklines=true,tabsize=4"
 literal "true"
 
 \end_inset
@@ -1072,7 +1089,7 @@ __ge__
 \begin_inset CommandInset include
 LatexCommand lstinputlisting
 filename "listings/preorder.py"
-lstparams "language=Python,fontfamily=tt,fontsize={\footnotesize},breaklines=true,tabsize=4"
+lstparams "language=Python,fontfamily=tt,fontsize={\\tiny},breaklines=true,tabsize=4"
 literal "true"
 
 \end_inset
@@ -1170,7 +1187,7 @@ __gt__
 \begin_inset CommandInset include
 LatexCommand lstinputlisting
 filename "listings/partial.py"
-lstparams "language=Python,fontfamily=tt,fontsize={\footnotesize},breaklines=true,tabsize=4"
+lstparams "language=Python,fontfamily=tt,fontsize={\\tiny},breaklines=true,tabsize=4"
 literal "true"
 
 \end_inset
@@ -1261,7 +1278,7 @@ __gt__
 \begin_inset CommandInset include
 LatexCommand lstinputlisting
 filename "listings/total.py"
-lstparams "language=Python,fontfamily=tt,fontsize={\footnotesize},breaklines=true,tabsize=4"
+lstparams "language=Python,fontfamily=tt,fontsize={\\tiny},breaklines=true,tabsize=4"
 literal "true"
 
 \end_inset

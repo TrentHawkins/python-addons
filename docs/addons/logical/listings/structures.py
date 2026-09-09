@@ -28,3 +28,14 @@ class Group(Monoid):
 	@abstractmethod
 	def inverse(self) -> Self:
 		...
+
+
+class Abelian(Semigroup):
+
+	def combine(self, other: Self, /) -> Self:
+		return other.combine(self)
+
+
+class AbelianGroup(Abelian, Group):
+
+	...

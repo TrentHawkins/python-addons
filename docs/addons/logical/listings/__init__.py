@@ -4,3 +4,9 @@
 currently stands. They are checked by pyright and pylint alongside the library, and they build
 on one another by relative import in the order the text introduces them.
 """
+
+
+from .structures import Magma, Semigroup, Monoid, Group, Abelian, AbelianGroup
+from .preorder import Preorder
+from .partial import Partial
+from .total import Total

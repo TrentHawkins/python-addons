@@ -1,6 +1,6 @@
 from typing import Self
 
-from .partial import Partial
+from . import Partial
 
 
 class Total(Partial):
