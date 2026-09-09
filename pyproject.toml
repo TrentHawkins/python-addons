@@ -30,6 +30,7 @@ venv = ".venv"
 include = [
     "src",
     "tests",
+    "docs",
 ]
 
 [tool.pylint.format]

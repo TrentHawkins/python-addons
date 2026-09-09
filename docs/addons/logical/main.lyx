@@ -56,28 +56,35 @@
 \surroundwithmdframed[style=codebox]{minted}
 
 \usepackage{tcolorbox}
+\usepackage{scalefnt}
+
+\newcommand{\InlineCodeScale}{0.9  }
+\newcommand{\InlineCodeRaise}{0.1em}
 
 \AtBeginDocument{%
-  \setmintedinline{
+  \setmintedinline{%
     bgcolor=none,
-    breaklines=false
+    breaklines=false,
+    fontsize={\scalefont{\InlineCodeScale}},
+    fontseries=auto,
+    fontshape=auto
   }%
-
   \renewcommand{\FancyVerbFormatInline}[1]{%
-    \tcbox[
-      on line,
-      tcbox raise=-2.7pt,
-      colback=code,
-      colframe=codeborder,
-      boxrule=0.5pt,
-      arc=1.75pt,
-      outer arc=2.25pt,
-      boxsep=0pt,
-      left=1.5pt,
-      right=1.5pt,
-      top=1.0pt,
-      bottom=0.5pt
-    ]{\strut\smash{#1}}%
+    \raisebox{\InlineCodeRaise}{%
+      \tcbox[
+        on line,
+        colback=code,
+        colframe=codeborder,
+        boxrule=0.5pt,
+        arc=1.75pt,
+        outer arc=2.25pt,
+        boxsep=0pt,
+        left=1.5pt,
+        right=1.5pt,
+        top=1.0pt,
+        bottom=0.5pt
+      ]{\strut\smash{#1}}%
+    }%
   }%
 }
 \end_preamble
@@ -409,7 +416,7 @@ status open
 
 \begin_layout Plain Layout
 f:
- typing.Callable[[A],
+ Callable[[A],
  B]
 \end_layout
 
@@ -523,6 +530,101 @@ Abstract base classes make this division explicit.
 \end_layout
 
 \begin_layout Standard
+One practical qualification applies to every program listing below.
+ Its signatures display the mathematical operation,
+ not every interoperability path expected of a production 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ type.
+ A closed operation 
+\begin_inset Formula $S\times S\to S$
+\end_inset
+
+ is therefore shown with 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+other:
+ Self
+\end_layout
+
+\end_inset
+
+ even when its concrete implementation should accept a wider operand domain.
+ A type such as 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Frac
+\end_layout
+
+\end_inset
+
+ may also accept 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+int
+\end_layout
+
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+float
+\end_layout
+
+\end_inset
+
+,
+ or other compatible representations;
+ it must normalize them according to its exactness and numerical-stability contract,
+ return 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+NotImplemented
+\end_layout
+
+\end_inset
+
+ when it cannot do so,
+ and ordinarily provide the corresponding reflected operator.
+ From the perspective of callable substitutability,
+ accepting more inputs is a contravariant widening of the operand parameter.
+ Reflected dispatch does not assert that the operation is commutative;
+ it only allows either operand to participate in the binary-operator protocol.
+ This interoperability machinery is omitted unless it is itself under discussion.
+\end_layout
+
+\begin_layout Standard
 Each construction in this text therefore follows the same pattern:
  state the carrier,
  operations,
@@ -546,13 +648,16 @@ python
  naming any approximation.
  Code is used as a display language for these definitions,
  not as a substitute for them.
- Built-in names are written bare,
- while names from the standard library are qualified by their module.
- With this convention in place,
+ Names from the standard library are imported and written bare,
+ and each listing opens with the imports it needs,
+ so that a signature reads as closely to its mathematical statement as the language allows.
+ The listings are drawn verbatim from source files that are checked alongside the library,
+ so the text shows the code as it currently stands.
+ With these conventions in place,
  the later correspondences can be read without repeatedly explaining the translation itself.
 \end_layout
 
-\begin_layout Section
+\begin_layout Subsection
 From operations to structures
 \end_layout
 
@@ -688,145 +793,11 @@ The complete correspondence can be stated directly as a class hierarchy.
 \end_layout
 
 \begin_layout Standard
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline false
-status open
-
-\begin_layout Plain Layout
-import abc
-\end_layout
-
-\begin_layout Plain Layout
-import typing
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-class Magma(abc.ABC):
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-	@abc.abstractmethod
-\end_layout
-
-\begin_layout Plain Layout
-	def operator(self,
- other:
- typing.Self,
- /) -> typing.Self:
-\end_layout
-
-\begin_layout Plain Layout
-		...
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-class Semigroup(Magma):
-\end_layout
-
-\begin_layout Plain Layout
-	"""`operator` is associative."""
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-class Monoid(Semigroup):
-\end_layout
-
-\begin_layout Plain Layout
-	"""`identity()` is neutral for `combine`."""
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-	@classmethod
-\end_layout
-
-\begin_layout Plain Layout
-	@abc.abstractmethod
-\end_layout
-
-\begin_layout Plain Layout
-	def identity(cls) -> typing.Self:
-\end_layout
-
-\begin_layout Plain Layout
-		...
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-class Group(Monoid):
-\end_layout
-
-\begin_layout Plain Layout
-	"""Every value has a two-sided inverse."""
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-	@property
-\end_layout
-
-\begin_layout Plain Layout
-	@abc.abstractmethod
-\end_layout
-
-\begin_layout Plain Layout
-	def inverse(self) -> typing.Self:
-\end_layout
-
-\begin_layout Plain Layout
-		...
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
+\begin_inset CommandInset include
+LatexCommand lstinputlisting
+filename "listings/structures.py"
+lstparams "language=Python,fontfamily=tt,fontsize={\footnotesize},breaklines=true,tabsize=4"
+literal "true"
 
 \end_inset
 
@@ -858,7 +829,7 @@ inline true
 status open
 
 \begin_layout Plain Layout
-typing.Self
+Self
 \end_layout
 
 \end_inset
@@ -871,7 +842,7 @@ inline true
 status open
 
 \begin_layout Plain Layout
-abc.abstractmethod
+abstractmethod
 \end_layout
 
 \end_inset
@@ -956,7 +927,7 @@ inline true
 status open
 
 \begin_layout Plain Layout
-@abc.abstractmethod
+@abstractmethod
 \end_layout
 
 \end_inset
@@ -971,6 +942,365 @@ The inheritance now reads in the same direction as the mathematics:
  and every semigroup is a magma.
  The converse does not follow,
  because possessing an operation does not establish the laws required by the stronger structures.
+\end_layout
+
+\begin_layout Section
+Climbing the ladder
+\end_layout
+
+\begin_layout Standard
+This work revolves around discrete mathematical structures,
+ approached from one uniform perspective in which the more complex unfold from the simpler.
+\end_layout
+
+\begin_layout Subsection
+Ordering
+\end_layout
+
+\begin_layout Standard
+Before starting any discussion around scalars or containers,
+ there is one structure they all share:
+ ordering.
+\end_layout
+
+\begin_layout Definition
+\begin_inset Argument 1
+status open
+
+\begin_layout Plain Layout
+preorder
+\end_layout
+
+\end_inset
+
+A binary relation 
+\begin_inset Formula $\lesssim$
+\end_inset
+
+ on a type 
+\begin_inset Formula $X$
+\end_inset
+
+ is called a preorder or quasiorder if it is reflexive and transitive:
+\end_layout
+
+\begin_layout Description
+reflexivity 
+\begin_inset Formula $\forall a:X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\lesssim a$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Description
+transitivity 
+\begin_inset Formula $\forall a,b,c:X$
+\end_inset
+
+,
+ if 
+\begin_inset Formula $a\lesssim b$
+\end_inset
+
+ and 
+\begin_inset Formula $b\lesssim c$
+\end_inset
+
+ then 
+\begin_inset Formula $a\lesssim c$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+In 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+,
+ a preorder asks for a single method.
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__le__
+\end_layout
+
+\end_inset
+
+ spells 
+\begin_inset Formula $a\lesssim b$
+\end_inset
+
+,
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__ge__
+\end_layout
+
+\end_inset
+
+ is the same relation read from the other side,
+ so it is derived rather than declared.
+ Reflexivity and transitivity are laws to be proved of an implementation,
+ not methods to be added to it.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand lstinputlisting
+filename "listings/preorder.py"
+lstparams "language=Python,fontfamily=tt,fontsize={\footnotesize},breaklines=true,tabsize=4"
+literal "true"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Definition
+\begin_inset Argument 1
+status open
+
+\begin_layout Plain Layout
+partial order
+\end_layout
+
+\end_inset
+
+A preorder 
+\begin_inset Formula $\leq$
+\end_inset
+
+ on a type 
+\begin_inset Formula $X$
+\end_inset
+
+ is called a partial order if it is also antisymmetric:
+\end_layout
+
+\begin_layout Description
+antisymmetry 
+\begin_inset Formula $\forall a,b:X$
+\end_inset
+
+,
+ if 
+\begin_inset Formula $a\leq b$
+\end_inset
+
+ and 
+\begin_inset Formula $b\leq a$
+\end_inset
+
+ then 
+\begin_inset Formula $a=b$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Antisymmetry is what allows equality to be derived from the order rather than declared beside it:
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__eq__
+\end_layout
+
+\end_inset
+
+ becomes comparison in both directions,
+ and the strict 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__lt__
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__gt__
+\end_layout
+
+\end_inset
+
+ follow as comparison without equality.
+ The concrete carrier is asked for nothing new;
+ the one method it writes now stands behind every comparison operator.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand lstinputlisting
+filename "listings/partial.py"
+lstparams "language=Python,fontfamily=tt,fontsize={\footnotesize},breaklines=true,tabsize=4"
+literal "true"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Definition
+\begin_inset Argument 1
+status open
+
+\begin_layout Plain Layout
+total order
+\end_layout
+
+\end_inset
+
+A partial order 
+\begin_inset Formula $\leq$
+\end_inset
+
+ on a type 
+\begin_inset Formula $X$
+\end_inset
+
+ is called a total order,
+ or a linear order,
+ if any two values are comparable:
+\end_layout
+
+\begin_layout Description
+totality 
+\begin_inset Formula $\forall a,b:X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\leq b$
+\end_inset
+
+ or 
+\begin_inset Formula $b\leq a$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Totality turns the strict order into a negation:
+ 
+\begin_inset Formula $a<b$
+\end_inset
+
+ holds exactly when 
+\begin_inset Formula $b\leq a$
+\end_inset
+
+ fails,
+ so 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__lt__
+\end_layout
+
+\end_inset
+
+ no longer needs the test for equality,
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__gt__
+\end_layout
+
+\end_inset
+
+ follows from it by reflection as before.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand lstinputlisting
+filename "listings/total.py"
+lstparams "language=Python,fontfamily=tt,fontsize={\footnotesize},breaklines=true,tabsize=4"
+literal "true"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As on the algebraic ladder,
+ each rung adds a law and takes work away:
+ the preorder asks for one method,
+ and every stronger order derives more from it rather than asking for more.
+\end_layout
+
+\begin_layout Subsection
+Scalar types —
+ the numeric foundation of containers
+\end_layout
+
+\begin_layout Standard
+Before diving into containers,
+ a discussion of the scalar types is warranted,
+ partly because they provide one of the two generalization axes that drive the simplicial container tower developed here.
+\end_layout
+
+\begin_layout Subsubsection
+Boolean algebra (based on 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+bool
+\end_layout
+
+\end_inset
+
+)
 \end_layout
 
 \begin_layout Standard

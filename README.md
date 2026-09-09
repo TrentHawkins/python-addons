@@ -170,6 +170,12 @@ Useful development commands:
 ```console
 uv sync --all-groups
 uv run pyright
+uv run pylint src tests docs
 uv run pytest
 uv build
 ```
+
+`docs/addons/logical/listings/` holds the code listings of the paper draft in
+`docs/addons/logical/main.lyx`, which includes them verbatim. They are checked
+by pyright and pylint together with the library, so the manuscript always shows
+code that type-checks.
