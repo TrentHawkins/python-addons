@@ -21,7 +21,7 @@
 \definecolor{magenta}{rgb}{0.6,0.2,0.8}
 \addtokomafont{disposition}{\rmfamily}
 \addtokomafont{descriptionlabel}{\rmfamily}
-%\setlength{\columnseprule}{0.4pt}
+\setlength{\columnseprule}{0.4pt}
 \renewcommand{\arraystretch}{1.5}
 \relpenalty=10000
 \binoppenalty=10000
@@ -211,13 +211,14 @@ eqs-within-sections
 \shortcut idx
 \color #006600
 \end_index
-\leftmargin 0.5in
+\leftmargin 0.625in
 \topmargin 1in
-\rightmargin 0.5in
+\rightmargin 0.625in
 \bottommargin 1in
 \headheight 0.5in
 \headsep 0.5in
 \footskip 0.5in
+\columnsep 0.25in
 \secnumdepth 3
 \tocdepth 3
 \paragraph_separation skip
@@ -226,7 +227,7 @@ eqs-within-sections
 \math_numbering_side default
 \quotes_style english
 \dynamic_quotes 1
-\papercolumns 1
+\papercolumns 2
 \papersides 1
 \paperpagestyle headings
 \tablestyle No_Borders
@@ -364,7 +365,8 @@ Functions give the notation its first example.
  contains it.
 \end_layout
 
-\begin_layout Description
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
 carrier A mathematical type 
 \begin_inset Formula $A$
 \end_inset
@@ -384,7 +386,8 @@ python
  type.
 \end_layout
 
-\begin_layout Description
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
 element A judgement 
 \begin_inset Formula $x\colon A$
 \end_inset
@@ -396,7 +399,8 @@ element A judgement
  of that type.
 \end_layout
 
-\begin_layout Description
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
 operation A map 
 \begin_inset Formula $f\colon A\to B$
 \end_inset
@@ -405,7 +409,8 @@ operation A map
  often exposed by an operator.
 \end_layout
 
-\begin_layout Description
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
 constant A distinguished object 
 \begin_inset Formula $e\colon A$
 \end_inset
@@ -413,7 +418,8 @@ constant A distinguished object
  corresponds to a value or constructor supplied by the class.
 \end_layout
 
-\begin_layout Description
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
 law A mathematical equation or relation corresponds to a behavioural contract.
  The interface can describe its shape;
  a proof establishes the law,
@@ -834,7 +840,7 @@ The complete correspondence can be stated directly as a class hierarchy.
 \begin_inset CommandInset include
 LatexCommand lstinputlisting
 filename "listings/structures.py"
-lstparams "language=Python,fontfamily=tt,fontsize={\\tiny},breaklines=true,tabsize=4"
+lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
 literal "true"
 
 \end_inset
@@ -1022,8 +1028,9 @@ A binary relation
  is called a preorder or quasiorder if it is reflexive and transitive:
 \end_layout
 
-\begin_layout Description
-reflexivity 
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+(reflexivity) 
 \begin_inset Formula $\forall a:X$
 \end_inset
 
@@ -1035,8 +1042,9 @@ reflexivity
 ,
 \end_layout
 
-\begin_layout Description
-transitivity 
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+(transitivity) 
 \begin_inset Formula $\forall a,b,c:X$
 \end_inset
 
@@ -1110,7 +1118,7 @@ __ge__
 \begin_inset CommandInset include
 LatexCommand lstinputlisting
 filename "listings/preorder.py"
-lstparams "language=Python,fontfamily=tt,fontsize={\\tiny},breaklines=true,tabsize=4"
+lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
 literal "true"
 
 \end_inset
@@ -1139,8 +1147,9 @@ A preorder
  is called a partial order if it is also antisymmetric:
 \end_layout
 
-\begin_layout Description
-antisymmetry 
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+(antisymmetry) 
 \begin_inset Formula $\forall a,b:X$
 \end_inset
 
@@ -1208,7 +1217,7 @@ __gt__
 \begin_inset CommandInset include
 LatexCommand lstinputlisting
 filename "listings/partial.py"
-lstparams "language=Python,fontfamily=tt,fontsize={\\tiny},breaklines=true,tabsize=4"
+lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
 literal "true"
 
 \end_inset
@@ -1239,8 +1248,9 @@ A partial order
  if any two values are comparable:
 \end_layout
 
-\begin_layout Description
-totality 
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+(totality) 
 \begin_inset Formula $\forall a,b:X$
 \end_inset
 
@@ -1299,7 +1309,7 @@ __gt__
 \begin_inset CommandInset include
 LatexCommand lstinputlisting
 filename "listings/total.py"
-lstparams "language=Python,fontfamily=tt,fontsize={\\tiny},breaklines=true,tabsize=4"
+lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
 literal "true"
 
 \end_inset

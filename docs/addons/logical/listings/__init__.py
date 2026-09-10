@@ -6,7 +6,7 @@ on one another by relative import in the order the text introduces them.
 """
 
 
-from .structures import Magma, Semigroup, Monoid, Group, Abelian, AbelianGroup
+from .structures import Magma, Semigroup, Monoid, Group
 from .preorder import Preorder
 from .partial import Partial
 from .total import Total
