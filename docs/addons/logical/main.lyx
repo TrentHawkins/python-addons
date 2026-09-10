@@ -34,6 +34,19 @@
 \renewcommand{\textfraction}{0.10}
 \renewcommand{\floatpagefraction}{0.75}
 
+% Typewriter font: Fira Code, for its programming ligatures, with graceful fallbacks.
+% Fira Code is not part of TeX Live, so it is taken from the system when installed
+% there, Retina weight preferred; otherwise TeX Live's own Fira Mono keeps the same
+% design without the ligatures. LyX loads fontspec before this preamble, so the test
+% is available here, and the choice made here overrides the document settings.
+\IfFontExistsTF{Fira Code}{%
+  \IfFontExistsTF{Fira Code Retina}
+    {\setmonofont{Fira Code}[UprightFont=* Retina, BoldFont=* Bold, Contextuals=Alternate, Scale=MatchLowercase]}
+    {\setmonofont{Fira Code}[Contextuals=Alternate, Scale=MatchLowercase]}%
+}{%
+  \IfFontExistsTF{Fira Mono}{\setmonofont{Fira Mono}[Scale=MatchLowercase]}{}%
+}
+
 \usepackage[framemethod=TikZ]{mdframed}
 
 \definecolor{code}{HTML}{EEEEEE}
@@ -71,6 +84,14 @@
       \par\vspace*{\ListingTrailer}%
     \end{mdframed}}%
 }
+% minted 3 boxes every hyphen, defining \PYGZhy as \mbox{-}, so that a line can never
+% break inside an operator such as ->. The box also hides the hyphen from the font's
+% shaper, so the arrow ligature never forms. Listings here never break at hyphens
+% anyway, fvextra forbids it, so the patch is switched off. Harmless with a minted
+% that does not define it.
+\makeatletter
+\AtBeginDocument{\let\minted@patch@PygmentsZhy\relax}
+\makeatother
 
 \usepackage{tcolorbox}
 \usepackage{scalefnt}
@@ -123,7 +144,7 @@ eqs-within-sections
 \font_typewriter "ADOBESourceCodePro" "default"
 \font_math "auto" "auto"
 \font_default_family default
-\use_non_tex_fonts false
+\use_non_tex_fonts true
 \font_sc false
 \font_roman_osf false
 \font_sans_osf false
@@ -133,7 +154,7 @@ eqs-within-sections
 \use_microtype false
 \use_dash_ligatures true
 \graphics default
-\default_output_format default
+\default_output_format pdf5
 \output_sync 1
 \bibtex_command biber
 \index_command default
