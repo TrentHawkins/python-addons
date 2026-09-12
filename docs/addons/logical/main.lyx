@@ -68,21 +68,12 @@
 }
 \surroundwithmdframed[style=codebox]{minted}
 % Listings included from files arrive as \inputminted, a command rather than an
-% environment, so the hook above never sees them. Give them the same box, and the
-% trailing blank line a pasted listing carried, without adding a newline to the
-% source file. fancyvrb runs formatcom right after selecting the listing's font, so
-% the line height is recorded there and one such line is added after the listing,
-% at whatever size it was actually set in. Deferred, because LyX loads minted after
-% this preamble.
-\newlength{\ListingTrailer}
+% environment, so the hook above never sees them. Give them the same box. Deferred,
+% because LyX loads minted after this preamble.
 \AtBeginDocument{%
-  \setminted{formatcom=\global\setlength{\ListingTrailer}{\baselineskip}}%
   \let\PlainInputMinted\inputminted
   \renewcommand{\inputminted}[3][]{%
-    \begin{mdframed}[style=codebox]%
-      \PlainInputMinted[#1]{#2}{#3}%
-      \par\vspace*{\ListingTrailer}%
-    \end{mdframed}}%
+    \begin{mdframed}[style=codebox]\PlainInputMinted[#1]{#2}{#3}\end{mdframed}}%
 }
 % minted 3 boxes every hyphen, defining \PYGZhy as \mbox{-}, so that a line can never
 % break inside an operator such as ->. The box also hides the hyphen from the font's
@@ -95,6 +86,7 @@
 
 \usepackage{tcolorbox}
 \usepackage{scalefnt}
+\usepackage{dsfont}
 
 \newcommand{\InlineCodeScale}{0.9  }
 \newcommand{\InlineCodeRaise}{0.1em}
@@ -227,7 +219,7 @@ eqs-within-sections
 \math_numbering_side default
 \quotes_style english
 \dynamic_quotes 1
-\papercolumns 2
+\papercolumns 1
 \papersides 1
 \paperpagestyle headings
 \tablestyle No_Borders
@@ -764,13 +756,13 @@ semigroup
 
 \begin_layout Standard
 If there is also a distinguished value 
-\begin_inset Formula $e\colon S$
+\begin_inset Formula $\mathds{1}\colon S$
 \end_inset
 
  such that 
 \begin_inset Formula 
 \[
-e\circ a=a=a\circ e\qquad(a\colon S),
+\mathds{1}\circ a=a=a\circ\mathds{1}\qquad(a\colon S),
 \]
 
 \end_inset
@@ -805,7 +797,7 @@ Finally,
  satisfying 
 \begin_inset Formula 
 \[
-a^{-1}\circ a=e=a\circ a^{-1}\qquad(a\colon S),
+a^{-1}\circ a=\mathds{1}=a\circ a^{-1}\qquad(a\colon S),
 \]
 
 \end_inset
@@ -838,8 +830,8 @@ The complete correspondence can be stated directly as a class hierarchy.
 
 \begin_layout Standard
 \begin_inset CommandInset include
-LatexCommand lstinputlisting
-filename "listings/structures.py"
+LatexCommand inputminted
+filename "listings/group.py"
 lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
 literal "true"
 
@@ -849,19 +841,84 @@ literal "true"
 \end_layout
 
 \begin_layout Standard
-The 
+The listing writes the operation additively,
+ so that the code reads with symbols the language already owns:
+ 
 \begin_inset listings
 lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
 inline true
 status open
 
 \begin_layout Plain Layout
-Magma.combine
++
 \end_layout
 
 \end_inset
 
- signature mirrors 
+ for 
+\begin_inset Formula $\circ$
+\end_inset
+
+,
+ the literal 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+
+ for 
+\begin_inset Formula $\mathds{1}$
+\end_inset
+
+,
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+-a
+\end_layout
+
+\end_inset
+
+ for 
+\begin_inset Formula $a^{-1}$
+\end_inset
+
+.
+ The abstract 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
++
+\end_layout
+
+\end_inset
+
+ of 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Magma
+\end_layout
+
+\end_inset
+
+ mirrors 
 \begin_inset Formula $S\times S\to S$
 \end_inset
 
@@ -878,7 +935,7 @@ Self
 
 \end_inset
 
- binds the other operand and the result to the type of the receiver.
+ binds the other operand and the result to the type of the receiver,
  
 \begin_inset listings
 lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
@@ -891,7 +948,48 @@ abstractmethod
 
 \end_inset
 
- leaves the operation itself to a concrete carrier.
+ leaves the operation itself to a concrete carrier,
+ and the body that declines with 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+NotImplemented
+\end_layout
+
+\end_inset
+
+ is where every chain of fallbacks ends.
+ Unary plus,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
++a
+\end_layout
+
+\end_inset
+
+,
+ is 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a
+\end_layout
+
+\end_inset
+
+ itself,
+ kept so that the two signs read as a pair once the inverse arrives.
  
 \begin_inset listings
 lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
@@ -913,70 +1011,273 @@ inline true
 status open
 
 \begin_layout Plain Layout
-Monoid.identity
+Monoid
 \end_layout
 
 \end_inset
 
- adds the distinguished value as a class method,
- so subclasses obtain an identity of their own type.
- The 
+ spells the identity as the literal 
 \begin_inset listings
 lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
 inline true
 status open
 
 \begin_layout Plain Layout
-Group.inverse
+0
 \end_layout
 
 \end_inset
 
- property adds the unary operation 
-\begin_inset Formula $a\mapsto a^{-1}$
+ on either side:
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a + 0
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0 + a
+\end_layout
+
+\end_inset
+
+ are 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a
+\end_layout
+
+\end_inset
+
+,
+ while a carrier writes its own 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a + b
+\end_layout
+
+\end_inset
+
+ and hands everything else up to the class above.
+ The left-hand spelling is the one the builtin 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+sum
+\end_layout
+
+\end_inset
+
+ relies on,
+ since it starts its fold from 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+
+,
+ so a monoid folds with no start value to declare.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Group
+\end_layout
+
+\end_inset
+
+ writes the inverse as the unary minus,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+-a
+\end_layout
+
+\end_inset
+
+,
+ and derives subtraction from it,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a - b
+\end_layout
+
+\end_inset
+
+ being 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a + (-b)
+\end_layout
+
+\end_inset
+
+,
+ so the derived operation costs the carrier nothing.
+ Commutativity is not a rung:
+ a magma,
+ a monoid or a group may each have it or lack it,
+ so 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Abelian
+\end_layout
+
+\end_inset
+
+ states it as a mixin on the bare magma.
+ When the operation commutes,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+b + a
+\end_layout
+
+\end_inset
+
+ may be answered by 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a + b
+\end_layout
+
+\end_inset
+
+,
+ which is exactly the reflected form of 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
++
+\end_layout
+
+\end_inset
+
+ that the operator protocol asks for when the left operand declines.
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+AbelianGroup
+\end_layout
+
+\end_inset
+
+ inherits its operations from 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Group
+\end_layout
+
+\end_inset
+
+ and its promise from 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Abelian
+\end_layout
+
+\end_inset
+
+,
+ and names the mixin first so that this reflected form is found before the narrower one that answers only 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0 + a
+\end_layout
+
 \end_inset
 
 .
- It is read as 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-a.inverse
 \end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand inputminted
+filename "listings/abelian.py"
+lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
+literal "true"
 
 \end_inset
 
- because the inverse is determined by the receiver and requires no additional argument.
- A property need not be stored data;
- a concrete class may compute it when accessed.
- Placing 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
 
-\begin_layout Plain Layout
-@property
-\end_layout
-
-\end_inset
-
- above 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-@abstractmethod
-\end_layout
-
-\end_inset
-
- preserves that access syntax while requiring each concrete carrier to supply the value.
 \end_layout
 
 \begin_layout Standard
@@ -986,6 +1287,24 @@ The inheritance now reads in the same direction as the mathematics:
  and every semigroup is a magma.
  The converse does not follow,
  because possessing an operation does not establish the laws required by the stronger structures.
+\end_layout
+
+\begin_layout Standard
+This 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ pattern is used throught the text to progressively build concepts from both formal perspectives:
+ a math and a programmatic one,
+ which is why a simple examle is outlined here.
 \end_layout
 
 \begin_layout Section
@@ -1078,7 +1397,7 @@ python
 \end_inset
 
 ,
- a preorder asks for a single method.
+ a preorder asks for one of two methods.
  
 \begin_inset listings
 lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
@@ -1086,7 +1405,7 @@ inline true
 status open
 
 \begin_layout Plain Layout
-__le__
+<=
 \end_layout
 
 \end_inset
@@ -1103,13 +1422,13 @@ inline true
 status open
 
 \begin_layout Plain Layout
-__ge__
+>=
 \end_layout
 
 \end_inset
 
  is the same relation read from the other side,
- so it is derived rather than declared.
+ so whichever of the two is not written is derived from the one that is.
  Reflexivity and transitivity are laws to be proved of an implementation,
  not methods to be added to it.
 \end_layout
@@ -1178,7 +1497,7 @@ inline true
 status open
 
 \begin_layout Plain Layout
-__eq__
+==
 \end_layout
 
 \end_inset
@@ -1191,7 +1510,7 @@ inline true
 status open
 
 \begin_layout Plain Layout
-__lt__
+<
 \end_layout
 
 \end_inset
@@ -1203,7 +1522,7 @@ inline true
 status open
 
 \begin_layout Plain Layout
-__gt__
+>
 \end_layout
 
 \end_inset
@@ -1284,12 +1603,11 @@ inline true
 status open
 
 \begin_layout Plain Layout
-__lt__
+<
 \end_layout
 
 \end_inset
 
- no longer needs the test for equality,
  and 
 \begin_inset listings
 lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
@@ -1297,12 +1615,13 @@ inline true
 status open
 
 \begin_layout Plain Layout
-__gt__
+>
 \end_layout
 
 \end_inset
 
- follows from it by reflection as before.
+ no longer need the test for equality;
+ each is the negation of the opposite weak comparison.
 \end_layout
 
 \begin_layout Standard
