@@ -1,0 +1,1686 @@
+#LyX 2.5 created this file. For more info see https://www.lyx.org/
+\lyxformat 643
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass scrartcl
+\begin_preamble
+%\usepackage{bm}
+\usepackage{bbm}
+\usepackage{xcolor}
+\usepackage{cleveref}
+%\usepackage{csquotes}
+%\usepackage{textcomp}
+%\usepackage{textgreek}
+%\usepackage{pdflscape}
+
+\definecolor{red}{rgb}{0.8,0.0,0.0}
+\definecolor{green}{rgb}{0.2,0.6,0.0}
+\definecolor{blue}{rgb}{0.2,0.4,1.0}
+\definecolor{magenta}{rgb}{0.6,0.2,0.8}
+\addtokomafont{disposition}{\rmfamily}
+\addtokomafont{descriptionlabel}{\rmfamily}
+\setlength{\columnseprule}{0.4pt}
+\renewcommand{\arraystretch}{1.5}
+\relpenalty=10000
+\binoppenalty=10000
+% Float policy: at most one figure/table per text page, and avoid small float-only pages.
+\setcounter{topnumber}{1}
+\setcounter{bottomnumber}{0}
+\setcounter{totalnumber}{1}
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0}
+\renewcommand{\textfraction}{0.10}
+\renewcommand{\floatpagefraction}{0.75}
+
+% Typewriter font: Fira Code, for its programming ligatures, with graceful fallbacks.
+% Fira Code is not part of TeX Live, so it is taken from the system when installed
+% there, Retina weight preferred; otherwise TeX Live's own Fira Mono keeps the same
+% design without the ligatures. LyX loads fontspec before this preamble, so the test
+% is available here, and the choice made here overrides the document settings.
+\IfFontExistsTF{Fira Code}{%
+  \IfFontExistsTF{Fira Code Retina}
+    {\setmonofont{Fira Code}[UprightFont=* Retina, BoldFont=* Bold, Contextuals=Alternate, Scale=MatchLowercase]}
+    {\setmonofont{Fira Code}[Contextuals=Alternate, Scale=MatchLowercase]}%
+}{%
+  \IfFontExistsTF{Fira Mono}{\setmonofont{Fira Mono}[Scale=MatchLowercase]}{}%
+}
+
+\usepackage[framemethod=TikZ]{mdframed}
+
+\definecolor{code}{HTML}{EEEEEE}
+\definecolor{codeborder}{HTML}{DDDDDD}
+
+\mdfdefinestyle{codebox}{
+    backgroundcolor=code,
+    linecolor=codeborder,
+    linewidth=0.5pt,
+    roundcorner=2.5pt,
+    innerleftmargin=5pt,
+    innerrightmargin=5pt,
+    innertopmargin=5pt,
+    innerbottommargin=5pt,
+    skipabove=\glueexpr 3.75pt + \parskip\relax,
+}
+\mdfsetup{
+    skipbelow=\glueexpr 6.25pt - \parskip\relax
+}
+\surroundwithmdframed[style=codebox]{minted}
+% Listings included from files arrive as \inputminted, a command rather than an
+% environment, so the hook above never sees them. Give them the same box. Deferred,
+% because LyX loads minted after this preamble.
+\AtBeginDocument{%
+  \let\PlainInputMinted\inputminted
+  \renewcommand{\inputminted}[3][]{%
+    \begin{mdframed}[style=codebox]\PlainInputMinted[#1]{#2}{#3}\end{mdframed}}%
+}
+% minted 3 boxes every hyphen, defining \PYGZhy as \mbox{-}, so that a line can never
+% break inside an operator such as ->. The box also hides the hyphen from the font's
+% shaper, so the arrow ligature never forms. Listings here never break at hyphens
+% anyway, fvextra forbids it, so the patch is switched off. Harmless with a minted
+% that does not define it.
+\makeatletter
+\AtBeginDocument{\let\minted@patch@PygmentsZhy\relax}
+\makeatother
+
+\usepackage{tcolorbox}
+\usepackage{scalefnt}
+\usepackage{dsfont}
+
+\newcommand{\InlineCodeScale}{0.9  }
+\newcommand{\InlineCodeRaise}{0.1em}
+
+\AtBeginDocument{%
+  \setmintedinline{%
+    bgcolor=none,
+    breaklines=false,
+    fontsize={\scalefont{\InlineCodeScale}},
+    fontseries=auto,
+    fontshape=auto
+  }%
+  \renewcommand{\FancyVerbFormatInline}[1]{%
+    \raisebox{\InlineCodeRaise}{%
+      \tcbox[
+        on line,
+        colback=code,
+        colframe=codeborder,
+        boxrule=0.5pt,
+        arc=1.75pt,
+        outer arc=2.25pt,
+        boxsep=0pt,
+        left=1.5pt,
+        right=1.5pt,
+        top=1.0pt,
+        bottom=0.5pt
+      ]{\strut\smash{#1}}%
+    }%
+  }%
+}
+\end_preamble
+\use_default_options true
+\begin_modules
+fix-cm
+fixme
+theorems-ams-bytype
+theorems-sec-bytype
+eqs-within-sections
+\end_modules
+\maintain_unincluded_children no
+\language english
+\language_package default
+\inputencoding utf8
+\fontencoding auto
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "ADOBESourceCodePro" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts true
+\font_sc false
+\font_roman_osf false
+\font_sans_osf false
+\font_typewriter_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format pdf5
+\output_sync 1
+\bibtex_command biber
+\index_command default
+\float_placement H
+\float_alignment center
+\paperfontsize 9
+\spacing single
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks true
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize letter
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine biblatex
+\cite_engine_type authoryear
+\biblio_style plain
+\biblio_options maxbibnames=99
+\biblatex_bibstyle numeric
+\biblatex_citestyle numeric
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date true
+\justification false
+\crossref_package refstyle
+\use_formatted_ref 0
+\use_minted 1
+\use_lineno 0
+\backgroundcolor none
+\fontcolor none
+\notefontcolor lightgray
+\boxbgcolor red
+\table_border_color default
+\table_odd_row_color default
+\table_even_row_color default
+\table_alt_row_colors_start 1
+\index Index
+\shortcut idx
+\color #006600
+\end_index
+\leftmargin 0.625in
+\topmargin 1in
+\rightmargin 0.625in
+\bottommargin 1in
+\headheight 0.5in
+\headsep 0.5in
+\footskip 0.5in
+\columnsep 0.25in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation skip
+\defskip halfline
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 1
+\papercolumns 1
+\papersides 1
+\paperpagestyle headings
+\tablestyle No_Borders
+\listings_params "style=friendly"
+\bullet 1 0 9 -1
+\bullet 3 0 7 -1
+\tracking_changes false
+\output_changes false
+\change_bars false
+\postpone_fragile_content false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\docbook_table_output 0
+\docbook_mathml_prefix 1
+\docbook_mathml_version 0
+\end_header
+
+\begin_body
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+Mathematics and programming often describe the same pattern in different languages.
+ Mathematics begins with a collection of objects,
+ equips them with operations,
+ distinguishes particular objects when necessary,
+ and states laws relating them.
+ A 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ type begins with values,
+ gives them operations through functions and methods,
+ may provide distinguished values through its class,
+ and specifies how all of these are expected to behave.
+ This text develops its constructions by moving deliberately between those two descriptions.
+\end_layout
+
+\begin_layout Subsection
+Reading the correspondence
+\end_layout
+
+\begin_layout Standard
+The correspondence is a reading convention,
+ not an identification of mathematics with 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+.
+ When a mathematical object and a piece of code are placed beside one another,
+ the claim is only that they play the same role in the construction at hand.
+ Features with no faithful counterpart are stated separately.
+\end_layout
+
+\begin_layout Standard
+Functions give the notation its first example.
+ A function from a type 
+\begin_inset Formula $A$
+\end_inset
+
+ to a type 
+\begin_inset Formula $B$
+\end_inset
+
+ is written 
+\begin_inset Formula $f\colon A\to B$
+\end_inset
+
+;
+ this may be read as saying that 
+\begin_inset Formula $f$
+\end_inset
+
+ has the function type 
+\begin_inset Formula $A\to B$
+\end_inset
+
+.
+ The same convention applies to every object:
+ 
+\begin_inset Formula $x\colon A$
+\end_inset
+
+ says that 
+\begin_inset Formula $x$
+\end_inset
+
+ has type 
+\begin_inset Formula $A$
+\end_inset
+
+.
+ Classical set notation often expresses the corresponding carrier-element relation as 
+\begin_inset Formula $x\in A$
+\end_inset
+
+.
+ This text uses the colon for typing and reserves 
+\begin_inset Formula $x\in X$
+\end_inset
+
+ for membership in an actual set or container 
+\begin_inset Formula $X$
+\end_inset
+
+.
+ The former states what 
+\begin_inset Formula $x$
+\end_inset
+
+ is;
+ the latter asks whether 
+\begin_inset Formula $X$
+\end_inset
+
+ contains it.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+carrier A mathematical type 
+\begin_inset Formula $A$
+\end_inset
+
+ corresponds to a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ type.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+element A judgement 
+\begin_inset Formula $x\colon A$
+\end_inset
+
+ corresponds to a value 
+\begin_inset Formula $x$
+\end_inset
+
+ of that type.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+operation A map 
+\begin_inset Formula $f\colon A\to B$
+\end_inset
+
+ corresponds to a function or method,
+ often exposed by an operator.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+constant A distinguished object 
+\begin_inset Formula $e\colon A$
+\end_inset
+
+ corresponds to a value or constructor supplied by the class.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+law A mathematical equation or relation corresponds to a behavioural contract.
+ The interface can describe its shape;
+ a proof establishes the law,
+ while tests check an implementation against it.
+\end_layout
+
+\begin_layout Standard
+The corresponding annotations in 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ are 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+x:
+ A
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+f:
+ Callable[[A],
+ B]
+\end_layout
+
+\end_inset
+
+.
+ They describe which values a callable accepts and returns;
+ they do not claim that the callable is pure,
+ total,
+ or otherwise identical to a mathematical function.
+\end_layout
+
+\begin_layout Standard
+The spelling of an operation does not determine its meaning.
+ The operator 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+|
+\end_layout
+
+\end_inset
+
+ may express disjunction,
+ set union,
+ or the union of types;
+ its carrier determines which reading applies.
+ Reusing a symbol is useful precisely when the same structural role appears in several settings.
+ Whenever such a pairing appears below,
+ the surrounding definition supplies the meaning,
+ something that is true even in the context of mathematics.
+\end_layout
+
+\begin_layout Subsection
+The object-oriented reading
+\end_layout
+
+\begin_layout Standard
+A 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+class
+\end_layout
+
+\end_inset
+
+ is a natural unit for this translation because it places a carrier and its operations under one name.
+ A value 
+\begin_inset Formula $x\colon A$
+\end_inset
+
+ is represented by an instance of the corresponding class,
+ its methods implement operations,
+ and its class-level interface supplies distinguished values or constructors.
+ Type annotations describe which values an operation accepts and returns.
+ They express the outline of a structure,
+ while its laws remain part of its contract.
+\end_layout
+
+\begin_layout Standard
+Composition and inheritance answer different questions.
+ Composition says that a value
+\emph on
+ has
+\emph default
+ a representation made from other values:
+ a rational number,
+ for example,
+ has a numerator and a denominator.
+ Inheritance says that one type
+\emph on
+ is
+\emph default
+ (a specialization of) another and may be used wherever the more general contract is expected.
+ In the notation above,
+ a value 
+\begin_inset Formula $x\colon B$
+\end_inset
+
+ may be used where a value of type 
+\begin_inset Formula $A$
+\end_inset
+
+ is expected whenever 
+\begin_inset Formula $B$
+\end_inset
+
+ specializes 
+\begin_inset Formula $A$
+\end_inset
+
+.
+ It is therefore appropriate only when the subclass preserves that contract,
+ not merely when inheriting its code is convenient.
+\end_layout
+
+\begin_layout Standard
+Abstract base classes make this division explicit.
+ Abstract methods name the operations a concrete carrier must provide;
+ concrete methods may supply operations that follow from them.
+ A subclass then chooses a representation and implements the primitive operations,
+ while inheriting the common consequences.
+ This reduces repetition without hiding which mathematical assumptions the shared behaviour uses.
+\end_layout
+
+\begin_layout Standard
+One practical qualification applies to every program listing below.
+ Its signatures display the mathematical operation,
+ not every interoperability path expected of a production 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ type.
+ A closed operation 
+\begin_inset Formula $S\times S\to S$
+\end_inset
+
+ is therefore shown with 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+other:
+ Self
+\end_layout
+
+\end_inset
+
+ even when its concrete implementation should accept a wider operand domain.
+ A type such as 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Frac
+\end_layout
+
+\end_inset
+
+ may also accept 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+int
+\end_layout
+
+\end_inset
+
+,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+float
+\end_layout
+
+\end_inset
+
+,
+ or other compatible representations;
+ it must normalize them according to its exactness and numerical-stability contract,
+ return 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+NotImplemented
+\end_layout
+
+\end_inset
+
+ when it cannot do so,
+ and ordinarily provide the corresponding reflected operator.
+ From the perspective of callable substitutability,
+ accepting more inputs is a contravariant widening of the operand parameter.
+ Reflected dispatch does not assert that the operation is commutative;
+ it only allows either operand to participate in the binary-operator protocol.
+ This interoperability machinery is omitted unless it is itself under discussion.
+\end_layout
+
+\begin_layout Standard
+Each construction in this text therefore follows the same pattern:
+ state the carrier,
+ operations,
+ distinguished values,
+ and laws;
+ translate the supported structure into a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ interface;
+ choose its representation;
+ and check the resulting correspondence,
+ naming any approximation.
+ Code is used as a display language for these definitions,
+ not as a substitute for them.
+ Names from the standard library are imported and written bare,
+ and each listing opens with the imports it needs,
+ so that a signature reads as closely to its mathematical statement as the language allows.
+ The listings are drawn verbatim from source files that are checked alongside the library,
+ so the text shows the code as it currently stands.
+ With these conventions in place,
+ the later correspondences can be read without repeatedly explaining the translation itself.
+\end_layout
+
+\begin_layout Subsection
+From operations to structures
+\end_layout
+
+\begin_layout Standard
+Let 
+\begin_inset Formula $S$
+\end_inset
+
+ be a type.
+ A binary operation on 
+\begin_inset Formula $S$
+\end_inset
+
+ is a value 
+\begin_inset Formula $\circ\colon S\times S\to S$
+\end_inset
+
+.
+ Consequently,
+ whenever 
+\begin_inset Formula $a\colon S$
+\end_inset
+
+ and 
+\begin_inset Formula $b\colon S$
+\end_inset
+
+,
+ their combination satisfies 
+\begin_inset Formula $a\circ b\colon S$
+\end_inset
+
+.
+ The operation is therefore closed on its carrier.
+ A carrier equipped with one closed binary operation is called a 
+\emph on
+magma
+\emph default
+.
+\end_layout
+
+\begin_layout Standard
+Closure gives the operation its shape but says nothing about how repeated combinations behave.
+ If 
+\begin_inset Formula 
+\[
+(a\circ b)\circ c=a\circ(b\circ c)\qquad(a,b,c\colon S),
+\]
+
+\end_inset
+
+ then the operation is associative and the magma is a 
+\emph on
+semigroup
+\emph default
+.
+ No new operation has been added;
+ the same carrier has acquired a stronger law.
+\end_layout
+
+\begin_layout Standard
+If there is also a distinguished value 
+\begin_inset Formula $\mathds{1}\colon S$
+\end_inset
+
+ such that 
+\begin_inset Formula 
+\[
+\mathds{1}\circ a=a=a\circ\mathds{1}\qquad(a\colon S),
+\]
+
+\end_inset
+
+ then 
+\begin_inset Formula $e$
+\end_inset
+
+ is an identity and the semigroup is a 
+\emph on
+monoid
+\emph default
+.
+ The identity may equally be read as a nullary operation:
+ it accepts no values and returns one of type 
+\begin_inset Formula $S$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Finally,
+ if every 
+\begin_inset Formula $a\colon S$
+\end_inset
+
+ has a value 
+\begin_inset Formula $a^{-1}\colon S$
+\end_inset
+
+ satisfying 
+\begin_inset Formula 
+\[
+a^{-1}\circ a=\mathds{1}=a\circ a^{-1}\qquad(a\colon S),
+\]
+
+\end_inset
+
+ then 
+\begin_inset Formula $a^{-1}$
+\end_inset
+
+ is the inverse of 
+\begin_inset Formula $a$
+\end_inset
+
+ and the monoid is a 
+\emph on
+group
+\emph default
+.
+ Both equations belong to the contract because the operation need not be commutative.
+ Inversion is therefore a unary operation on the carrier,
+ assigning 
+\begin_inset Formula $a\mapsto a^{-1}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The complete correspondence can be stated directly as a class hierarchy.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand inputminted
+filename "listings/group.py"
+lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
+literal "true"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The listing writes the operation additively,
+ so that the code reads with symbols the language already owns:
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
++
+\end_layout
+
+\end_inset
+
+ for 
+\begin_inset Formula $\circ$
+\end_inset
+
+,
+ the literal 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+
+ for 
+\begin_inset Formula $\mathds{1}$
+\end_inset
+
+,
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+-a
+\end_layout
+
+\end_inset
+
+ for 
+\begin_inset Formula $a^{-1}$
+\end_inset
+
+.
+ The abstract 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
++
+\end_layout
+
+\end_inset
+
+ of 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Magma
+\end_layout
+
+\end_inset
+
+ mirrors 
+\begin_inset Formula $S\times S\to S$
+\end_inset
+
+:
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Self
+\end_layout
+
+\end_inset
+
+ binds the other operand and the result to the type of the receiver,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+abstractmethod
+\end_layout
+
+\end_inset
+
+ leaves the operation itself to a concrete carrier,
+ and the body that declines with 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+NotImplemented
+\end_layout
+
+\end_inset
+
+ is where every chain of fallbacks ends.
+ Unary plus,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
++a
+\end_layout
+
+\end_inset
+
+,
+ is 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a
+\end_layout
+
+\end_inset
+
+ itself,
+ kept so that the two signs read as a pair once the inverse arrives.
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Semigroup
+\end_layout
+
+\end_inset
+
+ adds no method because associativity does not change the interface;
+ its declaration promises the stronger law.
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Monoid
+\end_layout
+
+\end_inset
+
+ spells the identity as the literal 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+
+ on either side:
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a + 0
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0 + a
+\end_layout
+
+\end_inset
+
+ are 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a
+\end_layout
+
+\end_inset
+
+,
+ while a carrier writes its own 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a + b
+\end_layout
+
+\end_inset
+
+ and hands everything else up to the class above.
+ The left-hand spelling is the one the builtin 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+sum
+\end_layout
+
+\end_inset
+
+ relies on,
+ since it starts its fold from 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+
+,
+ so a monoid folds with no start value to declare.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Group
+\end_layout
+
+\end_inset
+
+ writes the inverse as the unary minus,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+-a
+\end_layout
+
+\end_inset
+
+,
+ and derives subtraction from it,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a - b
+\end_layout
+
+\end_inset
+
+ being 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a + (-b)
+\end_layout
+
+\end_inset
+
+,
+ so the derived operation costs the carrier nothing.
+ Commutativity is not a rung:
+ a magma,
+ a monoid or a group may each have it or lack it,
+ so 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Abelian
+\end_layout
+
+\end_inset
+
+ states it as a mixin on the bare magma.
+ When the operation commutes,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+b + a
+\end_layout
+
+\end_inset
+
+ may be answered by 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+a + b
+\end_layout
+
+\end_inset
+
+,
+ which is exactly the reflected form of 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
++
+\end_layout
+
+\end_inset
+
+ that the operator protocol asks for when the left operand declines.
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+AbelianGroup
+\end_layout
+
+\end_inset
+
+ inherits its operations from 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Group
+\end_layout
+
+\end_inset
+
+ and its promise from 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Abelian
+\end_layout
+
+\end_inset
+
+,
+ and names the mixin first so that this reflected form is found before the narrower one that answers only 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+0 + a
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand inputminted
+filename "listings/abelian.py"
+lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
+literal "true"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The inheritance now reads in the same direction as the mathematics:
+ every group is a monoid,
+ every monoid is a semigroup,
+ and every semigroup is a magma.
+ The converse does not follow,
+ because possessing an operation does not establish the laws required by the stronger structures.
+\end_layout
+
+\begin_layout Standard
+This 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ pattern is used throught the text to progressively build concepts from both formal perspectives:
+ a math and a programmatic one,
+ which is why a simple examle is outlined here.
+\end_layout
+
+\begin_layout Section
+Climbing the ladder
+\end_layout
+
+\begin_layout Standard
+This work revolves around discrete mathematical structures,
+ approached from one uniform perspective in which the more complex unfold from the simpler.
+\end_layout
+
+\begin_layout Subsection
+Ordering
+\end_layout
+
+\begin_layout Standard
+Before starting any discussion around scalars or containers,
+ there is one structure they all share:
+ ordering.
+\end_layout
+
+\begin_layout Definition
+\begin_inset Argument 1
+status open
+
+\begin_layout Plain Layout
+preorder
+\end_layout
+
+\end_inset
+
+A binary relation 
+\begin_inset Formula $\lesssim$
+\end_inset
+
+ on a type 
+\begin_inset Formula $X$
+\end_inset
+
+ is called a preorder or quasiorder if it is reflexive and transitive:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+(reflexivity) 
+\begin_inset Formula $\forall a:X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\lesssim a$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+(transitivity) 
+\begin_inset Formula $\forall a,b,c:X$
+\end_inset
+
+,
+ if 
+\begin_inset Formula $a\lesssim b$
+\end_inset
+
+ and 
+\begin_inset Formula $b\lesssim c$
+\end_inset
+
+ then 
+\begin_inset Formula $a\lesssim c$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+In 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+,
+ a preorder asks for one of two methods.
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+<=
+\end_layout
+
+\end_inset
+
+ spells 
+\begin_inset Formula $a\lesssim b$
+\end_inset
+
+,
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+>=
+\end_layout
+
+\end_inset
+
+ is the same relation read from the other side,
+ so whichever of the two is not written is derived from the one that is.
+ Reflexivity and transitivity are laws to be proved of an implementation,
+ not methods to be added to it.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand lstinputlisting
+filename "listings/preorder.py"
+lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
+literal "true"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Definition
+\begin_inset Argument 1
+status open
+
+\begin_layout Plain Layout
+partial order
+\end_layout
+
+\end_inset
+
+A preorder 
+\begin_inset Formula $\leq$
+\end_inset
+
+ on a type 
+\begin_inset Formula $X$
+\end_inset
+
+ is called a partial order if it is also antisymmetric:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+(antisymmetry) 
+\begin_inset Formula $\forall a,b:X$
+\end_inset
+
+,
+ if 
+\begin_inset Formula $a\leq b$
+\end_inset
+
+ and 
+\begin_inset Formula $b\leq a$
+\end_inset
+
+ then 
+\begin_inset Formula $a=b$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Antisymmetry is what allows equality to be derived from the order rather than declared beside it:
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+==
+\end_layout
+
+\end_inset
+
+ becomes comparison in both directions,
+ and the strict 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+<
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+>
+\end_layout
+
+\end_inset
+
+ follow as comparison without equality.
+ The concrete carrier is asked for nothing new;
+ the one method it writes now stands behind every comparison operator.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand lstinputlisting
+filename "listings/partial.py"
+lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
+literal "true"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Definition
+\begin_inset Argument 1
+status open
+
+\begin_layout Plain Layout
+total order
+\end_layout
+
+\end_inset
+
+A partial order 
+\begin_inset Formula $\leq$
+\end_inset
+
+ on a type 
+\begin_inset Formula $X$
+\end_inset
+
+ is called a total order,
+ or a linear order,
+ if any two values are comparable:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+(totality) 
+\begin_inset Formula $\forall a,b:X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\leq b$
+\end_inset
+
+ or 
+\begin_inset Formula $b\leq a$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Totality turns the strict order into a negation:
+ 
+\begin_inset Formula $a<b$
+\end_inset
+
+ holds exactly when 
+\begin_inset Formula $b\leq a$
+\end_inset
+
+ fails,
+ so 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+<
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+>
+\end_layout
+
+\end_inset
+
+ no longer need the test for equality;
+ each is the negation of the opposite weak comparison.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand lstinputlisting
+filename "listings/total.py"
+lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
+literal "true"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As on the algebraic ladder,
+ each rung adds a law and takes work away:
+ the preorder asks for one method,
+ and every stronger order derives more from it rather than asking for more.
+\end_layout
+
+\begin_layout Subsection
+Scalar types —
+ the numeric foundation of containers
+\end_layout
+
+\begin_layout Standard
+Before diving into containers,
+ a discussion of the scalar types is warranted,
+ partly because they provide one of the two generalization axes that drive the simplicial container tower developed here.
+\end_layout
+
+\begin_layout Subsubsection
+Boolean algebra (based on 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+bool
+\end_layout
+
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "main"
+encoding "default"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
