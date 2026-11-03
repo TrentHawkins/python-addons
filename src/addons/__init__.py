@@ -20,9 +20,8 @@ class scalar:
 		numer: int = 0,
 		denom: int = 1, /
 	) -> Self:
-		if numer < 0 \
-		or denom < 0:
-			raise ValueError
+		if numer < 0: raise ValueError
+		if denom < 0: raise ValueError
 
 		if not denom:
 			numer = 1
@@ -41,3 +40,39 @@ class scalar:
 
 	def __setattr__(self, name: str, value: int) -> None: raise AttributeError
 	def __delattr__(self, name: str            ) -> None: raise AttributeError
+
+	def __float__(self) -> float:
+		return self.denom / (self.numer + self.denom)
+
+	def __add__(self, value: scalar) -> Self:
+		cls = type(self)
+
+		return cls(
+			self.numer * value.denom + value.numer * self.denom,
+			self.denom * value.denom
+		)
+
+	def __matmul__(self, value: scalar) -> Self:
+		return ~(~self + ~value)
+
+	def __mul__(self, value: scalar) -> Self:
+		cls = type(self)
+
+		return cls(
+			self.numer * value.numer,
+			self.denom * value.denom,
+		)
+
+	def __and__(self, value: scalar) -> Self: return (self + value) + (self * value)
+	def  __or__(self, value: scalar) -> Self: return (self @ value) @ (self * value)
+	def __xor__(self, value: scalar) -> Self: return (self @ value) - (self & value)
+	def __sub__(self, value: scalar) -> Self:
+		return self & ~value
+
+	def __invert__(self) -> Self:
+		cls = type(self)
+
+		return cls(
+			self.denom,
+			self.numer,
+		)
