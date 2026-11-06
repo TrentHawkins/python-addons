@@ -1,80 +1,79 @@
 from __future__ import annotations
 
 
-from collections import defaultdict
-from typing import Hashable, Iterable, Mapping, Self
+import collections
+import json
+import operator
+import typing
+
+from . import Bool
 
 
-class index[I: Hashable](defaultdict[I, bool]):
+type binary[T] = typing.Callable[[T, T], T]
 
-	def __init__(self, items: Iterable[I] | Mapping[I, bool] = (), complement: bool | None = None):
-		self.complement = complement if complement is not None else items.complement if isinstance(items, index) else False
 
-		if not isinstance(items, Mapping):
-			items = dict.fromkeys(items, not self.complement)
+class Set[I: typing.Hashable](collections.defaultdict[I, Bool]):
 
-		super().__init__(lambda: self.complement, items)
+	default: Bool
+
+
+	def __init__(self, items: typing.Iterable[I] | typing.Mapping[I, Bool] = (),
+		complement: Bool | None = None,
+	):
+		self.default = complement if complement is not None else items.default if isinstance(items, Set) else Bool.max()
+
+		if not isinstance(items, typing.Mapping):
+			items = dict.fromkeys(items, ~self.default)
+
+		super().__init__(lambda: self.default, items)
 
 	def __iter__(self):
 		for key, value in self.items():
-			if value is not self.complement:
+			if value != self.default:
 				yield key
 
 	def __repr__(self) -> str:
-		return ("~" if self.complement else "") + repr(set(self))
+		return json.dumps(self,
+			default = float,
+			indent = 4,
+		)
 
 	def __bool__(self) -> bool:
-		return self.complement or any(self.values())
+		return bool(self.default) or any(self.values())
 
 	def __len__(self) -> int:
-		return sum(value is not self.complement for value in self.values())
+		return sum(True for _ in self)
 
 	def __contains__(self, item: I) -> bool:
-		return self[item]
+		return bool(self[item])
 
-	def __invert__(self) -> Self:
+	def __invert__(self) -> typing.Self:
 		cls = type(self)
 
-		return cls({key: not value for key, value in self.items()},
-			complement = not self.complement,
+		return cls({key: ~value for key, value in self.items()},
+			complement = ~self.default,
 		)
 
-	def __or__(self, value: Self) -> Self:
-		cls = type(self)
+	def  __or__ (self, value: typing.Self | Bool) -> typing.Self: return self.operate(value, operator.or_ )
+	def  __and__(self, value: typing.Self | Bool) -> typing.Self: return self.operate(value, operator.and_)
+	def  __sub__(self, value: typing.Self | Bool) -> typing.Self: return self.operate(value, operator.sub )
+	def  __xor__(self, value: typing.Self | Bool) -> typing.Self: return self.operate(value, operator.xor )
 
-		return cls({key: self[key] or value[key] for key in self.keys() | value.keys()},
-			complement = self.complement or value.complement,
-		)
+	def __ror__ (self, value: typing.Self | Bool) -> typing.Self: return self | value
+	def __rand__(self, value: typing.Self | Bool) -> typing.Self: return self & value
+	def __rxor__(self, value: typing.Self | Bool) -> typing.Self: return self ^ value
+	def __rsub__(self, value: typing.Self | Bool) -> typing.Self:
+		return self.operate(value, lambda left, right: right - left)
 
-	def __and__(self, value: Self) -> Self:
-		cls = type(self)
 
-		return cls({key: self[key] and value[key] for key in self.keys() | value.keys()},
-			complement = self.complement and value.complement,
-		)
+	def get(self, key: I) -> Bool:
+		return super().get(key, self.default)
 
-	def __sub__(self, value: Self) -> Self:
-		cls = type(self)
-
-		return cls({key: self[key] and not value[key] for key in self.keys() | value.keys()},
-			complement = self.complement and not value.complement,
-		)
-
-	def __xor__(self, value: Self) -> Self:
-		cls = type(self)
-
-		return cls({key: self[key] is not value[key] for key in self.keys() | value.keys()},
-			complement = self.complement is not value.complement,
-		)
-
-	def get(self, key: I) -> bool:
-		return super().get(key, self.complement)
-
-	def setdefault(self, key: I) -> bool:
-		return super().setdefault(key, self.complement)
+	def setdefault(self, key: I) -> Bool:
+		return super().setdefault(key, self.default)
 
 	def add(self, item: I) -> None:
-		self[item] = True
+		self[item] = Bool.min()
 
 	def remove(self, item: I) -> None:
 		if item not in self:
@@ -83,4 +82,21 @@ class index[I: Hashable](defaultdict[I, bool]):
 		self.discard(item)
 
 	def discard(self, item: I) -> None:
-		self[item] = False
+		self[item] = Bool.max()
+
+	def operate(self, value: typing.Self | Bool,
+		operation: binary[Bool],
+	) -> typing.Self:
+		cls = type(self)
+
+		if isinstance(value, Bool):
+			items = {key: operation(member, value) for key, member in self.items()}
+			default = operation(self.default, value)
+
+		else:
+			items = {key: operation(self[key], value[key]) for key in self.keys() | value.keys()}
+			default = operation(self.default, value.default)
+
+		return cls(items,
+			complement = default,
+		)

@@ -51,17 +51,17 @@ class Number[T: Numeric]:
 	def __int__  (self) -> int  : return int  (self._)
 	def __float__(self) -> float: return float(self._)
 
-	def __add__(self, other: typing.Self, /) -> typing.Self: return self.operator(other, operator = operator.add)
-	def __mul__(self, other: typing.Self, /) -> typing.Self: return self.operator(other, operator = operator.mul)
+	def __add__(self, other: typing.Self, /) -> typing.Self: return self.operate(other, operator = operator.add)
+	def __mul__(self, other: typing.Self, /) -> typing.Self: return self.operate(other, operator = operator.mul)
 
-	def __pos__(self) -> typing.Self: return self.operator(operator = operator.pos)
-	def __abs__(self) -> typing.Self: return self.operator(operator = operator.abs)
+	def __pos__(self) -> typing.Self: return self.operate(operator = operator.pos)
+	def __abs__(self) -> typing.Self: return self.operate(operator = operator.abs)
 
-	def __eq__(self, other: object     , /) -> bool: return self.relation(other, relation = operator.eq)
-	def __le__(self, other: typing.Self, /) -> bool: return self.relation(other, relation = operator.le)
-	def __ge__(self, other: typing.Self, /) -> bool: return self.relation(other, relation = operator.ge)
-	def __lt__(self, other: typing.Self, /) -> bool: return self.relation(other, relation = operator.lt)
-	def __gt__(self, other: typing.Self, /) -> bool: return self.relation(other, relation = operator.gt)
+	def __eq__(self, other: object     , /) -> bool: return self.relate(other, relation = operator.eq)
+	def __le__(self, other: typing.Self, /) -> bool: return self.relate(other, relation = operator.le)
+	def __ge__(self, other: typing.Self, /) -> bool: return self.relate(other, relation = operator.ge)
+	def __lt__(self, other: typing.Self, /) -> bool: return self.relate(other, relation = operator.lt)
+	def __gt__(self, other: typing.Self, /) -> bool: return self.relate(other, relation = operator.gt)
 
 	@classmethod
 	def zero(cls) -> typing.Self:
@@ -84,12 +84,12 @@ class Number[T: Numeric]:
 		)
 
 	@typing.overload
-	def operator(self, /, *, operator: typing.Callable[[T], T]) -> typing.Self: ...
+	def operate(self, /, *, operator: typing.Callable[[T], T]) -> typing.Self: ...
 
 	@typing.overload
-	def operator(self, other: typing.Self, /, *, operator: typing.Callable[[T, T], T]) -> typing.Self: ...
+	def operate(self, other: typing.Self, /, *, operator: typing.Callable[[T, T], T]) -> typing.Self: ...
 
-	def operator(self, *others: typing.Self, operator: typing.Callable[..., T]) -> typing.Self:
+	def operate(self, *others: typing.Self, operator: typing.Callable[..., T]) -> typing.Self:
 		if not others:
 			return type(self)(operator(self._))
 
@@ -100,7 +100,7 @@ class Number[T: Numeric]:
 
 		return type(self)(operator(self._, other._))
 
-	def relation(self, other: object, relation: typing.Callable[[T, T], bool]) -> bool:
+	def relate(self, other: object, relation: typing.Callable[[T, T], bool]) -> bool:
 		if type(other) is not type(self):
 			return NotImplemented
 
