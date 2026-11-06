@@ -4,13 +4,13 @@ from __future__ import annotations
 
 
 from itertools import product
-from operator import and_, or_, sub, xor
-from typing import assert_type
+from operator import and_, iand, ior, isub, ixor, or_, sub, xor
+from typing import Callable, Iterable, Mapping, Self, assert_type
 
 import pytest
 
 from addons import Bool
-from addons.crisp import Set, binary
+from addons.crisp import Set
 
 
 class TestSet:
@@ -18,12 +18,68 @@ class TestSet:
 	keys = ("a", "b")
 	bounds = (Bool.max(), Bool.min())
 	operations = (or_, and_, sub, xor)
+	reductions = (("union", or_), ("intersection", and_), ("difference", sub))
+	updates = (
+		("update", "union", ior),
+		("intersection_update", "intersection", iand),
+		("difference_update", "difference", isub),
+		("symmetric_difference_update", "symmetric_difference", ixor),
+	)
 	associative = (or_, and_, xor)
 	states = tuple((first, second) for first, second in product((None, False, True), repeat = 2))
 	cases = tuple(product((False, True), states))
 
 	class Specialized(Set[str]):
 		...
+
+	class InvertedScalars(Set[str]):
+
+		def __init__(self, items: Iterable[str] | Mapping[str, Bool] | Bool = (),
+			default: Bool | None = None,
+		):
+			if isinstance(items, Bool):
+				items = ~items
+
+			super().__init__(items, default = default)
+
+	class EmptyResults(Set[str]):
+
+		def union(self, *others: Iterable[str] | Mapping[str, Bool] | Bool) -> Self:
+			return type(self)(Bool.max())
+
+		def intersection(self, *others: Iterable[str] | Mapping[str, Bool] | Bool) -> Self:
+			return type(self)(Bool.max())
+
+		def difference(self, *others: Iterable[str] | Mapping[str, Bool] | Bool) -> Self:
+			return type(self)(Bool.max())
+
+		def symmetric_difference(self, other: Iterable[str] | Mapping[str, Bool] | Bool) -> Self:
+			return type(self)(Bool.max())
+
+	class IdentityResults(Set[str]):
+
+		def union(self, *others: Iterable[str] | Mapping[str, Bool] | Bool) -> Self:
+			return self
+
+		def intersection(self, *others: Iterable[str] | Mapping[str, Bool] | Bool) -> Self:
+			return self
+
+		def difference(self, *others: Iterable[str] | Mapping[str, Bool] | Bool) -> Self:
+			return self
+
+		def symmetric_difference(self, other: Iterable[str] | Mapping[str, Bool] | Bool) -> Self:
+			return self
+
+	class Reflected(Set[str]):
+
+		def __ror__(self, other: Iterable[str] | Mapping[str, Bool] | Bool) -> Self:
+			return type(self)(["union"])
+
+		def __rand__(self, other: Iterable[str] | Mapping[str, Bool] | Bool) -> Self:
+			return type(self)(["intersection"])
+
+		def __rsub__(self, other: Iterable[str] | Mapping[str, Bool] | Bool) -> Self:
+			return type(self)(["difference"])
 
 	@staticmethod
 	def truth(value: bool) -> Bool:
@@ -32,16 +88,37 @@ class TestSet:
 	@classmethod
 	def make(cls, complement: bool, states: tuple[bool | None, bool | None]) -> Set[str]:
 		return Set({key: cls.truth(value) for key, value in zip(cls.keys, states) if value is not None},
-			complement = cls.truth(complement),
+			default = cls.truth(complement),
 		)
 
 	@classmethod
 	def signature(cls, value: Set[str]) -> tuple[Bool, ...]:
 		return (value.default, *(value.get(key) for key in cls.keys))
 
+	@pytest.mark.parametrize("scalar", bounds)
+	def test_scalar_construction_defines_constant_membership(self, scalar: Bool):
+		value = Set[str](scalar)
+
+		assert_type(value, Set[str])
+		assert value.default is scalar
+		assert not value.keys()
+		assert len(value) == 0
+		assert bool(value) is bool(scalar)
+		assert value["missing"] is scalar
+		assert not set(value)
+
+	@pytest.mark.parametrize("scalar", bounds)
+	@pytest.mark.parametrize("default", bounds)
+	def test_explicit_default_overrides_scalar_construction(self, scalar: Bool, default: Bool):
+		value = Set[str](scalar, default = default)
+
+		assert value.default is default
+		assert not value.keys()
+		assert value["missing"] is default
+
 	@pytest.mark.parametrize("complement", (False, True))
 	def test_iterable_defines_exceptions_to_the_default(self, complement: bool):
-		value = Set(iter(self.keys), complement = self.truth(complement))
+		value = Set(iter(self.keys), default = self.truth(complement))
 
 		assert type(value.default) is Bool
 		assert bool(value.default) is complement
@@ -53,8 +130,8 @@ class TestSet:
 
 	@pytest.mark.parametrize("complement", bounds)
 	def test_explicit_default_is_preserved_even_when_false(self, complement: Bool):
-		value = Set[str](complement = complement)
-		copy = Set(~value, complement = complement)
+		value = Set[str](default = complement)
+		copy = Set(~value, default = complement)
 
 		assert value.default is complement
 		assert copy.default is complement
@@ -65,7 +142,7 @@ class TestSet:
 	def test_mapping_and_copy_preserve_actual_memberships(self, complement: bool, states: tuple[bool | None, bool | None]):
 		value = self.make(complement, states)
 		copy = Set(value)
-		changed = Set(value, complement = ~value.default)
+		changed = Set(value, default = ~value.default)
 
 		assert dict(copy.items()) == dict(changed.items()) == dict(value.items())
 		assert copy.default == value.default
@@ -93,7 +170,7 @@ class TestSet:
 
 	@pytest.mark.parametrize("complement", (False, True))
 	def test_missing_membership_and_setdefault_insert_but_get_does_not(self, complement: bool):
-		value = Set[str](complement = self.truth(complement))
+		value = Set[str](default = self.truth(complement))
 
 		assert value.get("read") is value.default
 		assert "read" not in value.keys()
@@ -119,8 +196,8 @@ class TestSet:
 
 	@pytest.mark.parametrize("complement", (False, True))
 	def test_representations_show_the_finite_index(self, complement: bool):
-		empty = Set[str](complement = self.truth(complement))
-		single = Set(["a"], complement = self.truth(complement))
+		empty = Set[str](default = self.truth(complement))
+		single = Set(["a"], default = self.truth(complement))
 		prefix = "~" if complement else ""
 
 		assert repr(empty) == prefix + "set()"
@@ -139,10 +216,11 @@ class TestSet:
 		assert len(inverse) == len(value)
 
 	@pytest.mark.parametrize("operation", operations)
-	def test_binary_operations_cover_both_indices_and_defaults(self, operation: binary[Bool]):
+	def test_binary_operations_cover_both_indices_and_defaults(self, operation: Callable[[Bool, Bool], Bool]):
 		for (left_default, left_states), (right_default, right_states) in product(self.cases, repeat = 2):
 			left = self.make(left_default, left_states)
 			right = self.make(right_default, right_states)
+			right_items = dict(right.items())
 			keys = left.keys() | right.keys()
 			expected = tuple(operation(a, b) for a, b in zip(self.signature(left), self.signature(right)))
 			result = left.operate(right, operation)
@@ -150,8 +228,38 @@ class TestSet:
 			assert self.signature(result) == expected
 			assert result.keys() == keys
 			assert all(type(value) is Bool for value in result.values())
-			assert left.keys() == right.keys() == keys
+			assert left.keys() == keys
+			assert dict(right.items()) == right_items
 			assert result["new"] == operation(left.default, right.default)
+
+	@pytest.mark.parametrize("operation", operations)
+	@pytest.mark.parametrize("scalar", bounds)
+	def test_scalar_promotion_preserves_pointwise_operations(self, operation: Callable[[Bool, Bool], Bool], scalar: Bool):
+		for complement, states in self.cases:
+			value = self.make(complement, states)
+			expected = tuple(operation(member, scalar) for member in self.signature(value))
+			result = value.operate(scalar, operation)
+
+			assert self.signature(result) == expected
+			assert result.keys() == value.keys()
+
+	@pytest.mark.parametrize("scalar", bounds)
+	def test_constructor_interpretation_is_shared_by_operations(self, scalar: Bool):
+		direct = self.InvertedScalars(scalar)
+		value = self.InvertedScalars()
+		result = value | scalar
+
+		assert direct.default == result.default == ~scalar
+		assert not direct.keys()
+		assert not result.keys()
+		assert type(result) is self.InvertedScalars
+
+	@pytest.mark.parametrize("scalar", bounds)
+	@pytest.mark.parametrize("default", bounds)
+	def test_constructor_override_preserves_explicit_defaults(self, scalar: Bool, default: Bool):
+		value = self.InvertedScalars(scalar, default = default)
+
+		assert value.default is default
 
 	@pytest.mark.parametrize("default", bounds)
 	def test_operator_preserves_the_computed_default(self, default: Bool):
@@ -190,7 +298,7 @@ class TestSet:
 		assert not (value - true)
 
 	@pytest.mark.parametrize("operation", associative)
-	def test_pointwise_operations_remain_associative(self, operation: binary[Bool]):
+	def test_pointwise_operations_remain_associative(self, operation: Callable[[Bool, Bool], Bool]):
 		for first, second, third in product(self.cases, repeat = 3):
 			a, b, c = self.make(*first), self.make(*second), self.make(*third)
 			left = a.operate(b, operation).operate(c, operation)
@@ -200,7 +308,7 @@ class TestSet:
 
 	@pytest.mark.parametrize("complement", (False, True))
 	def test_membership_mutators_store_bool_values(self, complement: bool):
-		value = Set[str](complement = self.truth(complement))
+		value = Set[str](default = self.truth(complement))
 		value.add("a")
 
 		assert value["a"] == Bool.min()
@@ -232,3 +340,215 @@ class TestSet:
 			true | left, true & left, true - left, true ^ left,
 		):
 			assert type(result) is self.Specialized
+
+	@pytest.mark.parametrize("name, operation", reductions)
+	@pytest.mark.parametrize("complement, states", cases)
+	def test_reductions_fold_mixed_operands(self, name: str, operation: Callable[[Set[str], Set[str]], Set[str]],
+		complement: bool, states: tuple[bool | None, bool | None],
+	):
+		value = self.make(complement, states)
+		original = dict(value.items())
+		others = (["a"], {"b": Bool.min()}, Set(["b"], default = Bool.min()), Bool.max(), Bool.min())
+		expected = Set(value)
+
+		for other in others:
+			normalized = Set[str](default = other) if isinstance(other, Bool) else Set(other)
+			expected = operation(expected, normalized)
+
+		result = getattr(value, name)(*others)
+
+		assert self.signature(result) == self.signature(expected)
+		assert result.keys() == expected.keys()
+		assert dict(value.items()) == original
+		assert bool(value.default) is complement
+
+	@pytest.mark.parametrize("name, operation", reductions)
+	def test_reductions_accept_one_shot_iterables(self, name: str, operation: Callable[[Set[str], Set[str]], Set[str]]):
+		value = Set(self.keys)
+		result = getattr(value, name)(iter(["a"]))
+		expected = operation(Set(value), Set(["a"]))
+
+		assert self.signature(result) == self.signature(expected)
+
+	@pytest.mark.parametrize("name, operation", reductions)
+	@pytest.mark.parametrize("default", bounds)
+	def test_empty_reductions_return_fresh_copies(self, name: str,
+		operation: Callable[[TestSet.Specialized, Iterable[str] | Mapping[str, Bool] | Bool], TestSet.Specialized],
+		default: Bool,
+	):
+		value = self.Specialized({"a": Bool.min(), "b": Bool.max()}, default = default)
+
+		for result in (getattr(value, name)(), value.reduce(operation)):
+			assert result is not value
+			assert type(result) is self.Specialized
+			assert result.default == value.default
+			assert dict(result.items()) == dict(value.items())
+
+	@pytest.mark.parametrize("name, operation", reductions)
+	def test_reductions_use_reflected_operator_dispatch(self, name: str,
+		operation: Callable[[Set[str], Iterable[str] | Mapping[str, Bool] | Bool], Set[str]],
+	):
+		value = Set(["a"])
+		other = self.Reflected(["b"])
+
+		for result in (getattr(value, name)(other), value.reduce(operation, other)):
+			assert type(result) is self.Reflected
+			assert set(result) == {name}
+
+	def test_difference_reduction_groups_from_the_left(self):
+		value = Set(self.keys)
+
+		assert set(value.difference(["a"], ["a"])) == {"b"}
+
+	def test_reductions_preserve_subclasses_and_static_types(self):
+		value = self.Specialized(self.keys)
+
+		assert_type(value.union(["c"], Bool.max()), TestSet.Specialized)
+		assert_type(value.intersection({"a": Bool.min()}, Bool.min()), TestSet.Specialized)
+		assert_type(value.difference(iter(["a"]), Bool.max()), TestSet.Specialized)
+		assert_type(value.reduce(or_, ["c"], Bool.max()), TestSet.Specialized)
+
+		for result in (value.union(Bool.min()), value.intersection(Bool.max()), value.difference(["a"])):
+			assert type(result) is self.Specialized
+
+	@pytest.mark.parametrize("name, pure, operation", updates)
+	@pytest.mark.parametrize("complement, states", cases)
+	def test_updates_and_inplace_operators_match_the_algebra(self, name: str, pure: str,
+		operation: Callable[[Set[str], Iterable[str] | Mapping[str, Bool] | Bool], Set[str]],
+		complement: bool, states: tuple[bool | None, bool | None],
+	):
+		others = [self.make(default, entries) for default, entries in self.cases]
+
+		for other in (*others, *self.bounds):
+			value = self.make(complement, states)
+			inplace = Set(value)
+			expected = getattr(Set(value), pure)(other)
+			factory = value.default_factory
+
+			assert getattr(value, name)(other) is None
+			assert operation(inplace, other) is inplace
+
+			for result in (value, inplace):
+				assert self.signature(result) == self.signature(expected)
+				assert dict(result.items()) == dict(expected.items())
+				assert result["missing"] is result.default
+
+			assert value.default_factory is factory
+
+	@pytest.mark.parametrize("name, operation", reductions)
+	@pytest.mark.parametrize("default", bounds)
+	def test_empty_updates_preserve_the_receiver(self, name: str,
+		operation: Callable[[TestSet.Specialized, Iterable[str] | Mapping[str, Bool] | Bool], TestSet.Specialized],
+		default: Bool,
+	):
+		value = self.Specialized({"a": Bool.min(), "b": Bool.max()}, default = default)
+		items = dict(value.items())
+		factory = value.default_factory
+		update_name = "update" if name == "union" else name + "_update"
+
+		assert getattr(value, update_name)() is None
+		assert type(value) is self.Specialized
+		assert dict(value.items()) == items
+		assert value.default is default
+		assert value.default_factory is factory
+		assert self.signature(value) == self.signature(value.reduce(operation))
+
+	@pytest.mark.parametrize("name, pure, operation", updates)
+	@pytest.mark.parametrize("default", bounds)
+	def test_updates_accept_the_receiver_as_an_operand(self, name: str, pure: str,
+		operation: Callable[[Set[str], Iterable[str] | Mapping[str, Bool] | Bool], Set[str]], default: Bool,
+	):
+		value = Set({"a": Bool.min(), "b": Bool.max()}, default = default)
+		inplace = Set(value)
+		expected = getattr(Set(value), pure)(value)
+
+		assert getattr(value, name)(value) is None
+		assert operation(inplace, inplace) is inplace
+		assert self.signature(value) == self.signature(inplace) == self.signature(expected)
+
+	def test_updates_support_multiple_mixed_operands(self):
+		value = Set(["a"])
+		value.update(iter(["b"]), {"c": Bool.min()}, Bool.max())
+
+		assert set(value) == {"a", "b", "c"}
+
+		value.intersection_update(iter(["a", "b"]), {"b": Bool.min()}, Bool.min())
+
+		assert set(value) == {"b"}
+
+		value.difference_update(iter(["a"]), {"b": Bool.min()}, Bool.max())
+
+		assert not value
+
+		value.symmetric_difference_update(iter(["c"]))
+
+		assert set(value) == {"c"}
+
+	def test_update_unions_memberships_instead_of_overwriting_them(self):
+		value = Set(["a"])
+		value.update({"a": Bool.max()})
+
+		assert "a" in value
+
+	@pytest.mark.parametrize("name, pure, operation", updates)
+	def test_updates_honor_named_overrides_and_replace_stale_entries(self, name: str, pure: str,
+		operation: Callable[[Set[str], Iterable[str] | Mapping[str, Bool] | Bool], Set[str]],
+	):
+		value = self.EmptyResults(["a"], default = Bool.min())
+		alias = value
+
+		assert not getattr(value, pure)(Bool.min())
+		assert getattr(value, name)(Bool.min()) is None
+		assert value is alias
+		assert not value.keys()
+		assert value.default == Bool.max()
+
+		value.add("b")
+
+		assert operation(value, Bool.min()) is value
+		assert not value.keys()
+
+	@pytest.mark.parametrize("name, pure, operation", updates)
+	def test_update_overrides_can_return_the_receiver(self, name: str, pure: str,
+		operation: Callable[[Set[str], Iterable[str] | Mapping[str, Bool] | Bool], Set[str]],
+	):
+		value = self.IdentityResults({"a": Bool.min(), "b": Bool.max()}, default = Bool.min())
+		items = dict(value.items())
+		default = value.default
+
+		assert getattr(value, pure)(Bool.max()) is value
+		assert getattr(value, name)(Bool.max()) is None
+		assert operation(value, Bool.max()) is value
+		assert dict(value.items()) == items
+		assert value.default is default
+
+	def test_inplace_syntax_preserves_aliases_subclasses_and_factory_binding(self):
+		value = self.Specialized(["a"])
+		alias = value
+		factory = value.default_factory
+		value |= ["b"]
+
+		assert_type(value, TestSet.Specialized)
+		assert set(value) == {"a", "b"}
+
+		value &= {"a": Bool.min()}
+
+		assert_type(value, TestSet.Specialized)
+		assert set(value) == {"a"}
+
+		value ^= Bool.min()
+
+		assert_type(value, TestSet.Specialized)
+		assert value.default == Bool.min()
+		assert "a" not in value
+
+		value -= Bool.min()
+
+		assert_type(value, TestSet.Specialized)
+		assert not value
+		assert value is alias
+		assert value.default_factory is factory
+
+		value.default = Bool.min()
+
+		assert value["missing"] is value.default
