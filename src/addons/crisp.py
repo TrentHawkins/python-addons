@@ -43,6 +43,7 @@ class Set[I: Hashable](defaultdict[I, Bool]):
 			items = dict.fromkeys(items, ~default)
 
 		self.default = default
+
 		super().__init__(lambda: self.default, items)
 
 	def __iter__(self):
