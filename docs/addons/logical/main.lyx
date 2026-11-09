@@ -241,41 +241,16 @@ eqs-within-sections
 \begin_body
 
 \begin_layout Section
-Introduction
-\end_layout
-
-\begin_layout Standard
-Mathematics and programming often describe the same pattern in different languages.
- Mathematics begins with a collection of objects,
- equips them with operations,
- distinguishes particular objects when necessary,
- and states laws relating them.
- A 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-python
-\end_layout
-
-\end_inset
-
- type begins with values,
- gives them operations through functions and methods,
- may provide distinguished values through its class,
- and specifies how all of these are expected to behave.
- This text develops its constructions by moving deliberately between those two descriptions.
+Foundations
 \end_layout
 
 \begin_layout Subsection
-Reading the correspondence
+Sets and functions
 \end_layout
 
 \begin_layout Standard
-The correspondence is a reading convention,
- not an identification of mathematics with 
+Mathematical sets do not exactly correspong to types in the object–oriented programming paradigm,
+ however 
 \begin_inset listings
 lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
 inline true
@@ -287,83 +262,89 @@ python
 
 \end_inset
 
-.
- When a mathematical object and a piece of code are placed beside one another,
- the claim is only that they play the same role in the construction at hand.
- Features with no faithful counterpart are stated separately.
+ makes the corresponces clearer with the 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+typing.Hashable
 \end_layout
 
-\begin_layout Standard
-Functions give the notation its first example.
- A function from a type 
-\begin_inset Formula $A$
 \end_inset
 
- to a type 
-\begin_inset Formula $B$
+ protocol.
+ Every type that implements 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__hash__
+\end_layout
+
 \end_inset
 
- is written 
-\begin_inset Formula $f\colon A\to B$
+ has the ability to distinguish its instances and,
+ besides allowing the definition of an actual 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
 \end_inset
 
-;
- this may be read as saying that 
-\begin_inset Formula $f$
+ set of that type as a container,
+ it allows a particular (hashable) type 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+X
+\end_layout
+
 \end_inset
 
- has the function type 
-\begin_inset Formula $A\to B$
-\end_inset
-
-.
- The same convention applies to every object:
- 
-\begin_inset Formula $x\colon A$
-\end_inset
-
- says that 
-\begin_inset Formula $x$
-\end_inset
-
- has type 
-\begin_inset Formula $A$
-\end_inset
-
-.
- Classical set notation often expresses the corresponding carrier-element relation as 
-\begin_inset Formula $x\in A$
-\end_inset
-
-.
- This text uses the colon for typing and reserves 
-\begin_inset Formula $x\in X$
-\end_inset
-
- for membership in an actual set or container 
+ to correspond precisely to a (classical) mathematical set 
 \begin_inset Formula $X$
 \end_inset
 
-.
- The former states what 
-\begin_inset Formula $x$
-\end_inset
-
- is;
- the latter asks whether 
-\begin_inset Formula $X$
-\end_inset
-
- contains it.
+ as a type:
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-carrier A mathematical type 
-\begin_inset Formula $A$
+\begin_layout Standard
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline false
+status open
+
+\begin_layout Plain Layout
+class Hashable(typing.Protocol):
+\end_layout
+
+\begin_layout Plain Layout
+	def __hash__(self) -> int:
+\end_layout
+
+\begin_layout Plain Layout
+		...
+\end_layout
+
 \end_inset
 
- corresponds to a 
+
+\end_layout
+
+\begin_layout Standard
+Hashability in 
 \begin_inset listings
 lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
 inline true
@@ -375,1012 +356,117 @@ python
 
 \end_inset
 
- type.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-element A judgement 
-\begin_inset Formula $x\colon A$
-\end_inset
-
- corresponds to a value 
-\begin_inset Formula $x$
-\end_inset
-
- of that type.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-operation A map 
-\begin_inset Formula $f\colon A\to B$
-\end_inset
-
- corresponds to a function or method,
- often exposed by an operator.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-constant A distinguished object 
-\begin_inset Formula $e\colon A$
-\end_inset
-
- corresponds to a value or constructor supplied by the class.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-law A mathematical equation or relation corresponds to a behavioural contract.
- The interface can describe its shape;
- a proof establishes the law,
- while tests check an implementation against it.
-\end_layout
-
-\begin_layout Standard
-The corresponding annotations in 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-python
-\end_layout
-
-\end_inset
-
- are 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-x:
- A
-\end_layout
-
-\end_inset
-
- and 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-f:
- Callable[[A],
- B]
-\end_layout
-
-\end_inset
-
-.
- They describe which values a callable accepts and returns;
- they do not claim that the callable is pure,
- total,
- or otherwise identical to a mathematical function.
-\end_layout
-
-\begin_layout Standard
-The spelling of an operation does not determine its meaning.
- The operator 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-|
-\end_layout
-
-\end_inset
-
- may express disjunction,
- set union,
- or the union of types;
- its carrier determines which reading applies.
- Reusing a symbol is useful precisely when the same structural role appears in several settings.
- Whenever such a pairing appears below,
- the surrounding definition supplies the meaning,
- something that is true even in the context of mathematics.
-\end_layout
-
-\begin_layout Subsection
-The object-oriented reading
-\end_layout
-
-\begin_layout Standard
-A 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-class
-\end_layout
-
-\end_inset
-
- is a natural unit for this translation because it places a carrier and its operations under one name.
- A value 
-\begin_inset Formula $x\colon A$
-\end_inset
-
- is represented by an instance of the corresponding class,
- its methods implement operations,
- and its class-level interface supplies distinguished values or constructors.
- Type annotations describe which values an operation accepts and returns.
- They express the outline of a structure,
- while its laws remain part of its contract.
-\end_layout
-
-\begin_layout Standard
-Composition and inheritance answer different questions.
- Composition says that a value
-\emph on
- has
-\emph default
- a representation made from other values:
- a rational number,
- for example,
- has a numerator and a denominator.
- Inheritance says that one type
-\emph on
- is
-\emph default
- (a specialization of) another and may be used wherever the more general contract is expected.
- In the notation above,
- a value 
-\begin_inset Formula $x\colon B$
-\end_inset
-
- may be used where a value of type 
-\begin_inset Formula $A$
-\end_inset
-
- is expected whenever 
-\begin_inset Formula $B$
-\end_inset
-
- specializes 
-\begin_inset Formula $A$
-\end_inset
-
-.
- It is therefore appropriate only when the subclass preserves that contract,
- not merely when inheriting its code is convenient.
-\end_layout
-
-\begin_layout Standard
-Abstract base classes make this division explicit.
- Abstract methods name the operations a concrete carrier must provide;
- concrete methods may supply operations that follow from them.
- A subclass then chooses a representation and implements the primitive operations,
- while inheriting the common consequences.
- This reduces repetition without hiding which mathematical assumptions the shared behaviour uses.
-\end_layout
-
-\begin_layout Standard
-One practical qualification applies to every program listing below.
- Its signatures display the mathematical operation,
- not every interoperability path expected of a production 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-python
-\end_layout
-
-\end_inset
-
- type.
- A closed operation 
-\begin_inset Formula $S\times S\to S$
-\end_inset
-
- is therefore shown with 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-other:
- Self
-\end_layout
-
-\end_inset
-
- even when its concrete implementation should accept a wider operand domain.
- A type such as 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-Frac
-\end_layout
-
-\end_inset
-
- may also accept 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-int
-\end_layout
-
-\end_inset
-
-,
- 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-float
-\end_layout
-
-\end_inset
-
-,
- or other compatible representations;
- it must normalize them according to its exactness and numerical-stability contract,
- return 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-NotImplemented
-\end_layout
-
-\end_inset
-
- when it cannot do so,
- and ordinarily provide the corresponding reflected operator.
- From the perspective of callable substitutability,
- accepting more inputs is a contravariant widening of the operand parameter.
- Reflected dispatch does not assert that the operation is commutative;
- it only allows either operand to participate in the binary-operator protocol.
- This interoperability machinery is omitted unless it is itself under discussion.
-\end_layout
-
-\begin_layout Standard
-Each construction in this text therefore follows the same pattern:
- state the carrier,
- operations,
- distinguished values,
- and laws;
- translate the supported structure into a 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-python
-\end_layout
-
-\end_inset
-
- interface;
- choose its representation;
- and check the resulting correspondence,
- naming any approximation.
- Code is used as a display language for these definitions,
- not as a substitute for them.
- Names from the standard library are imported and written bare,
- and each listing opens with the imports it needs,
- so that a signature reads as closely to its mathematical statement as the language allows.
- The listings are drawn verbatim from source files that are checked alongside the library,
- so the text shows the code as it currently stands.
- With these conventions in place,
- the later correspondences can be read without repeatedly explaining the translation itself.
-\end_layout
-
-\begin_layout Subsection
-From operations to structures
-\end_layout
-
-\begin_layout Standard
-Let 
-\begin_inset Formula $S$
-\end_inset
-
- be a type.
- A binary operation on 
-\begin_inset Formula $S$
-\end_inset
-
- is a value 
-\begin_inset Formula $\circ\colon S\times S\to S$
-\end_inset
-
-.
- Consequently,
- whenever 
-\begin_inset Formula $a\colon S$
-\end_inset
-
- and 
-\begin_inset Formula $b\colon S$
-\end_inset
-
-,
- their combination satisfies 
-\begin_inset Formula $a\circ b\colon S$
-\end_inset
-
-.
- The operation is therefore closed on its carrier.
- A carrier equipped with one closed binary operation is called a 
-\emph on
-magma
-\emph default
-.
-\end_layout
-
-\begin_layout Standard
-Closure gives the operation its shape but says nothing about how repeated combinations behave.
- If 
-\begin_inset Formula 
-\[
-(a\circ b)\circ c=a\circ(b\circ c)\qquad(a,b,c\colon S),
-\]
-
-\end_inset
-
- then the operation is associative and the magma is a 
-\emph on
-semigroup
-\emph default
-.
- No new operation has been added;
- the same carrier has acquired a stronger law.
-\end_layout
-
-\begin_layout Standard
-If there is also a distinguished value 
-\begin_inset Formula $\mathds{1}\colon S$
-\end_inset
-
- such that 
-\begin_inset Formula 
-\[
-\mathds{1}\circ a=a=a\circ\mathds{1}\qquad(a\colon S),
-\]
-
-\end_inset
-
- then 
-\begin_inset Formula $e$
-\end_inset
-
- is an identity and the semigroup is a 
-\emph on
-monoid
-\emph default
-.
- The identity may equally be read as a nullary operation:
- it accepts no values and returns one of type 
-\begin_inset Formula $S$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-Finally,
- if every 
-\begin_inset Formula $a\colon S$
-\end_inset
-
- has a value 
-\begin_inset Formula $a^{-1}\colon S$
-\end_inset
-
- satisfying 
-\begin_inset Formula 
-\[
-a^{-1}\circ a=\mathds{1}=a\circ a^{-1}\qquad(a\colon S),
-\]
-
-\end_inset
-
- then 
-\begin_inset Formula $a^{-1}$
-\end_inset
-
- is the inverse of 
-\begin_inset Formula $a$
-\end_inset
-
- and the monoid is a 
-\emph on
-group
-\emph default
-.
- Both equations belong to the contract because the operation need not be commutative.
- Inversion is therefore a unary operation on the carrier,
- assigning 
-\begin_inset Formula $a\mapsto a^{-1}$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-The complete correspondence can be stated directly as a class hierarchy.
-\end_layout
-
-\begin_layout Standard
-\begin_inset CommandInset include
-LatexCommand inputminted
-filename "listings/group.py"
-lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
-literal "true"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The listing writes the operation additively,
- so that the code reads with symbols the language already owns:
- 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-+
-\end_layout
-
-\end_inset
-
- for 
-\begin_inset Formula $\circ$
-\end_inset
-
-,
- the literal 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-0
-\end_layout
-
+ perceived as discernability,
+ more precisely coresponds to the notion of 
+\begin_inset Formula $=$
 \end_inset
-
- for 
-\begin_inset Formula $\mathds{1}$
-\end_inset
-
-,
- and 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
--a
-\end_layout
-
-\end_inset
-
- for 
-\begin_inset Formula $a^{-1}$
-\end_inset
-
-.
- The abstract 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-+
-\end_layout
-
-\end_inset
-
- of 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-Magma
-\end_layout
-
-\end_inset
-
- mirrors 
-\begin_inset Formula $S\times S\to S$
-\end_inset
-
-:
- 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-Self
-\end_layout
-
-\end_inset
-
- binds the other operand and the result to the type of the receiver,
- 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-abstractmethod
-\end_layout
-
-\end_inset
-
- leaves the operation itself to a concrete carrier,
- and the body that declines with 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-NotImplemented
-\end_layout
-
-\end_inset
-
- is where every chain of fallbacks ends.
- Unary plus,
- 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-+a
-\end_layout
-
-\end_inset
-
-,
- is 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-a
-\end_layout
-
-\end_inset
-
- itself,
- kept so that the two signs read as a pair once the inverse arrives.
- 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-Semigroup
-\end_layout
-
-\end_inset
-
- adds no method because associativity does not change the interface;
- its declaration promises the stronger law.
- 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-Monoid
-\end_layout
-
-\end_inset
-
- spells the identity as the literal 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-0
-\end_layout
-
-\end_inset
-
- on either side:
- 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-a + 0
-\end_layout
-
-\end_inset
-
- and 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-0 + a
-\end_layout
-
-\end_inset
-
- are 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-a
-\end_layout
-
-\end_inset
-
-,
- while a carrier writes its own 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-a + b
-\end_layout
-
-\end_inset
-
- and hands everything else up to the class above.
- The left-hand spelling is the one the builtin 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-sum
-\end_layout
-
-\end_inset
-
- relies on,
- since it starts its fold from 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-0
-\end_layout
-
-\end_inset
-
-,
- so a monoid folds with no start value to declare.
-\end_layout
-
-\begin_layout Standard
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-Group
-\end_layout
-
-\end_inset
-
- writes the inverse as the unary minus,
- 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
--a
-\end_layout
-
-\end_inset
-
-,
- and derives subtraction from it,
- 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-a - b
-\end_layout
-
-\end_inset
-
- being 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-a + (-b)
-\end_layout
-
-\end_inset
-
-,
- so the derived operation costs the carrier nothing.
- Commutativity is not a rung:
- a magma,
- a monoid or a group may each have it or lack it,
- so 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-Abelian
-\end_layout
-
-\end_inset
-
- states it as a mixin on the bare magma.
- When the operation commutes,
- 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-b + a
-\end_layout
-
-\end_inset
-
- may be answered by 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-a + b
-\end_layout
-
-\end_inset
-
-,
- which is exactly the reflected form of 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-+
-\end_layout
-
-\end_inset
-
- that the operator protocol asks for when the left operand declines.
- 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-AbelianGroup
-\end_layout
-
-\end_inset
-
- inherits its operations from 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-Group
-\end_layout
-
-\end_inset
-
- and its promise from 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-Abelian
-\end_layout
-
-\end_inset
-
-,
- and names the mixin first so that this reflected form is found before the narrower one that answers only 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-0 + a
-\end_layout
-
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-\begin_inset CommandInset include
-LatexCommand inputminted
-filename "listings/abelian.py"
-lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
-literal "true"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The inheritance now reads in the same direction as the mathematics:
- every group is a monoid,
- every monoid is a semigroup,
- and every semigroup is a magma.
- The converse does not follow,
- because possessing an operation does not establish the laws required by the stronger structures.
-\end_layout
-
-\begin_layout Standard
-This 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-python
-\end_layout
-
-\end_inset
-
- pattern is used throught the text to progressively build concepts from both formal perspectives:
- a math and a programmatic one,
- which is why a simple examle is outlined here.
-\end_layout
-
-\begin_layout Section
-Climbing the ladder
-\end_layout
-
-\begin_layout Standard
-This work revolves around discrete mathematical structures,
- approached from one uniform perspective in which the more complex unfold from the simpler.
-\end_layout
-
-\begin_layout Subsection
-Ordering
-\end_layout
 
-\begin_layout Standard
-Before starting any discussion around scalars or containers,
- there is one structure they all share:
- ordering.
+ in mathematics,
+ a notion used throughout here consistently,
+ and is necessary when exploring mathematical foundations from a clasical perspective.
 \end_layout
 
 \begin_layout Definition
-\begin_inset Argument 1
-status open
-
-\begin_layout Plain Layout
-preorder
-\end_layout
-
-\end_inset
-
-A binary relation 
-\begin_inset Formula $\lesssim$
-\end_inset
-
- on a type 
+Given sets 
 \begin_inset Formula $X$
 \end_inset
 
- is called a preorder or quasiorder if it is reflexive and transitive:
+ and 
+\begin_inset Formula $Y$
+\end_inset
+
+ and a function 
+\begin_inset Formula $f:X\to Y$
+\end_inset
+
+:
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-(reflexivity) 
-\begin_inset Formula $\forall a:X$
+\begin_deeper
+\begin_layout Itemize
+\begin_inset Formula $\forall a\in X$
+\end_inset
+
+,
+ the image of 
+\begin_inset Formula $a$
+\end_inset
+
+ through 
+\begin_inset Formula $f$
+\end_inset
+
+ is denoted 
+\begin_inset Formula $f(a)$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\forall A\subseteq X$
+\end_inset
+
+,
+ the image of 
+\begin_inset Formula $A$
+\end_inset
+
+ though 
+\begin_inset Formula $f$
+\end_inset
+
+ is 
+\begin_inset Formula 
+\[
+f(A)=\{b\in Y|\exists a\in X,b=f(a)\},
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+meaning 
+\begin_inset Formula $f(X)\subseteq Y$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+A function 
+\begin_inset Formula $f:X\to Y$
+\end_inset
+
+ is:
+\end_layout
+
+\begin_layout Description
+injective iff 
+\begin_inset Formula $\forall a,b\in X$
 \end_inset
 
 ,
  
-\begin_inset Formula $a\lesssim a$
-\end_inset
-
-,
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-(transitivity) 
-\begin_inset Formula $\forall a,b,c:X$
-\end_inset
-
-,
- if 
-\begin_inset Formula $a\lesssim b$
-\end_inset
-
- and 
-\begin_inset Formula $b\lesssim c$
-\end_inset
-
- then 
-\begin_inset Formula $a\lesssim c$
+\begin_inset Formula $f(a)=f(b)\Rightarrow a=b$
 \end_inset
 
 .
+\end_layout
+
+\begin_layout Description
+surjective iff 
+\begin_inset Formula $f(X)=Y$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Description
+bijective iff it is both injective and surjective.
 \end_layout
 
 \begin_layout Standard
@@ -1396,49 +482,99 @@ python
 
 \end_inset
 
-,
- a preorder asks for one of two methods.
+ a function 
+\begin_inset Formula $f:X\to Y$
+\end_inset
+
+ is defined by its signature while,
  
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-<=
-\end_layout
-
-\end_inset
-
- spells 
-\begin_inset Formula $a\lesssim b$
+\begin_inset Formula $\forall a\in X$
 \end_inset
 
 ,
- and 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
->=
-\end_layout
-
+ the image 
+\begin_inset Formula $f(a)$
 \end_inset
 
- is the same relation read from the other side,
- so whichever of the two is not written is derived from the one that is.
- Reflexivity and transitivity are laws to be proved of an implementation,
- not methods to be added to it.
+ is defined by the body of the function:
 \end_layout
 
 \begin_layout Standard
-\begin_inset CommandInset include
-LatexCommand lstinputlisting
-filename "listings/preorder.py"
-lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
-literal "true"
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline false
+status open
+
+\begin_layout Plain Layout
+def f(a:
+ X) -> Y:
+\end_layout
+
+\begin_layout Plain Layout
+	...
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Relations
+\end_layout
+
+\begin_layout Definition
+Given a set 
+\begin_inset Formula $X$
+\end_inset
+
+,
+ any 
+\begin_inset Formula $a,b\in X$
+\end_inset
+
+ define an ordered pair 
+\begin_inset Formula $(a,b)\in X\times X$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Identifying 
+\begin_inset Formula $X$
+\end_inset
+
+ with (generic) type 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+X
+\end_layout
+
+\end_inset
+
+,
+ the Cartesian product 
+\begin_inset Formula $X\times X$
+\end_inset
+
+ therefore corresponds to:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline false
+status open
+
+\begin_layout Plain Layout
+type pair[X] = tuple[X,
+ X]
+\end_layout
 
 \end_inset
 
@@ -1446,30 +582,381 @@ literal "true"
 \end_layout
 
 \begin_layout Definition
-\begin_inset Argument 1
-status open
-
-\begin_layout Plain Layout
-partial order
-\end_layout
-
-\end_inset
-
-A preorder 
-\begin_inset Formula $\leq$
-\end_inset
-
- on a type 
+Given a set 
 \begin_inset Formula $X$
 \end_inset
 
- is called a partial order if it is also antisymmetric:
+,
+ a binary relation 
+\begin_inset Formula $R$
+\end_inset
+
+ on 
+\begin_inset Formula $X$
+\end_inset
+
+ is a boolean function 
+\begin_inset Formula $R:X\times X\to\{0,1\}$
+\end_inset
+
+.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-(antisymmetry) 
-\begin_inset Formula $\forall a,b:X$
+\begin_layout Standard
+The statement 
+\begin_inset Formula $R(x,y)=1$
+\end_inset
+
+ reads in infix notation as 
+\begin_inset Formula $xRy$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The characteristic signature of a relation in 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ (using the verb paradigm for naming functions) is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline false
+status open
+
+\begin_layout Plain Layout
+class Relation(typing.Hashable):
+\end_layout
+
+\begin_layout Plain Layout
+	def relate(self,
+ other:
+ X) -> bool:
+\end_layout
+
+\begin_layout Plain Layout
+		...
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Relations
+\end_layout
+
+\begin_layout Subsubsection
+Equivalence
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+equivalence relation
+\emph default
+ 
+\begin_inset Formula $\sim$
+\end_inset
+
+ is a binary relation on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ that is:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+reflexive 
+\begin_inset Formula $\forall a\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\sim a$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Description
+symmetric 
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\sim b$
+\end_inset
+
+ iff 
+\begin_inset Formula $b\sim a$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Description
+transitive 
+\begin_inset Formula $\forall a,b,c\in X$
+\end_inset
+
+ if 
+\begin_inset Formula $a\sim b$
+\end_inset
+
+ and 
+\begin_inset Formula $b\sim c$
+\end_inset
+
+ then 
+\begin_inset Formula $a\sim c$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Every equivalence relation 
+\begin_inset Formula $\sim$
+\end_inset
+
+ corresponds its nonequivalence counterpart 
+\begin_inset Formula $\nsim$
+\end_inset
+
+ as
+\begin_inset Formula 
+\[
+\nsim:X\times X\to\{0,1\}:x,y\mapsto x\nsim y=\neg(x\sim y),
+\]
+
+\end_inset
+
+and vice versa.
+\end_layout
+
+\begin_layout Standard
+Unlike equality (hashability),
+ equivalence relations may introduce a sort of bucketting of instances in 
+\begin_inset Formula $X$
+\end_inset
+
+,
+ which is why in 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ they correspond to distinct from 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__hash__
+\end_layout
+
+\end_inset
+
+ methods:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline false
+status open
+
+\begin_layout Plain Layout
+class Equivalence(typing.Hashable):
+\end_layout
+
+\begin_layout Plain Layout
+	def __eq__(self,
+ other:
+ X) -> bool:
+ return not self != other
+\end_layout
+
+\begin_layout Plain Layout
+	def __ne__(self,
+ other:
+ X) -> bool:
+ return not self == other
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Equality is a (trivial) equivalence relation,
+ in which case 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__eq__
+\end_layout
+
+\end_inset
+
+ delegates to 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__hash__
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Ordering
+\end_layout
+
+\begin_layout Definition
+A binary relation 
+\begin_inset Formula $\mathord{\lesssim}$
+\end_inset
+
+ on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ is called a 
+\emph on
+preorder
+\emph default
+ if it is reflexive and transitive:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+reflexivity 
+\begin_inset Formula $\forall a\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\lesssim a$
+\end_inset
+
+,
+ i.e.
+ every element is related to itself.
+\end_layout
+
+\begin_layout Description
+transitivity 
+\begin_inset Formula $\forall a,b,c\in X$
+\end_inset
+
+ with 
+\begin_inset Formula $a\lesssim b$
+\end_inset
+
+ and 
+\begin_inset Formula $b\lesssim c$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\lesssim c$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Given a preorder 
+\begin_inset Formula $\lesssim$
+\end_inset
+
+ on 
+\begin_inset Formula $X$
+\end_inset
+
+ one may define an equivalence relation 
+\begin_inset Formula $\sim$
+\end_inset
+
+ on 
+\begin_inset Formula $X$
+\end_inset
+
+ by
+\begin_inset Formula 
+\[
+a\lesssim b\text{ and }b\lesssim a\text{ iff }a\sim b
+\]
+
+\end_inset
+
+
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Minisec
+Partial
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+partial order
+\emph default
+ 
+\begin_inset Formula $\mathord{\leq}$
+\end_inset
+
+ is a preorder on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ that is antisymmetric:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+antisymmetry 
+\begin_inset Formula $\forall a,b\in X$
 \end_inset
 
 ,
@@ -1481,6 +968,7 @@ A preorder
 \begin_inset Formula $b\leq a$
 \end_inset
 
+,
  then 
 \begin_inset Formula $a=b$
 \end_inset
@@ -1488,89 +976,179 @@ A preorder
 .
 \end_layout
 
+\end_deeper
 \begin_layout Standard
-Antisymmetry is what allows equality to be derived from the order rather than declared beside it:
- 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-==
-\end_layout
-
-\end_inset
-
- becomes comparison in both directions,
- and the strict 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-<
-\end_layout
-
-\end_inset
-
- and 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
->
-\end_layout
-
-\end_inset
-
- follow as comparison without equality.
- The concrete carrier is asked for nothing new;
- the one method it writes now stands behind every comparison operator.
-\end_layout
-
-\begin_layout Standard
-\begin_inset CommandInset include
-LatexCommand lstinputlisting
-filename "listings/partial.py"
-lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
-literal "true"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Definition
-\begin_inset Argument 1
-status open
-
-\begin_layout Plain Layout
-total order
-\end_layout
-
-\end_inset
-
-A partial order 
-\begin_inset Formula $\leq$
-\end_inset
-
- on a type 
+Formally,
+ a partial order is a binary relation that is reflexive,
+ antisymmetric and transitive.
+ A 
+\emph on
+partially ordered set
+\emph default
+ (
+\emph on
+poset
+\emph default
+ for short) is a set 
 \begin_inset Formula $X$
 \end_inset
 
- is called a total order,
- or a linear order,
- if any two values are comparable:
+ (called the ground set of the order) equipped with a partial order.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-(totality) 
-\begin_inset Formula $\forall a,b:X$
+\begin_layout Standard
+Given a preorder 
+\begin_inset Formula $\lesssim$
+\end_inset
+
+ on 
+\begin_inset Formula $X$
+\end_inset
+
+ and the equivalence relation 
+\begin_inset Formula $\sim$
+\end_inset
+
+ it implies,
+ one may define a partial order 
+\begin_inset Formula $\leq$
+\end_inset
+
+ on 
+\begin_inset Formula $X/\mathord{\sim}$
+\end_inset
+
+,
+ by
+\begin_inset Formula 
+\[
+[a]\leq[b]\text{ iff }a\lesssim b
+\]
+
+\end_inset
+
+
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+strict partial order
+\emph default
+ 
+\begin_inset Formula $<$
+\end_inset
+
+ is a binary relation on 
+\begin_inset Formula $X$
+\end_inset
+
+ that is irreflexive and transitive:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+irreflexivity 
+\begin_inset Formula $\forall a\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\neg(a<a)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Description
+transitivity 
+\begin_inset Formula $\forall a,b,c\in X$
+\end_inset
+
+ with 
+\begin_inset Formula $a<b$
+\end_inset
+
+ and 
+\begin_inset Formula $b<c$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a<c$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Any preorder 
+\begin_inset Formula $\lesssim$
+\end_inset
+
+ on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ gives rise to a strict partial order defined (using the induced equivalence relation 
+\begin_inset Formula $\sim$
+\end_inset
+
+) by
+\begin_inset Formula 
+\[
+a<b\text{ iff }a\lesssim b\text{ and }a\nsim b
+\]
+
+\end_inset
+
+
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+.
+ A partial order on 
+\begin_inset Formula $X$
+\end_inset
+
+ gives rise to the same strict partial order,
+ hence using the same name.
+\end_layout
+
+\begin_layout Minisec
+Total
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+total order
+\emph default
+ 
+\begin_inset Formula $\leq$
+\end_inset
+
+ on some set 
+\begin_inset Formula $X$
+\end_inset
+
+ is a partial order in which any two elements are comparable,
+ that is:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+strong
+\begin_inset space ~
+\end_inset
+
+connectivity 
+\begin_inset Formula $\forall a,b\in X$
 \end_inset
 
 ,
@@ -1585,101 +1163,280 @@ A partial order
 .
 \end_layout
 
-\begin_layout Standard
-Totality turns the strict order into a negation:
+\end_deeper
+\begin_layout Definition
+Note that,
+ reflexivity in total orders follows from strong connectivity.
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+strict total order
+\emph default
  
+\begin_inset Formula $\leq$
+\end_inset
+
+ on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ is a strict partial order in which any two elements are comparable,
+ that is:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+connectivity 
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+,
+ if 
+\begin_inset Formula $a\neq b$
+\end_inset
+
+,
+ then 
 \begin_inset Formula $a<b$
 \end_inset
 
- holds exactly when 
-\begin_inset Formula $b\leq a$
+ or 
+\begin_inset Formula $b>a$
 \end_inset
 
- fails,
- so 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-<
+.
 \end_layout
 
+\end_deeper
+\begin_layout Standard
+A total order 
+\begin_inset Formula $\leq$
 \end_inset
 
- and 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
+ on a set 
+\begin_inset Formula $X$
+\end_inset
 
-\begin_layout Plain Layout
->
+ implies a strict total order 
+\begin_inset Formula $<$
+\end_inset
+
+ by
+\begin_inset Formula 
+\[
+a<b\text{ iff }a\leq b\text{ and }a\neq b
+\]
+
+\end_inset
+
+
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+.
 \end_layout
 
+\begin_layout Paragraph
+Extrema
+\end_layout
+
+\begin_layout Definition
+A poset can have at most one greatest and one least element:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+An element 
+\begin_inset Formula $M=\max X\in X$
 \end_inset
 
- no longer need the test for equality;
- each is the negation of the opposite weak comparison.
+ is the greatest element iff 
+\begin_inset Formula $\forall a\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\leq M$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+An element 
+\begin_inset Formula $m=\min X\in X$
+\end_inset
+
+ is the least element iff 
+\begin_inset Formula $\forall a\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $m\leq a$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Algebra
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+binary operation
+\emph default
+ 
+\begin_inset Formula $\bullet_{X}$
+\end_inset
+
+ is a mapping of the elements (pairs) of the cartesian product 
+\begin_inset Formula $X\times X$
+\end_inset
+
+ to 
+\begin_inset Formula $X$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+\bullet_{X}:X\times X\to X
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-\begin_inset CommandInset include
-LatexCommand lstinputlisting
-filename "listings/total.py"
-lstparams "language=Python,fontfamily=tt,fontsize={\\scriptsize},breaklines=true,tabsize=4"
-literal "true"
-
+Binary operations are usually written using infix notation such as 
+\begin_inset Formula $a\bullet_{X}b$
 \end_inset
 
+ rather than by functional notation.
+\end_layout
 
+\begin_layout Definition
+Let 
+\begin_inset Formula $X$
+\end_inset
+
+ be a set equipped with one or several methods of producing elements of 
+\begin_inset Formula $X$
+\end_inset
+
+ from other elements of 
+\begin_inset Formula $A$
+\end_inset
+
+ (operations).
+ A subset 
+\begin_inset Formula $A\subseteq X$
+\end_inset
+
+ is said to be 
+\emph on
+closed
+\emph default
+ under these methods if an input of (purely) elements of 
+\begin_inset Formula $A$
+\end_inset
+
+ always results in an element still in 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ or 
+\begin_inset Formula $\forall a,b\in A$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\bullet_{X}b\in A$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
-As on the algebraic ladder,
- each rung adds a law and takes work away:
- the preorder asks for one method,
- and every stronger order derives more from it rather than asking for more.
+It follows that 
+\begin_inset Formula $\forall A\subseteq X$
+\end_inset
+
+,
+ there is a smallest closed subset 
+\begin_inset Formula $\bar{A}\subseteq S$
+\end_inset
+
+ such that 
+\begin_inset Formula $A\subseteq\bar{A}$
+\end_inset
+
+ (it is the intersection fo all closed subsets that contain 
+\begin_inset Formula $A$
+\end_inset
+
+).
+ Depending on the context,
+ 
+\begin_inset Formula $\bar{A}$
+\end_inset
+
+ is called the closure of 
+\begin_inset Formula $A$
+\end_inset
+
+.
 \end_layout
 
-\begin_layout Subsection
-Scalar types —
- the numeric foundation of containers
+\begin_layout Example
+Given the operation of subtraction 
+\begin_inset Formula $-:\mathbb{Q}\times\mathbb{Q}\to\mathbb{Q}$
+\end_inset
+
+ on the rationals,
+ the closure of 
+\begin_inset Formula $\mathbb{N}$
+\end_inset
+
+ is 
+\begin_inset Formula $\bar{\mathbb{N}}=\mathbb{Z}$
+\end_inset
+
+.
+ Given the operation of division 
+\begin_inset Formula $/:\mathbb{Q}^{*}\times\mathbb{Q}^{*}\to\mathbb{Q}^{*}$
+\end_inset
+
+,
+ the closure of 
+\begin_inset Formula $\mathbb{Z}^{*}$
+\end_inset
+
+ is 
+\begin_inset Formula $\bar{\mathbb{Z}}^{*}=\mathbb{Q}^{*}$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
-Before diving into containers,
- a discussion of the scalar types is warranted,
- partly because they provide one of the two generalization axes that drive the simplicial container tower developed here.
-\end_layout
-
-\begin_layout Subsubsection
-Boolean algebra (based on 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-bool
-\end_layout
-
+\begin_inset Formula $\forall X\subseteq S$
 \end_inset
 
-)
-\end_layout
-
-\begin_layout Standard
-\begin_inset CommandInset bibtex
-LatexCommand bibtex
-btprint "btPrintCited"
-bibfiles "main"
-encoding "default"
-
+ closed,
+ 
+\begin_inset Formula $\bar{X}=X$
 \end_inset
 
-
+.
 \end_layout
 
 \end_body
