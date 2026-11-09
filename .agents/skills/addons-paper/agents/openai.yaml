@@ -1,0 +1,4 @@
+interface:
+  display_name: "Addons Paper"
+  short_description: "Review and refine the addons mathematics draft"
+  default_prompt: "Use $addons-paper to review the current draft, keeping settled conventions separate from open editorial choices."
