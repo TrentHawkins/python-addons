@@ -245,7 +245,852 @@ Foundations
 \end_layout
 
 \begin_layout Subsection
-Sets and functions
+Sets
+\end_layout
+
+\begin_layout Subsubsection
+Basic notions
+\end_layout
+
+\begin_layout Definition
+In mathematics,
+ a set is a collection of different things,
+ called elements or members of the set.
+ A set may also be called a 
+\emph on
+collection
+\emph default
+ or 
+\emph on
+family
+\emph default
+,
+ especially when its elements are themselves sets;
+ this may avoid confusion between the set and its members.
+ A set may be specified either by listing its elements or by giving a property that characterizes its elements,
+ such as for the set of the prime numbers or the set of all students in a given class.
+\end_layout
+
+\begin_layout Standard
+If 
+\begin_inset Formula $x$
+\end_inset
+
+ is an element of a set 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ one says that 
+\begin_inset Formula $x$
+\end_inset
+
+ belongs to 
+\begin_inset Formula $A$
+\end_inset
+
+ or 
+\emph on
+is in
+\emph default
+ 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ and one writes 
+\begin_inset Formula $x\in A$
+\end_inset
+
+.
+ The statement 
+\emph on
+
+\begin_inset Formula $x$
+\end_inset
+
+ is not in 
+\begin_inset Formula $A$
+\end_inset
+
+
+\emph default
+ is written a 
+\begin_inset Formula $x\notin a$
+\end_inset
+
+.
+ Type notation can be used for affirmative membership,
+ 
+\begin_inset Formula $x:A$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+axiom of extensionality
+\emph default
+ states that two sets are equal if and only if they have the same elements,
+ or
+\begin_inset Formula 
+\[
+A=B\Longleftrightarrow\forall x(x\in A\Longrightarrow x\in B).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Definition
+There exists a set with no elements,
+ and extensionality implies that there is only one such set.
+ It is called the 
+\emph on
+empty set
+\emph default
+ (or null set) and is denoted 
+\begin_inset Formula $\varnothing$
+\end_inset
+
+ or {}.
+\end_layout
+
+\begin_layout Definition
+A singleton is a set with exactly one element.
+ If 
+\begin_inset Formula $x$
+\end_inset
+
+ is this element,
+ the singleton is denoted 
+\begin_inset Formula $\{x\}$
+\end_inset
+
+.
+ The sets 
+\begin_inset Formula $\{\varnothing\}$
+\end_inset
+
+ and 
+\begin_inset Formula $\varnothing$
+\end_inset
+
+ are different,
+ because the former has one element (namely 
+\begin_inset Formula $\varnothing$
+\end_inset
+
+) and the latter has no elements at all.
+\end_layout
+
+\begin_layout Subsubsection
+Specifying a set
+\end_layout
+
+\begin_layout Standard
+Extensionality implies that to specify a set,
+ it suffices either to list its elements or to provide a property that characterize the set's elements among the elements of a possibly larger set.
+\end_layout
+
+\begin_layout Minisec
+Roster notation
+\end_layout
+
+\begin_layout Definition
+
+\emph on
+Roster
+\emph default
+ or 
+\emph on
+enumeration notation
+\emph default
+ is a notation introduced by Ernst Zermelo in 1908 that specifies a set by listing its elements between braces,
+ separated by commas.
+\end_layout
+
+\begin_layout Example
+The notations 
+\begin_inset Formula $\{\}$
+\end_inset
+
+ for the empty set and 
+\begin_inset Formula $\{x\}$
+\end_inset
+
+ for a singleton are examples of roster notation.
+\end_layout
+
+\begin_layout Standard
+When specifying a set,
+ all that matters is whether each potential element is in the set or not,
+ so a set does not change if elements are repeated or arranged in a different order.
+\end_layout
+
+\begin_layout Standard
+When there is a clear pattern for generating all set elements,
+ one can use an ellipsis to abbreviate the notation.
+\end_layout
+
+\begin_layout Minisec
+Set–builder notation
+\end_layout
+
+\begin_layout Definition
+Set–builder notation specifies a set as being the set of all elements that satisfy some logical formula.
+ More precisely,
+ if 
+\begin_inset Formula $\varpi(x)$
+\end_inset
+
+ is a logical formula depending on a variable 
+\begin_inset Formula $x$
+\end_inset
+
+,
+ which evalutates to 
+\begin_inset Formula $\top$
+\end_inset
+
+ or 
+\begin_inset Formula $\bot$
+\end_inset
+
+ depending on the value of 
+\begin_inset Formula $x$
+\end_inset
+
+,
+ then
+\begin_inset Formula 
+\[
+\{x:\varpi(x)\}
+\]
+
+\end_inset
+
+denotes the set of all 
+\begin_inset Formula $x$
+\end_inset
+
+ for which 
+\begin_inset Formula $\varpi(x)$
+\end_inset
+
+ is 
+\begin_inset Formula $\top$
+\end_inset
+
+.
+ In this notation,
+ 
+\begin_inset Formula $:$
+\end_inset
+
+ is read as 
+\emph on
+such that
+\emph default
+.
+\end_layout
+
+\begin_layout Subsection
+Set relations and operations
+\end_layout
+
+\begin_layout Standard
+There are two types of things one can do with sets:
+\end_layout
+
+\begin_layout Itemize
+One can compare sets and see their relationship.
+ These are called 
+\emph on
+set relations
+\emph default
+.
+ Equality is the first such relation encountered this far.
+\end_layout
+
+\begin_layout Itemize
+One can produce new sets from other sets.
+ These are called 
+\emph on
+set operations
+\emph default
+.
+\end_layout
+
+\begin_layout Subsubsection
+Subsets
+\end_layout
+
+\begin_layout Standard
+As seen before,
+ sets 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+ are equal iff they have the same elements,
+ denoted as 
+\begin_inset Formula $A=B$
+\end_inset
+
+.
+ Equality is reflexive;
+ for every set 
+\begin_inset Formula $B$
+\end_inset
+
+,
+ 
+\begin_inset Formula $B=B$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+subset
+\emph default
+ of a set 
+\begin_inset Formula $B$
+\end_inset
+
+ is a set 
+\begin_inset Formula $A$
+\end_inset
+
+ such that every element of 
+\begin_inset Formula $A$
+\end_inset
+
+ is also an element of 
+\begin_inset Formula $B$
+\end_inset
+
+,
+ or
+\begin_inset Formula 
+\[
+A\subseteq B\Longleftrightarrow\forall x(x\in A\Longrightarrow x\in B).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The relationship between sets established by 
+\begin_inset Formula $\subseteq$
+\end_inset
+
+ is called inclusion or containment.
+ Containment is reflexive too;
+ every set 
+\begin_inset Formula $B$
+\end_inset
+
+ is a subset of itself,
+ namely 
+\begin_inset Formula $B\subseteq B$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Definition
+A set 
+\begin_inset Formula $A$
+\end_inset
+
+ is a 
+\emph on
+proper subset
+\emph default
+ of a set 
+\begin_inset Formula $B$
+\end_inset
+
+ if 
+\begin_inset Formula $A\subseteq B$
+\end_inset
+
+ and 
+\begin_inset Formula $A\neq B$
+\end_inset
+
+;
+ to denote this one writes 
+\begin_inset Formula $A\subset B$
+\end_inset
+
+,
+ therefore
+\begin_inset Formula 
+\[
+A\subset B\Longleftrightarrow A\subseteq B\wedge A\neq B.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Minisec
+Properties of containment
+\end_layout
+
+\begin_layout Standard
+Containment is antisymmetic;
+ 
+\begin_inset Formula $\forall A,B$
+\end_inset
+
+ set,
+\begin_inset Formula 
+\[
+A=B\Longleftrightarrow A\subseteq B\wedge A\supseteq B.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The empy set is a subset of every set:
+ 
+\begin_inset Formula $\forall A$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\varnothing\subseteq A$
+\end_inset
+
+.
+ In particular,
+ 
+\begin_inset Formula $\forall A\neq\varnothing$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\varnothing\subset A$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Basic-operations"
+
+\end_inset
+
+Basic operations
+\end_layout
+
+\begin_layout Standard
+There are several standard operations that produce new sets from given sets,
+ analogously to how addition and multiplication produce new numbers from given numbers.
+ The operations that are considered in this section are those such that all elements of the produced sets belong to a previously defined set.
+\end_layout
+
+\begin_layout Minisec
+Intersection
+\end_layout
+
+\begin_layout Definition
+The 
+\emph on
+intersection
+\emph default
+ of sets 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+ is set denoted 
+\begin_inset Formula $A\cap B$
+\end_inset
+
+ whose elements are those elements that belong to both 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+.
+ That is,
+\begin_inset Formula 
+\[
+A\cap B=\{x:x\in A\wedge x\in B\},
+\]
+
+\end_inset
+
+Apparently,
+ 
+\begin_inset Formula $A\cap B\subseteq A$
+\end_inset
+
+ and 
+\begin_inset Formula $A\cap B\subseteq B$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Proposition
+Intersection is associative and commutative;
+ this means that for proceeding a sequence of intersections,
+ one may proceed in any order,
+ without the need of parentheses for specifying the order of operations,
+ for example,
+ 
+\begin_inset Formula $\forall A,B,C$
+\end_inset
+
+ sets:
+\begin_inset Formula 
+\[
+(A\cap B)\cap C=A\cap(B\cap C)=A\cap B\cap C=\{x|x\in A\wedge x\in B\wedge x\in C\}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Definition
+If 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+ is a nonempty set of sets,
+ its intersection,
+ denoted
+\begin_inset Formula 
+\[
+\bigcap\nolimits\mathcal{S}=\bigcap\nolimits_{A\in\mathcal{S}}A,
+\]
+
+\end_inset
+
+is the set whose elements are those elements that belond to all sets in 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+.
+ That is,
+\begin_inset Formula 
+\[
+\bigcap\nolimits\mathcal{S}=\Big\{ x\Big|\bigwedge\nolimits_{A\in\mathcal{S}}(x\in A)\Big\}=\{x|(\forall A\in\mathcal{S})x\in A\}.
+\]
+
+\end_inset
+
+Example:
+ If 
+\begin_inset Formula $\mathcal{S}=\{X,Y,Z\}$
+\end_inset
+
+,
+ then
+\begin_inset Formula 
+\[
+\bigcap\nolimits\mathcal{S}=X\cap Y\cap Z.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Minisec
+Union
+\end_layout
+
+\begin_layout Definition
+The 
+\emph on
+union
+\emph default
+ of two sets 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+ is a set denoted 
+\begin_inset Formula $A\cup B$
+\end_inset
+
+ whose elements are those elements that belong to 
+\begin_inset Formula $A$
+\end_inset
+
+ or 
+\begin_inset Formula $B$
+\end_inset
+
+ or both.
+ That is,
+\begin_inset Formula 
+\[
+A\cup B=\{x|x\in A\vee x\in B\},
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $\vee$
+\end_inset
+
+ denotes the logical 
+\family typewriter
+or
+\family default
+.
+ Apparently,
+ 
+\begin_inset Formula $A\subseteq A\cup B$
+\end_inset
+
+ and 
+\begin_inset Formula $B\subseteq A\cup B$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Proposition
+Union is associative and commutative.
+\end_layout
+
+\begin_layout Definition
+If 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+ is a set of sets,
+ its union,
+ denoted
+\begin_inset Formula 
+\[
+\bigcup\mathcal{S}=\bigcup_{A\in\mathcal{S}}A,
+\]
+
+\end_inset
+
+is the set whose elements are those elementes that belong to at least one set in 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+.
+ That is,
+\begin_inset Formula 
+\[
+\bigcup\mathcal{S}=\Big\{ x\Big|\bigvee\nolimits_{A\in\mathcal{S}}(x\in A)\Big\}=\{x|(\exists A\in\mathcal{S})x\in A\}.
+\]
+
+\end_inset
+
+Example:
+ If 
+\begin_inset Formula $\mathcal{S}=\{X,Y,Z\}$
+\end_inset
+
+,
+ then
+\begin_inset Formula 
+\[
+\bigcup\mathcal{S}=X\cup Y\cup Z.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Minisec
+Set difference
+\end_layout
+
+\begin_layout Definition
+The 
+\emph on
+set difference
+\emph default
+ of two sets 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+,
+ is a set,
+ denoted 
+\begin_inset Formula $A\setminus B$
+\end_inset
+
+ or 
+\begin_inset Formula $A-B$
+\end_inset
+
+,
+ whose elements are those elements that belong to 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ but not to 
+\begin_inset Formula $B$
+\end_inset
+
+.
+ That is,
+\begin_inset Formula 
+\[
+A\setminus B=\{x|x\in A\wedge x\notin B\}.
+\]
+
+\end_inset
+
+Note that 
+\begin_inset Formula $A\setminus B=A\setminus(A\cap B)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+When 
+\begin_inset Formula $B\subseteq A$
+\end_inset
+
+ the difference 
+\begin_inset Formula $A\setminus B=\neg_{A}B$
+\end_inset
+
+ is also called the 
+\emph on
+complement
+\emph default
+ of 
+\begin_inset Formula $B$
+\end_inset
+
+ in 
+\begin_inset Formula $A$
+\end_inset
+
+.
+ Naively speaking,
+\begin_inset Formula 
+\[
+\neg B=\{x|x\notin B\},
+\]
+
+\end_inset
+
+but this does not lead to a set as is.
+ When all sets that are considered are subsets of a fixed 
+\emph on
+universal set
+\emph default
+ 
+\begin_inset Formula $U$
+\end_inset
+
+,
+ the complement 
+\begin_inset Formula $\neg_{U}A$
+\end_inset
+
+ is often called the absolute complement of 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ and is denoted simply as 
+\begin_inset Formula $\neg A$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Definition
+The 
+\emph on
+symmetric difference
+\emph default
+ of two sets 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+,
+ denoted 
+\begin_inset Formula $A\bigtriangleup B$
+\end_inset
+
+,
+ is the set of those elements that belong to 
+\begin_inset Formula $A$
+\end_inset
+
+ or 
+\begin_inset Formula $B$
+\end_inset
+
+ but not on both:
+\begin_inset Formula 
+\[
+A\bigtriangleup B=(A\setminus B)\cup(B\setminus A)=(A\cup B)\setminus(A\cap B).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
