@@ -203,9 +203,9 @@ eqs-within-sections
 \shortcut idx
 \color #006600
 \end_index
-\leftmargin 0.625in
+\leftmargin 0.75in
 \topmargin 1in
-\rightmargin 0.625in
+\rightmargin 0.75in
 \bottommargin 1in
 \headheight 0.5in
 \headsep 0.5in
@@ -316,13 +316,7 @@ is in
 
 \emph default
  is written a 
-\begin_inset Formula $x\notin a$
-\end_inset
-
-.
- Type notation can be used for affirmative membership,
- 
-\begin_inset Formula $x:A$
+\begin_inset Formula $x\notin A$
 \end_inset
 
 .
@@ -337,7 +331,7 @@ axiom of extensionality
  or
 \begin_inset Formula 
 \[
-A=B\Longleftrightarrow\forall x(x\in A\Longrightarrow x\in B).
+A=B\Longleftrightarrow\forall x(x\in A\Longleftrightarrow x\in B).
 \]
 
 \end_inset
@@ -653,7 +647,7 @@ Properties of containment
 \end_layout
 
 \begin_layout Standard
-Containment is antisymmetic;
+Containment is antisymmetric;
  
 \begin_inset Formula $\forall A,B$
 \end_inset
@@ -670,7 +664,7 @@ A=B\Longleftrightarrow A\subseteq B\wedge A\supseteq B.
 \end_layout
 
 \begin_layout Standard
-The empy set is a subset of every set:
+The empty set is a subset of every set:
  
 \begin_inset Formula $\forall A$
 \end_inset
@@ -701,7 +695,7 @@ name "subsec:Basic-operations"
 
 \end_inset
 
-Basic operations
+Internal operations
 \end_layout
 
 \begin_layout Standard
@@ -743,13 +737,12 @@ intersection
  That is,
 \begin_inset Formula 
 \[
-A\cap B=\{x:x\in A\wedge x\in B\},
+A\cap B=\{x:x\in A\wedge x\in B\}.
 \]
 
 \end_inset
 
-Apparently,
- 
+Therefore 
 \begin_inset Formula $A\cap B\subseteq A$
 \end_inset
 
@@ -760,25 +753,11 @@ Apparently,
 .
 \end_layout
 
-\begin_layout Proposition
+\begin_layout Standard
 Intersection is associative and commutative;
  this means that for proceeding a sequence of intersections,
  one may proceed in any order,
- without the need of parentheses for specifying the order of operations,
- for example,
- 
-\begin_inset Formula $\forall A,B,C$
-\end_inset
-
- sets:
-\begin_inset Formula 
-\[
-(A\cap B)\cap C=A\cap(B\cap C)=A\cap B\cap C=\{x|x\in A\wedge x\in B\wedge x\in C\}
-\]
-
-\end_inset
-
-
+ without the need of parentheses for specifying the order of operations.
 \end_layout
 
 \begin_layout Definition
@@ -791,39 +770,16 @@ If
  denoted
 \begin_inset Formula 
 \[
-\bigcap\nolimits\mathcal{S}=\bigcap\nolimits_{A\in\mathcal{S}}A,
+\bigcap\nolimits\mathcal{S}=\bigcap\nolimits_{A\in\mathcal{S}}A=\{x:(\forall A\in\mathcal{S})x\in A\},
 \]
 
 \end_inset
 
-is the set whose elements are those elements that belond to all sets in 
+is the set whose elements are those elements that belong to all sets in 
 \begin_inset Formula $\mathcal{S}$
 \end_inset
 
 .
- That is,
-\begin_inset Formula 
-\[
-\bigcap\nolimits\mathcal{S}=\Big\{ x\Big|\bigwedge\nolimits_{A\in\mathcal{S}}(x\in A)\Big\}=\{x|(\forall A\in\mathcal{S})x\in A\}.
-\]
-
-\end_inset
-
-Example:
- If 
-\begin_inset Formula $\mathcal{S}=\{X,Y,Z\}$
-\end_inset
-
-,
- then
-\begin_inset Formula 
-\[
-\bigcap\nolimits\mathcal{S}=X\cap Y\cap Z.
-\]
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Minisec
@@ -835,7 +791,7 @@ The
 \emph on
 union
 \emph default
- of two sets 
+ of sets 
 \begin_inset Formula $A$
 \end_inset
 
@@ -855,26 +811,16 @@ union
 \begin_inset Formula $B$
 \end_inset
 
- or both.
+ (or both).
  That is,
 \begin_inset Formula 
 \[
-A\cup B=\{x|x\in A\vee x\in B\},
+A\cup B=\{x|x\in A\vee x\in B\}.
 \]
 
 \end_inset
 
-where 
-\begin_inset Formula $\vee$
-\end_inset
-
- denotes the logical 
-\family typewriter
-or
-\family default
-.
- Apparently,
- 
+Therefore 
 \begin_inset Formula $A\subseteq A\cup B$
 \end_inset
 
@@ -885,7 +831,7 @@ or
 .
 \end_layout
 
-\begin_layout Proposition
+\begin_layout Standard
 Union is associative and commutative.
 \end_layout
 
@@ -899,7 +845,7 @@ If
  denoted
 \begin_inset Formula 
 \[
-\bigcup\mathcal{S}=\bigcup_{A\in\mathcal{S}}A,
+\bigcup\mathcal{S}=\bigcup\nolimits_{A\in\mathcal{S}}A=\{x|(\exists A\in\mathcal{S})x\in A\},
 \]
 
 \end_inset
@@ -909,29 +855,6 @@ is the set whose elements are those elementes that belong to at least one set in
 \end_inset
 
 .
- That is,
-\begin_inset Formula 
-\[
-\bigcup\mathcal{S}=\Big\{ x\Big|\bigvee\nolimits_{A\in\mathcal{S}}(x\in A)\Big\}=\{x|(\exists A\in\mathcal{S})x\in A\}.
-\]
-
-\end_inset
-
-Example:
- If 
-\begin_inset Formula $\mathcal{S}=\{X,Y,Z\}$
-\end_inset
-
-,
- then
-\begin_inset Formula 
-\[
-\bigcup\mathcal{S}=X\cup Y\cup Z.
-\]
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Minisec
@@ -943,22 +866,18 @@ The
 \emph on
 set difference
 \emph default
- of two sets 
-\begin_inset Formula $A$
+ of set 
+\begin_inset Formula $B$
 \end_inset
 
- and 
-\begin_inset Formula $B$
+ from 
+\begin_inset Formula $A$
 \end_inset
 
 ,
  is a set,
  denoted 
 \begin_inset Formula $A\setminus B$
-\end_inset
-
- or 
-\begin_inset Formula $A-B$
 \end_inset
 
 ,
@@ -1043,12 +962,24 @@ universal set
 .
 \end_layout
 
+\begin_layout Standard
+Informally however,
+\begin_inset Formula 
+\[
+A\setminus B=A\cap\neg B.
+\]
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Definition
 The 
 \emph on
 symmetric difference
 \emph default
- of two sets 
+ of sets 
 \begin_inset Formula $A$
 \end_inset
 
@@ -1081,190 +1012,137 @@ A\bigtriangleup B=(A\setminus B)\cup(B\setminus A)=(A\cup B)\setminus(A\cap B).
 
 \end_layout
 
-\begin_layout Standard
-\begin_inset CommandInset line
-LatexCommand rule
-offset "0.5ex"
-width "100col%"
-height "1pt"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Mathematical sets do not exactly correspong to types in the object–oriented programming paradigm,
- however 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-python
-\end_layout
-
-\end_inset
-
- makes the corresponces clearer with the 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-typing.Hashable
-\end_layout
-
-\end_inset
-
- protocol.
- Every type that implements 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-__hash__
-\end_layout
-
-\end_inset
-
- has the ability to distinguish its instances and,
- besides allowing the definition of an actual 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-python
-\end_layout
-
-\end_inset
-
- set of that type as a container,
- it allows a particular (hashable) type 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-X
-\end_layout
-
-\end_inset
-
- to correspond precisely to a (classical) mathematical set 
-\begin_inset Formula $X$
-\end_inset
-
- as a type:
-\end_layout
-
-\begin_layout Standard
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline false
-status open
-
-\begin_layout Plain Layout
-class Hashable(typing.Protocol):
-\end_layout
-
-\begin_layout Plain Layout
-	def __hash__(self) -> int:
-\end_layout
-
-\begin_layout Plain Layout
-		...
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Hashability in 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-python
-\end_layout
-
-\end_inset
-
- perceived as discernability,
- more precisely coresponds to the notion of 
-\begin_inset Formula $=$
-\end_inset
-
- in mathematics,
- a notion used throughout here consistently,
- and is necessary when exploring mathematical foundations from a clasical perspective.
+\begin_layout Subsection
+Functions
 \end_layout
 
 \begin_layout Definition
-Given sets 
-\begin_inset Formula $X$
-\end_inset
-
- and 
-\begin_inset Formula $Y$
-\end_inset
-
- and a function 
-\begin_inset Formula $f:X\to Y$
-\end_inset
-
-:
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-\begin_inset Formula $\forall a\in X$
-\end_inset
-
-,
- the image of 
-\begin_inset Formula $a$
-\end_inset
-
- through 
+A 
+\emph on
+function
+\emph default
+ 
 \begin_inset Formula $f$
 \end_inset
 
- is denoted 
-\begin_inset Formula $f(a)$
-\end_inset
-
-,
-\end_layout
-
-\begin_layout Itemize
-\begin_inset Formula $\forall A\subseteq X$
-\end_inset
-
-,
- the image of 
+ from a set 
 \begin_inset Formula $A$
 \end_inset
 
- though 
+ to a set 
+\begin_inset Formula $B$
+\end_inset
+
+ is a rule that assigns to each element of 
+\begin_inset Formula $A$
+\end_inset
+
+ a unique element of 
+\begin_inset Formula $B$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The notation 
+\begin_inset Formula $f:A\to B$
+\end_inset
+
+ denotes a function 
 \begin_inset Formula $f$
 \end_inset
 
- is 
+ from 
+\begin_inset Formula $A$
+\end_inset
+
+ to 
+\begin_inset Formula $B$
+\end_inset
+
+.The result of applying 
+\begin_inset Formula $f$
+\end_inset
+
+ to an element 
+\begin_inset Formula $x\in A$
+\end_inset
+
+ is denoted 
+\begin_inset Formula $f(x)$
+\end_inset
+
+;
+ it is called the 
+\emph on
+value
+\emph default
+ of 
+\begin_inset Formula $f$
+\end_inset
+
+ at 
+\begin_inset Formula $x$
+\end_inset
+
+,
+ or the 
+\emph on
+image
+\emph default
+ of 
+\begin_inset Formula $x$
+\end_inset
+
+ under 
+\begin_inset Formula $f$
+\end_inset
+
+.
+ The set 
+\begin_inset Formula $A$
+\end_inset
+
+ is called the 
+\emph on
+domain
+\emph default
+ of 
+\begin_inset Formula $f$
+\end_inset
+
+,
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+ is called the 
+\emph on
+codomain
+\emph default
+ of 
+\begin_inset Formula $f$
+\end_inset
+
+.
+ The set 
+\begin_inset Formula $f(A)\subseteq B$
+\end_inset
+
+ called the image set of 
+\begin_inset Formula $f$
+\end_inset
+
+,
+ is the subset of the codomain every element of which is a mapped element from 
+\begin_inset Formula $A$
+\end_inset
+
+:
 \begin_inset Formula 
 \[
-f(A)=\{b\in Y|\exists a\in X,b=f(a)\},
+f(A)=\{f(x):x\in A\}
 \]
 
 \end_inset
@@ -1272,158 +1150,456 @@ f(A)=\{b\in Y|\exists a\in X,b=f(a)\},
 
 \end_layout
 
-\end_deeper
-\begin_layout Standard
-meaning 
-\begin_inset Formula $f(X)\subseteq Y$
+\begin_layout Definition
+Special types of a function 
+\begin_inset Formula $f:A\to B$
 \end_inset
 
-.
+:
 \end_layout
 
-\begin_layout Standard
-A function 
-\begin_inset Formula $f:X\to Y$
-\end_inset
-
- is:
-\end_layout
-
+\begin_deeper
 \begin_layout Description
-injective iff 
-\begin_inset Formula $\forall a,b\in X$
+
+\emph on
+injective
+\emph default
+ 
+\begin_inset Formula $\forall x,y\in A$
 \end_inset
 
 ,
  
-\begin_inset Formula $f(a)=f(b)\Rightarrow a=b$
+\begin_inset Formula $f(x)=f(y)\Rightarrow x=y$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Description
+
+\emph on
+surjective
+\emph default
+ 
+\begin_inset Formula $f(A)=B$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Description
+
+\emph on
+bijective
+\emph default
+ is both injective and surjective.
+\end_layout
+
+\end_deeper
+\begin_layout Minisec
+Indexed family
+\end_layout
+
+\begin_layout Standard
+Intuitively,
+ an indexed family is a collection whose elements are labelled with the elements of an arbitrary (index) set 
+\begin_inset Formula $I$
+\end_inset
+
+.
+ These labels allow the same element to occur several times in the family.
+\end_layout
+
+\begin_layout Definition
+An indexed family is a function that has an index set 
+\begin_inset Formula $I$
+\end_inset
+
+ as its domain.
+ Generally,
+ the usual functional notation is not used for indexed families.
+ Instead,
+ the element 
+\begin_inset Formula $i$
+\end_inset
+
+ of the index set 
+\begin_inset Formula $I$
+\end_inset
+
+ is written as a subscript of the same name of the family.
+ Special cases include:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset Formula $I=\mathbb{B}=\{\bot,\top\}$
+\end_inset
+
+ defines an ordered pair,
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $I=\mathbb{N}_{n-1}=\{0,...,n-1\}$
+\end_inset
+
+ (
+\begin_inset Formula $\forall n\in\mathbb{N}$
+\end_inset
+
+) defines an 
+\begin_inset Formula $n$
+\end_inset
+
+-tuple,
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $I=\mathbb{N}$
+\end_inset
+
+ defines a sequence.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Family of sets operations become indexed operations:
+\begin_inset Formula 
+\begin{gather*}
+\bigcup\nolimits_{i\in I}A_{i}=\{x:\exists i\in I,x\in A_{i}\},\\
+\bigcap\nolimits_{i\in I}A_{i}=\{x:\forall i\in I,x\in A_{i}\}.
+\end{gather*}
+
+\end_inset
+
+For intersection,
+ 
+\begin_inset Formula $I\neq\varnothing$
 \end_inset
 
 .
 \end_layout
 
-\begin_layout Description
-surjective iff 
-\begin_inset Formula $f(X)=Y$
-\end_inset
-
-.
+\begin_layout Minisec
+Indicator function
 \end_layout
 
-\begin_layout Description
-bijective iff it is both injective and surjective.
+\begin_layout Definition
+Given a set 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\forall B\subseteq A$
+\end_inset
+
+,
+ its 
+\emph on
+indicator function
+\emph default
+ is
+\begin_inset Formula 
+\[
+\mathds{1}_{B}:A\to\mathbb{B}:x\mapsto\mathds{1}_{B}(x)=\begin{cases}
+\top & x\in A,\\
+\bot & x\notin A.
+\end{cases}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+External operations
 \end_layout
 
 \begin_layout Standard
 In 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "subsec:Basic-operations"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+tuple "list"
 
-\begin_layout Plain Layout
-python
-\end_layout
-
-\end_inset
-
- a function 
-\begin_inset Formula $f:X\to Y$
-\end_inset
-
- is defined by its signature while,
- 
-\begin_inset Formula $\forall a\in X$
 \end_inset
 
 ,
- the image 
-\begin_inset Formula $f(a)$
+ all elements of sets produced by set operations belong to previously defined sets.
+ In this section,
+ other set operations are considered,
+ which produce sets whose elements can be outside all previously considered sets.
+\end_layout
+
+\begin_layout Minisec
+Cartesian product
+\end_layout
+
+\begin_layout Definition
+Given sets 
+\begin_inset Formula $A$
 \end_inset
 
- is defined by the body of the function:
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+,
+ their 
+\emph on
+Cartesian product
+\emph default
+ (or simply 
+\emph on
+product
+\emph default
+),
+ denoted 
+\begin_inset Formula $A\times B$
+\end_inset
+
+,
+ is the set of all ordered pairs 
+\begin_inset Formula $(a,b)$
+\end_inset
+
+ such that 
+\begin_inset Formula $a\in A$
+\end_inset
+
+ and 
+\begin_inset Formula $b\in B$
+\end_inset
+
+;
+ that is,
+\begin_inset Formula 
+\[
+A\times B=\{(a,b)|a\in A\wedge b\in B\}.
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline false
-status open
+The definition makes sense even if 
+\begin_inset Formula $A=B$
+\end_inset
 
-\begin_layout Plain Layout
-def f(a:
- X) -> Y:
+,
+ in which case we write 
+\begin_inset Formula $A\times A=A^{2}$
+\end_inset
+
+.
+ The graph of a function 
+\begin_inset Formula $f:A\to B$
+\end_inset
+
+ is the set of all ordered pairs 
+\begin_inset Formula $(a,f(a))$
+\end_inset
+
+ as 
+\begin_inset Formula $a$
+\end_inset
+
+ ranged over all elements of 
+\begin_inset Formula $A$
+\end_inset
+
+.
+ It is a subset of the Cartesian product 
+\begin_inset Formula $A\times B$
+\end_inset
+
+.
 \end_layout
 
-\begin_layout Plain Layout
-	...
+\begin_layout Definition
+Given an indexed family of sets 
+\begin_inset Formula $(A_{i})_{i\in I}$
+\end_inset
+
+,
+ the product
+\begin_inset Formula 
+\[
+\prod\nolimits_{i\in I}A_{i}
+\]
+
+\end_inset
+
+is the set of all indexed families of elements 
+\begin_inset Formula $(a_{i})_{i\in I}$
+\end_inset
+
+ such that 
+\begin_inset Formula $\forall i\in I$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a_{i}\in A_{i}$
+\end_inset
+
+.
 \end_layout
+
+\begin_layout Minisec
+Set exponentiation
+\end_layout
+
+\begin_layout Definition
+Given two sets 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+,
+ the 
+\emph on
+set exponentiation
+\emph default
+,
+ denoted 
+\begin_inset Formula $B^{A}$
+\end_inset
+
+,
+ is the set that has as elements all functions 
+\begin_inset Formula $A\rightarrow B$
+\end_inset
+
+,
+ i.e.:
+\begin_inset Formula 
+\[
+B^{A}=\{f:f:A\rightarrow B\}.
+\]
 
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+Equivalently,
+ 
+\begin_inset Formula $B^{A}$
+\end_inset
+
+ can be viewed as the Cartesian product of a family,
+ indexed by 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ of sets that are all equal to 
+\begin_inset Formula $B$
+\end_inset
+
+.
+ This explains the terminology and the notation,
+ since exponentiation with integer exponents is a product where all factors are equal to the base:
+\begin_inset Formula 
+\[
+B^{A}=\prod\nolimits_{a\in A}B=\{(b_{a})_{a\in A}|\forall a\in A,b_{a}\in B\}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Cardinality
+\end_layout
+
+\begin_layout Definition
+Informally,
+ the cardinality of a set 
+\begin_inset Formula $S$
+\end_inset
+
+,
+ often denoted 
+\begin_inset Formula $|S|$
+\end_inset
+
+,
+ is the number of its members.
+ This number is the natural number 
+\begin_inset Formula $n\in\mathbb{N}$
+\end_inset
+
+ when there is a one-to-one correspondence between the set 
+\begin_inset Formula $S$
+\end_inset
+
+ and the set 
+\begin_inset Formula $\mathbb{N}_{n}=\{1,2,...,n\}$
+\end_inset
+
+ of the first 
+\begin_inset Formula $n$
+\end_inset
+
+ natural numbers.
+ Also,
+\begin_inset Formula 
+\[
+\vert\varnothing\vert=0.
+\]
+
+\end_inset
+
+A set with the cardinality of a natural number is called a finite set,
+ which applies in both cases.
+ Otherwise,
+ one has an infinite set.
+ Having the same cardinality of a proper subset is a characteristic property of infinite sets:
+ a set is infinite if and only if it has the same cardinality as one of its proper subsets.
+\end_layout
+
+\begin_layout Definition
+Infinite sets may have the same cardinalities still;
+ 
+\begin_inset Formula $\forall A,B$
+\end_inset
+
+ sets,
+ 
+\begin_inset Formula $\vert A\vert=\vert B|$
+\end_inset
+
+ iff 
+\begin_inset Formula $\exists f:A\to B$
+\end_inset
+
+ bijective.
 \end_layout
 
 \begin_layout Subsection
 Relations
 \end_layout
 
-\begin_layout Definition
-Given a set 
-\begin_inset Formula $X$
-\end_inset
-
-,
- any 
-\begin_inset Formula $a,b\in X$
-\end_inset
-
- define an ordered pair 
-\begin_inset Formula $(a,b)\in X\times X$
-\end_inset
-
-.
-\end_layout
-
 \begin_layout Standard
-Identifying 
-\begin_inset Formula $X$
-\end_inset
-
- with (generic) type 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-X
-\end_layout
-
-\end_inset
-
-,
- the Cartesian product 
-\begin_inset Formula $X\times X$
-\end_inset
-
- therefore corresponds to:
-\end_layout
-
-\begin_layout Standard
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline false
-status open
-
-\begin_layout Plain Layout
-type pair[X] = tuple[X,
- X]
-\end_layout
-
-\end_inset
-
-
+In mathematics,
+ a binary relation denotes some kind of relationship between two objects in a set,
+ which may or may not hold.
 \end_layout
 
 \begin_layout Definition
@@ -1433,15 +1609,20 @@ Given a set
 
 ,
  a binary relation 
-\begin_inset Formula $R$
+\begin_inset Formula $\bigcirc$
 \end_inset
 
- on 
+ over 
 \begin_inset Formula $X$
 \end_inset
 
- is a boolean function 
-\begin_inset Formula $R:X\times X\to\{0,1\}$
+ is a set of ordered pairs of elements from 
+\begin_inset Formula $X$
+\end_inset
+
+,
+ formally 
+\begin_inset Formula $\bigcirc\subseteq X\times X$
 \end_inset
 
 .
@@ -1449,836 +1630,33 @@ Given a set
 
 \begin_layout Standard
 The statement 
-\begin_inset Formula $R(x,y)=1$
+\begin_inset Formula $(x,y)\in\bigcirc$
 \end_inset
 
  reads in infix notation as 
-\begin_inset Formula $xRy$
+\begin_inset Formula $x\bigcirc y$
 \end_inset
 
 .
-\end_layout
-
-\begin_layout Standard
-The characteristic signature of a relation in 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-python
-\end_layout
-
-\end_inset
-
- (using the verb paradigm for naming functions) is:
-\end_layout
-
-\begin_layout Standard
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline false
-status open
-
-\begin_layout Plain Layout
-class Relation(typing.Hashable):
-\end_layout
-
-\begin_layout Plain Layout
-	def relate(self,
- other:
- X) -> bool:
-\end_layout
-
-\begin_layout Plain Layout
-		...
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Subsection
-Relations
-\end_layout
-
-\begin_layout Subsubsection
-Equivalence
-\end_layout
-
-\begin_layout Definition
-A 
-\emph on
-equivalence relation
-\emph default
- 
-\begin_inset Formula $\sim$
-\end_inset
-
- is a binary relation on a set 
-\begin_inset Formula $X$
-\end_inset
-
- that is:
-\end_layout
-
-\begin_deeper
-\begin_layout Description
-reflexive 
-\begin_inset Formula $\forall a\in X$
-\end_inset
-
-,
- 
-\begin_inset Formula $a\sim a$
-\end_inset
-
-,
-\end_layout
-
-\begin_layout Description
-symmetric 
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
-,
- 
-\begin_inset Formula $a\sim b$
-\end_inset
-
- iff 
-\begin_inset Formula $b\sim a$
-\end_inset
-
-,
-\end_layout
-
-\begin_layout Description
-transitive 
-\begin_inset Formula $\forall a,b,c\in X$
-\end_inset
-
+ The order of the elements is important;
  if 
-\begin_inset Formula $a\sim b$
+\begin_inset Formula $x\neq y$
 \end_inset
 
- and 
-\begin_inset Formula $b\sim c$
+ the 
+\begin_inset Formula $y\bigcirc x$
 \end_inset
 
- then 
-\begin_inset Formula $a\sim c$
-\end_inset
-
-.
-\end_layout
-
-\end_deeper
-\begin_layout Standard
-Every equivalence relation 
-\begin_inset Formula $\sim$
-\end_inset
-
- corresponds its nonequivalence counterpart 
-\begin_inset Formula $\nsim$
-\end_inset
-
- as
-\begin_inset Formula 
-\[
-\nsim:X\times X\to\{0,1\}:x,y\mapsto x\nsim y=\neg(x\sim y),
-\]
-
-\end_inset
-
-and vice versa.
-\end_layout
-
-\begin_layout Standard
-Unlike equality (hashability),
- equivalence relations may introduce a sort of bucketting of instances in 
-\begin_inset Formula $X$
-\end_inset
-
-,
- which is why in 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-python
-\end_layout
-
-\end_inset
-
- they correspond to distinct from 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-__hash__
-\end_layout
-
-\end_inset
-
- methods:
-\end_layout
-
-\begin_layout Standard
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline false
-status open
-
-\begin_layout Plain Layout
-class Equivalence(typing.Hashable):
-\end_layout
-
-\begin_layout Plain Layout
-	def __eq__(self,
- other:
- X) -> bool:
- return not self != other
-\end_layout
-
-\begin_layout Plain Layout
-	def __ne__(self,
- other:
- X) -> bool:
- return not self == other
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Equality is a (trivial) equivalence relation,
- in which case 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-__eq__
-\end_layout
-
-\end_inset
-
- delegates to 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-__hash__
-\end_layout
-
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Subsubsection
-Ordering
-\end_layout
-
-\begin_layout Definition
-A binary relation 
-\begin_inset Formula $\mathord{\lesssim}$
-\end_inset
-
- on a set 
-\begin_inset Formula $X$
-\end_inset
-
- is called a 
-\emph on
-preorder
-\emph default
- if it is reflexive and transitive:
-\end_layout
-
-\begin_deeper
-\begin_layout Description
-reflexivity 
-\begin_inset Formula $\forall a\in X$
-\end_inset
-
-,
- 
-\begin_inset Formula $a\lesssim a$
-\end_inset
-
-,
- i.e.
- every element is related to itself.
-\end_layout
-
-\begin_layout Description
-transitivity 
-\begin_inset Formula $\forall a,b,c\in X$
-\end_inset
-
- with 
-\begin_inset Formula $a\lesssim b$
-\end_inset
-
- and 
-\begin_inset Formula $b\lesssim c$
-\end_inset
-
-,
- 
-\begin_inset Formula $a\lesssim c$
-\end_inset
-
-.
-\end_layout
-
-\end_deeper
-\begin_layout Standard
-Given a preorder 
-\begin_inset Formula $\lesssim$
-\end_inset
-
- on 
-\begin_inset Formula $X$
-\end_inset
-
- one may define an equivalence relation 
-\begin_inset Formula $\sim$
-\end_inset
-
- on 
-\begin_inset Formula $X$
-\end_inset
-
- by
-\begin_inset Formula 
-\[
-a\lesssim b\text{ and }b\lesssim a\text{ iff }a\sim b
-\]
-
-\end_inset
-
-
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Minisec
-Partial
-\end_layout
-
-\begin_layout Definition
-A 
-\emph on
-partial order
-\emph default
- 
-\begin_inset Formula $\mathord{\leq}$
-\end_inset
-
- is a preorder on a set 
-\begin_inset Formula $X$
-\end_inset
-
- that is antisymmetric:
-\end_layout
-
-\begin_deeper
-\begin_layout Description
-antisymmetry 
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
-,
- if 
-\begin_inset Formula $a\leq b$
-\end_inset
-
- and 
-\begin_inset Formula $b\leq a$
-\end_inset
-
-,
- then 
-\begin_inset Formula $a=b$
-\end_inset
-
-.
-\end_layout
-
-\end_deeper
-\begin_layout Standard
-Formally,
- a partial order is a binary relation that is reflexive,
- antisymmetric and transitive.
- A 
-\emph on
-partially ordered set
-\emph default
- (
-\emph on
-poset
-\emph default
- for short) is a set 
-\begin_inset Formula $X$
-\end_inset
-
- (called the ground set of the order) equipped with a partial order.
-\end_layout
-
-\begin_layout Standard
-Given a preorder 
-\begin_inset Formula $\lesssim$
-\end_inset
-
- on 
-\begin_inset Formula $X$
-\end_inset
-
- and the equivalence relation 
-\begin_inset Formula $\sim$
-\end_inset
-
- it implies,
- one may define a partial order 
-\begin_inset Formula $\leq$
-\end_inset
-
- on 
-\begin_inset Formula $X/\mathord{\sim}$
-\end_inset
-
-,
- by
-\begin_inset Formula 
-\[
-[a]\leq[b]\text{ iff }a\lesssim b
-\]
-
-\end_inset
-
-
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Definition
-A 
-\emph on
-strict partial order
-\emph default
- 
-\begin_inset Formula $<$
-\end_inset
-
- is a binary relation on 
-\begin_inset Formula $X$
-\end_inset
-
- that is irreflexive and transitive:
-\end_layout
-
-\begin_deeper
-\begin_layout Description
-irreflexivity 
-\begin_inset Formula $\forall a\in X$
-\end_inset
-
-,
- 
-\begin_inset Formula $\neg(a<a)$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Description
-transitivity 
-\begin_inset Formula $\forall a,b,c\in X$
-\end_inset
-
- with 
-\begin_inset Formula $a<b$
-\end_inset
-
- and 
-\begin_inset Formula $b<c$
-\end_inset
-
-,
- 
-\begin_inset Formula $a<c$
-\end_inset
-
-.
-\end_layout
-
-\end_deeper
-\begin_layout Standard
-Any preorder 
-\begin_inset Formula $\lesssim$
-\end_inset
-
- on a set 
-\begin_inset Formula $X$
-\end_inset
-
- gives rise to a strict partial order defined (using the induced equivalence relation 
-\begin_inset Formula $\sim$
-\end_inset
-
-) by
-\begin_inset Formula 
-\[
-a<b\text{ iff }a\lesssim b\text{ and }a\nsim b
-\]
-
-\end_inset
-
-
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
-.
- A partial order on 
-\begin_inset Formula $X$
-\end_inset
-
- gives rise to the same strict partial order,
- hence using the same name.
-\end_layout
-
-\begin_layout Minisec
-Total
-\end_layout
-
-\begin_layout Definition
-A 
-\emph on
-total order
-\emph default
- 
-\begin_inset Formula $\leq$
-\end_inset
-
- on some set 
-\begin_inset Formula $X$
-\end_inset
-
- is a partial order in which any two elements are comparable,
- that is:
-\end_layout
-
-\begin_deeper
-\begin_layout Description
-strong
-\begin_inset space ~
-\end_inset
-
-connectivity 
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
-,
- 
-\begin_inset Formula $a\leq b$
+ can be 
+\begin_inset Formula $\top$
 \end_inset
 
  or 
-\begin_inset Formula $b\leq a$
+\begin_inset Formula $\bot$
 \end_inset
 
-.
-\end_layout
-
-\end_deeper
-\begin_layout Definition
-Note that,
- reflexivity in total orders follows from strong connectivity.
-\end_layout
-
-\begin_layout Definition
-A 
-\emph on
-strict total order
-\emph default
- 
-\begin_inset Formula $\leq$
-\end_inset
-
- on a set 
-\begin_inset Formula $X$
-\end_inset
-
- is a strict partial order in which any two elements are comparable,
- that is:
-\end_layout
-
-\begin_deeper
-\begin_layout Description
-connectivity 
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
-,
- if 
-\begin_inset Formula $a\neq b$
-\end_inset
-
-,
- then 
-\begin_inset Formula $a<b$
-\end_inset
-
- or 
-\begin_inset Formula $b>a$
-\end_inset
-
-.
-\end_layout
-
-\end_deeper
-\begin_layout Standard
-A total order 
-\begin_inset Formula $\leq$
-\end_inset
-
- on a set 
-\begin_inset Formula $X$
-\end_inset
-
- implies a strict total order 
-\begin_inset Formula $<$
-\end_inset
-
- by
-\begin_inset Formula 
-\[
-a<b\text{ iff }a\leq b\text{ and }a\neq b
-\]
-
-\end_inset
-
-
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Paragraph
-Extrema
-\end_layout
-
-\begin_layout Definition
-A poset can have at most one greatest and one least element:
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-An element 
-\begin_inset Formula $M=\max X\in X$
-\end_inset
-
- is the greatest element iff 
-\begin_inset Formula $\forall a\in X$
-\end_inset
-
-,
- 
-\begin_inset Formula $a\leq M$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Itemize
-An element 
-\begin_inset Formula $m=\min X\in X$
-\end_inset
-
- is the least element iff 
-\begin_inset Formula $\forall a\in X$
-\end_inset
-
-,
- 
-\begin_inset Formula $m\leq a$
-\end_inset
-
-.
-\end_layout
-
-\end_deeper
-\begin_layout Section
-Algebra
-\end_layout
-
-\begin_layout Definition
-A 
-\emph on
-binary operation
-\emph default
- 
-\begin_inset Formula $\bullet_{X}$
-\end_inset
-
- is a mapping of the elements (pairs) of the cartesian product 
-\begin_inset Formula $X\times X$
-\end_inset
-
- to 
-\begin_inset Formula $X$
-\end_inset
-
-:
-\begin_inset Formula 
-\[
-\bullet_{X}:X\times X\to X
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Binary operations are usually written using infix notation such as 
-\begin_inset Formula $a\bullet_{X}b$
-\end_inset
-
- rather than by functional notation.
-\end_layout
-
-\begin_layout Definition
-Let 
-\begin_inset Formula $X$
-\end_inset
-
- be a set equipped with one or several methods of producing elements of 
-\begin_inset Formula $X$
-\end_inset
-
- from other elements of 
-\begin_inset Formula $A$
-\end_inset
-
- (operations).
- A subset 
-\begin_inset Formula $A\subseteq X$
-\end_inset
-
- is said to be 
-\emph on
-closed
-\emph default
- under these methods if an input of (purely) elements of 
-\begin_inset Formula $A$
-\end_inset
-
- always results in an element still in 
-\begin_inset Formula $A$
-\end_inset
-
-,
- or 
-\begin_inset Formula $\forall a,b\in A$
-\end_inset
-
-,
- 
-\begin_inset Formula $a\bullet_{X}b\in A$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-It follows that 
-\begin_inset Formula $\forall A\subseteq X$
-\end_inset
-
-,
- there is a smallest closed subset 
-\begin_inset Formula $\bar{A}\subseteq S$
-\end_inset
-
- such that 
-\begin_inset Formula $A\subseteq\bar{A}$
-\end_inset
-
- (it is the intersection fo all closed subsets that contain 
-\begin_inset Formula $A$
-\end_inset
-
-).
- Depending on the context,
- 
-\begin_inset Formula $\bar{A}$
-\end_inset
-
- is called the closure of 
-\begin_inset Formula $A$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Example
-Given the operation of subtraction 
-\begin_inset Formula $-:\mathbb{Q}\times\mathbb{Q}\to\mathbb{Q}$
-\end_inset
-
- on the rationals,
- the closure of 
-\begin_inset Formula $\mathbb{N}$
-\end_inset
-
- is 
-\begin_inset Formula $\bar{\mathbb{N}}=\mathbb{Z}$
-\end_inset
-
-.
- Given the operation of division 
-\begin_inset Formula $/:\mathbb{Q}^{*}\times\mathbb{Q}^{*}\to\mathbb{Q}^{*}$
-\end_inset
-
-,
- the closure of 
-\begin_inset Formula $\mathbb{Z}^{*}$
-\end_inset
-
- is 
-\begin_inset Formula $\bar{\mathbb{Z}}^{*}=\mathbb{Q}^{*}$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula $\forall X\subseteq S$
-\end_inset
-
- closed,
- 
-\begin_inset Formula $\bar{X}=X$
+ independently of 
+\begin_inset Formula $x\bigcirc y$
 \end_inset
 
 .
