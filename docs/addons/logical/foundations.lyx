@@ -1,0 +1,2713 @@
+#LyX 2.5 created this file. For more info see https://www.lyx.org/
+\lyxformat 643
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass scrartcl
+\begin_preamble
+%\usepackage{bm}
+\usepackage{bbm}
+\usepackage{xcolor}
+\usepackage{cleveref}
+%\usepackage{csquotes}
+%\usepackage{textcomp}
+%\usepackage{textgreek}
+%\usepackage{pdflscape}
+
+\definecolor{red}{rgb}{0.8,0.0,0.0}
+\definecolor{green}{rgb}{0.2,0.6,0.0}
+\definecolor{blue}{rgb}{0.2,0.4,1.0}
+\definecolor{magenta}{rgb}{0.6,0.2,0.8}
+\addtokomafont{disposition}{\rmfamily}
+\addtokomafont{descriptionlabel}{\rmfamily}
+\setlength{\columnseprule}{0.4pt}
+\renewcommand{\arraystretch}{1.5}
+\relpenalty=10000
+\binoppenalty=10000
+% Float policy: at most one figure/table per text page, and avoid small float-only pages.
+\setcounter{topnumber}{1}
+\setcounter{bottomnumber}{0}
+\setcounter{totalnumber}{1}
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0}
+\renewcommand{\textfraction}{0.10}
+\renewcommand{\floatpagefraction}{0.75}
+
+% Typewriter font: Fira Code, for its programming ligatures, with graceful fallbacks.
+% Fira Code is not part of TeX Live, so it is taken from the system when installed
+% there, Retina weight preferred; otherwise TeX Live's own Fira Mono keeps the same
+% design without the ligatures. LyX loads fontspec before this preamble, so the test
+% is available here, and the choice made here overrides the document settings.
+\IfFontExistsTF{Fira Code}{%
+  \IfFontExistsTF{Fira Code Retina}
+    {\setmonofont{Fira Code}[UprightFont=* Retina, BoldFont=* Bold, Contextuals=Alternate, Scale=MatchLowercase]}
+    {\setmonofont{Fira Code}[Contextuals=Alternate, Scale=MatchLowercase]}%
+}{%
+  \IfFontExistsTF{Fira Mono}{\setmonofont{Fira Mono}[Scale=MatchLowercase]}{}%
+}
+
+\usepackage[framemethod=TikZ]{mdframed}
+
+\definecolor{code}{HTML}{EEEEEE}
+\definecolor{codeborder}{HTML}{DDDDDD}
+
+\mdfdefinestyle{codebox}{
+    backgroundcolor=code,
+    linecolor=codeborder,
+    linewidth=0.5pt,
+    roundcorner=7.5pt,
+    innerleftmargin=7.5pt,
+    innerrightmargin=7.5pt,
+    innertopmargin=7.5pt,
+    innerbottommargin=7.5pt,
+    skipabove=\glueexpr 3.75pt + \parskip\relax,
+}
+\mdfsetup{
+    skipbelow=\glueexpr 6.25pt - \parskip\relax
+}
+\surroundwithmdframed[style=codebox]{minted}
+% Listings included from files arrive as \inputminted, a command rather than an
+% environment, so the hook above never sees them. Give them the same box. Deferred,
+% because LyX loads minted after this preamble.
+\AtBeginDocument{%
+  \let\PlainInputMinted\inputminted
+  \renewcommand{\inputminted}[3][]{%
+    \begin{mdframed}[style=codebox]\PlainInputMinted[#1]{#2}{#3}\end{mdframed}}%
+}
+% minted 3 boxes every hyphen, defining \PYGZhy as \mbox{-}, so that a line can never
+% break inside an operator such as ->. The box also hides the hyphen from the font's
+% shaper, so the arrow ligature never forms. Listings here never break at hyphens
+% anyway, fvextra forbids it, so the patch is switched off. Harmless with a minted
+% that does not define it.
+\makeatletter
+\AtBeginDocument{\let\minted@patch@PygmentsZhy\relax}
+\makeatother
+
+\usepackage{tcolorbox}
+\usepackage{scalefnt}
+\usepackage{dsfont}
+
+\newcommand{\InlineCodeScale}{0.9  }
+\newcommand{\InlineCodeRaise}{0.1em}
+
+\AtBeginDocument{%
+  \setmintedinline{%
+    bgcolor=none,
+    breaklines=false,
+    fontsize={\scalefont{\InlineCodeScale}},
+    fontseries=auto,
+    fontshape=auto
+  }%
+  \renewcommand{\FancyVerbFormatInline}[1]{%
+    \raisebox{\InlineCodeRaise}{%
+      \tcbox[
+        on line,
+        colback=code,
+        colframe=codeborder,
+        boxrule=0.5pt,
+        arc=1.75pt,
+        outer arc=2.25pt,
+        boxsep=0pt,
+        left=1.5pt,
+        right=1.5pt,
+        top=1.0pt,
+        bottom=0.5pt
+      ]{\strut\smash{#1}}%
+    }%
+  }%
+  \renewmdenv[style=codebox]{shaded}%
+}
+\end_preamble
+\use_default_options true
+\master main.lyx
+\begin_modules
+fix-cm
+fixme
+theorems-ams-bytype
+theorems-sec-bytype
+eqs-within-sections
+\end_modules
+\maintain_unincluded_children no
+\language english
+\language_package default
+\inputencoding utf8
+\fontencoding auto
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "ADOBESourceCodePro" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts true
+\font_sc false
+\font_roman_osf false
+\font_sans_osf false
+\font_typewriter_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format pdf5
+\output_sync 1
+\bibtex_command biber
+\index_command default
+\float_placement H
+\float_alignment center
+\paperfontsize 9
+\spacing single
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks true
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize letter
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine biblatex
+\cite_engine_type authoryear
+\biblio_style plain
+\biblio_options maxbibnames=99
+\biblatex_bibstyle numeric
+\biblatex_citestyle numeric
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date true
+\justification false
+\crossref_package refstyle
+\use_formatted_ref 0
+\use_minted 1
+\use_lineno 0
+\backgroundcolor none
+\fontcolor none
+\notefontcolor lightgray
+\boxbgcolor black
+\table_border_color default
+\table_odd_row_color default
+\table_even_row_color default
+\table_alt_row_colors_start 1
+\index Index
+\shortcut idx
+\color #006600
+\end_index
+\leftmargin 0.75in
+\topmargin 1in
+\rightmargin 0.75in
+\bottommargin 1in
+\headheight 0.5in
+\headsep 0.5in
+\footskip 0.5in
+\columnsep 0.25in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation skip
+\defskip halfline
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 1
+\papercolumns 1
+\papersides 1
+\paperpagestyle headings
+\tablestyle No_Borders
+\listings_params "style=friendly"
+\bullet 1 0 9 -1
+\bullet 3 0 7 -1
+\tracking_changes false
+\output_changes false
+\change_bars false
+\postpone_fragile_content false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\docbook_table_output 0
+\docbook_mathml_prefix 1
+\docbook_mathml_version 0
+\end_header
+
+\begin_body
+
+\begin_layout Section
+Foundations
+\end_layout
+
+\begin_layout Subsection
+Sets
+\end_layout
+
+\begin_layout Subsubsection
+Basic notions
+\end_layout
+
+\begin_layout Definition
+In mathematics,
+ a set is a collection of different things,
+ called elements or members of the set.
+ A set may also be called a 
+\emph on
+collection
+\emph default
+ or 
+\emph on
+family
+\emph default
+,
+ especially when its elements are themselves sets;
+ this may avoid confusion between the set and its members.
+ A set may be specified either by listing its elements or by giving a property that characterizes its elements,
+ such as for the set of the prime numbers or the set of all students in a given class.
+\end_layout
+
+\begin_layout Standard
+If 
+\begin_inset Formula $x$
+\end_inset
+
+ is an element of a set 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ one says that 
+\begin_inset Formula $x$
+\end_inset
+
+ belongs to 
+\begin_inset Formula $A$
+\end_inset
+
+ or 
+\emph on
+is in
+\emph default
+ 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ and one writes 
+\begin_inset Formula $x\in A$
+\end_inset
+
+.
+ The statement 
+\emph on
+
+\begin_inset Formula $x$
+\end_inset
+
+ is not in 
+\begin_inset Formula $A$
+\end_inset
+
+
+\emph default
+ is written a 
+\begin_inset Formula $x\notin A$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+axiom of extensionality
+\emph default
+ states that two sets are equal if and only if they have the same elements,
+ or
+\begin_inset Formula 
+\[
+A=B\Longleftrightarrow\forall x(x\in A\Longleftrightarrow x\in B).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Definition
+There exists a set with no elements,
+ and extensionality implies that there is only one such set.
+ It is called the 
+\emph on
+empty set
+\emph default
+ (or null set) and is denoted 
+\begin_inset Formula $\varnothing$
+\end_inset
+
+ or {}.
+\end_layout
+
+\begin_layout Definition
+A singleton is a set with exactly one element.
+ If 
+\begin_inset Formula $x$
+\end_inset
+
+ is this element,
+ the singleton is denoted 
+\begin_inset Formula $\{x\}$
+\end_inset
+
+.
+ The sets 
+\begin_inset Formula $\{\varnothing\}$
+\end_inset
+
+ and 
+\begin_inset Formula $\varnothing$
+\end_inset
+
+ are different,
+ because the former has one element (namely 
+\begin_inset Formula $\varnothing$
+\end_inset
+
+) and the latter has no elements at all.
+\end_layout
+
+\begin_layout Subsubsection
+Specifying a set
+\end_layout
+
+\begin_layout Standard
+Extensionality implies that to specify a set,
+ it suffices either to list its elements or to provide a property that characterize the latter among the elements of a possibly larger set.
+\end_layout
+
+\begin_layout Minisec
+Roster notation
+\end_layout
+
+\begin_layout Definition
+
+\emph on
+Roster
+\emph default
+ or 
+\emph on
+enumeration notation
+\emph default
+ is a notation introduced by Ernst Zermelo in 1908 that specifies a set by listing its elements between braces,
+ separated by commas.
+\end_layout
+
+\begin_layout Example
+The notations 
+\begin_inset Formula $\{\}$
+\end_inset
+
+ for the empty set and 
+\begin_inset Formula $\{x\}$
+\end_inset
+
+ for a singleton are examples of roster notation.
+\end_layout
+
+\begin_layout Standard
+When specifying a set,
+ all that matters is whether each potential element is in the set or not,
+ so a set does not change if elements are repeated or arranged in a different order.
+\end_layout
+
+\begin_layout Standard
+When there is a clear pattern for generating all set elements,
+ one can use an ellipsis to abbreviate the notation.
+\end_layout
+
+\begin_layout Minisec
+Set–builder notation
+\end_layout
+
+\begin_layout Definition
+Set–builder notation specifies a set as being the set of all elements that satisfy some logical formula.
+ More precisely,
+ if 
+\begin_inset Formula $\varpi(x)$
+\end_inset
+
+ is a logical formula depending on a variable 
+\begin_inset Formula $x$
+\end_inset
+
+,
+ which evalutates to 
+\begin_inset Formula $\top$
+\end_inset
+
+ or 
+\begin_inset Formula $\bot$
+\end_inset
+
+ depending on the value of 
+\begin_inset Formula $x$
+\end_inset
+
+,
+ then
+\begin_inset Formula 
+\[
+\{x:\varpi(x)\}
+\]
+
+\end_inset
+
+denotes the set of all 
+\begin_inset Formula $x$
+\end_inset
+
+ for which 
+\begin_inset Formula $\varpi(x)$
+\end_inset
+
+ is 
+\begin_inset Formula $\top$
+\end_inset
+
+.
+ In this notation,
+ 
+\begin_inset Formula $:$
+\end_inset
+
+ is read as 
+\emph on
+such that
+\emph default
+.
+\end_layout
+
+\begin_layout Subsection
+Set relations and operations
+\end_layout
+
+\begin_layout Standard
+There are two types of things one can do with sets:
+\end_layout
+
+\begin_layout Itemize
+One can compare sets and see their relationship.
+ These are called 
+\emph on
+set relations
+\emph default
+.
+ Equality is the first such relation encountered this far.
+\end_layout
+
+\begin_layout Itemize
+One can produce new sets from other sets.
+ These are called 
+\emph on
+set operations
+\emph default
+.
+\end_layout
+
+\begin_layout Subsubsection
+Subsets
+\end_layout
+
+\begin_layout Standard
+As seen before,
+ sets 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+ are equal iff they have the same elements,
+ denoted as 
+\begin_inset Formula $A=B$
+\end_inset
+
+.
+ Equality is reflexive;
+ for every set 
+\begin_inset Formula $B$
+\end_inset
+
+,
+ 
+\begin_inset Formula $B=B$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+subset
+\emph default
+ of a set 
+\begin_inset Formula $B$
+\end_inset
+
+ is a set 
+\begin_inset Formula $A$
+\end_inset
+
+ such that every element of 
+\begin_inset Formula $A$
+\end_inset
+
+ is also an element of 
+\begin_inset Formula $B$
+\end_inset
+
+,
+ or
+\begin_inset Formula 
+\[
+A\subseteq B\Longleftrightarrow\forall x(x\in A\Longrightarrow x\in B).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The relationship between sets established by 
+\begin_inset Formula $\subseteq$
+\end_inset
+
+ is called inclusion or containment.
+ Containment is reflexive too;
+ every set 
+\begin_inset Formula $B$
+\end_inset
+
+ is a subset of itself,
+ namely 
+\begin_inset Formula $B\subseteq B$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Definition
+A set 
+\begin_inset Formula $A$
+\end_inset
+
+ is a 
+\emph on
+proper subset
+\emph default
+ of a set 
+\begin_inset Formula $B$
+\end_inset
+
+ if 
+\begin_inset Formula $A\subseteq B$
+\end_inset
+
+ and 
+\begin_inset Formula $A\neq B$
+\end_inset
+
+;
+ to denote this one writes 
+\begin_inset Formula $A\subset B$
+\end_inset
+
+,
+ therefore
+\begin_inset Formula 
+\[
+A\subset B\Longleftrightarrow A\subseteq B\wedge A\neq B.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Minisec
+Properties of containment
+\end_layout
+
+\begin_layout Standard
+Containment is antisymmetric;
+ 
+\begin_inset Formula $\forall A,B$
+\end_inset
+
+ sets,
+\begin_inset Formula 
+\[
+A=B\Longleftrightarrow A\subseteq B\wedge A\supseteq B.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The empty set is a subset of every set:
+ 
+\begin_inset Formula $\forall A$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\varnothing\subseteq A$
+\end_inset
+
+.
+ In particular,
+ 
+\begin_inset Formula $\forall A\neq\varnothing$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\varnothing\subset A$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Containment is also transitive;
+ 
+\begin_inset Formula $\forall A,B,C$
+\end_inset
+
+ sets,
+\begin_inset Formula 
+\[
+A\subseteq B\wedge B\subseteq C\Longrightarrow A\subseteq C.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Internal-operations"
+
+\end_inset
+
+Internal operations
+\end_layout
+
+\begin_layout Standard
+There are several standard operations that produce new sets from given sets,
+ analogously to how addition and multiplication produce new numbers from given numbers.
+ The operations that are considered in this section are those such that all elements of the produced sets belong to a previously defined set.
+\end_layout
+
+\begin_layout Minisec
+Intersection
+\end_layout
+
+\begin_layout Definition
+The 
+\emph on
+intersection
+\emph default
+ of sets 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+ is set denoted 
+\begin_inset Formula $A\cap B$
+\end_inset
+
+ whose elements are those elements that belong to both 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+.
+ That is,
+\begin_inset Formula 
+\[
+A\cap B=\{x:x\in A\wedge x\in B\}.
+\]
+
+\end_inset
+
+Thus 
+\begin_inset Formula $A\cap B\subseteq A$
+\end_inset
+
+ and 
+\begin_inset Formula $A\cap B\subseteq B$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Intersection is associative and commutative;
+ this means that for proceeding a sequence of intersections,
+ one may proceed in any order,
+ without the need of parentheses for specifying the order of operations.
+\end_layout
+
+\begin_layout Definition
+If 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+ is a nonempty set of sets,
+ its intersection,
+ denoted
+\begin_inset Formula 
+\[
+\bigcap\nolimits\mathcal{S}=\bigcap\nolimits_{A\in\mathcal{S}}A=\{x:\forall A\in\mathcal{S},x\in A\},
+\]
+
+\end_inset
+
+is the set whose elements are those elements that belong to all sets in 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Minisec
+Union
+\end_layout
+
+\begin_layout Definition
+The 
+\emph on
+union
+\emph default
+ of sets 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+ is a set denoted 
+\begin_inset Formula $A\cup B$
+\end_inset
+
+ whose elements are those elements that belong to 
+\begin_inset Formula $A$
+\end_inset
+
+ or 
+\begin_inset Formula $B$
+\end_inset
+
+ (or both).
+ That is,
+\begin_inset Formula 
+\[
+A\cup B=\{x|x\in A\vee x\in B\}.
+\]
+
+\end_inset
+
+Thus 
+\begin_inset Formula $A\subseteq A\cup B$
+\end_inset
+
+ and 
+\begin_inset Formula $B\subseteq A\cup B$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Union is associative and commutative.
+\end_layout
+
+\begin_layout Definition
+If 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+ is a set of sets,
+ its union,
+ denoted
+\begin_inset Formula 
+\[
+\bigcup\mathcal{S}=\bigcup\nolimits_{A\in\mathcal{S}}A=\{x:\exists A\in\mathcal{S},x\in A\},
+\]
+
+\end_inset
+
+is the set whose elements are those elementes that belong to at least one set in 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Minisec
+Set difference
+\end_layout
+
+\begin_layout Definition
+The 
+\emph on
+set difference
+\emph default
+ of set 
+\begin_inset Formula $B$
+\end_inset
+
+ from 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ is a set,
+ denoted 
+\begin_inset Formula $A\setminus B$
+\end_inset
+
+,
+ whose elements are those elements that belong to 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ but not to 
+\begin_inset Formula $B$
+\end_inset
+
+.
+ That is,
+\begin_inset Formula 
+\[
+A\setminus B=\{x|x\in A\wedge x\notin B\}.
+\]
+
+\end_inset
+
+Note that 
+\begin_inset Formula $A\setminus B=A\setminus(A\cap B)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+When 
+\begin_inset Formula $B\subseteq A$
+\end_inset
+
+ the difference 
+\begin_inset Formula $A\setminus B=B^{\complement}$
+\end_inset
+
+ is also called the 
+\emph on
+complement
+\emph default
+ of 
+\begin_inset Formula $B$
+\end_inset
+
+ in 
+\begin_inset Formula $A$
+\end_inset
+
+.
+ Naively speaking,
+\begin_inset Formula 
+\[
+B^{\complement}=\{x|x\notin B\},
+\]
+
+\end_inset
+
+but this does not lead to a set as is.
+ When all sets that are considered are subsets of a fixed 
+\emph on
+universal set
+\emph default
+ 
+\begin_inset Formula $U$
+\end_inset
+
+,
+ the complement 
+\begin_inset Formula $B^{\complement}$
+\end_inset
+
+ is often called the absolute complement of 
+\begin_inset Formula $B$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Informally however,
+\begin_inset Formula 
+\[
+A\setminus B=A\cap B^{\complement}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Definition
+The 
+\emph on
+symmetric difference
+\emph default
+ of sets 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+,
+ denoted 
+\begin_inset Formula $A\bigtriangleup B$
+\end_inset
+
+,
+ is the set of those elements that belong to 
+\begin_inset Formula $A$
+\end_inset
+
+ or 
+\begin_inset Formula $B$
+\end_inset
+
+ but not on both:
+\begin_inset Formula 
+\[
+A\bigtriangleup B=(A\setminus B)\cup(B\setminus A)=(A\cup B)\setminus(A\cap B).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Functions
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+function
+\emph default
+ 
+\begin_inset Formula $f$
+\end_inset
+
+ from a set 
+\begin_inset Formula $A$
+\end_inset
+
+ to a set 
+\begin_inset Formula $B$
+\end_inset
+
+ is a rule that assigns to each element of 
+\begin_inset Formula $A$
+\end_inset
+
+ a unique element of 
+\begin_inset Formula $B$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The notation 
+\begin_inset Formula $f:A\to B$
+\end_inset
+
+ denotes a function 
+\begin_inset Formula $f$
+\end_inset
+
+ from 
+\begin_inset Formula $A$
+\end_inset
+
+ to 
+\begin_inset Formula $B$
+\end_inset
+
+.The result of applying 
+\begin_inset Formula $f$
+\end_inset
+
+ to an element 
+\begin_inset Formula $x\in A$
+\end_inset
+
+ is denoted 
+\begin_inset Formula $f(x)$
+\end_inset
+
+;
+ it is called the 
+\emph on
+value
+\emph default
+ of 
+\begin_inset Formula $f$
+\end_inset
+
+ at 
+\begin_inset Formula $x$
+\end_inset
+
+,
+ or the 
+\emph on
+image
+\emph default
+ of 
+\begin_inset Formula $x$
+\end_inset
+
+ under 
+\begin_inset Formula $f$
+\end_inset
+
+.
+ The set 
+\begin_inset Formula $A$
+\end_inset
+
+ is called the 
+\emph on
+domain
+\emph default
+ of 
+\begin_inset Formula $f$
+\end_inset
+
+,
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+ is called the 
+\emph on
+codomain
+\emph default
+ of 
+\begin_inset Formula $f$
+\end_inset
+
+.
+ The set 
+\begin_inset Formula $f(A)\subseteq B$
+\end_inset
+
+ called the image set of 
+\begin_inset Formula $f$
+\end_inset
+
+,
+ is the subset of the codomain every element of which is a mapped element from 
+\begin_inset Formula $A$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+f(A)=\{f(x):x\in A\}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Definition
+Special types of a function 
+\begin_inset Formula $f:A\to B$
+\end_inset
+
+:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+
+\emph on
+injective
+\emph default
+ 
+\begin_inset Formula $\forall x,y\in A$
+\end_inset
+
+,
+ 
+\begin_inset Formula $f(x)=f(y)\Rightarrow x=y$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Description
+
+\emph on
+surjective
+\emph default
+ 
+\begin_inset Formula $f(A)=B$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Description
+
+\emph on
+bijective
+\emph default
+ is both injective and surjective.
+\end_layout
+
+\end_deeper
+\begin_layout Minisec
+Indexed family
+\end_layout
+
+\begin_layout Standard
+Intuitively,
+ an indexed family is a collection whose elements are labelled with the elements of an arbitrary (index) set 
+\begin_inset Formula $I$
+\end_inset
+
+.
+ These labels allow the same element to occur several times in the family.
+\end_layout
+
+\begin_layout Definition
+An indexed family is a function that has an index set 
+\begin_inset Formula $I$
+\end_inset
+
+ as its domain.
+ Generally,
+ the usual functional notation is not used for indexed families.
+ Instead,
+ the element 
+\begin_inset Formula $i$
+\end_inset
+
+ of the index set 
+\begin_inset Formula $I$
+\end_inset
+
+ is written as a subscript of the same name of the family.
+ Special cases include:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset Formula $I=\mathbb{B}=\{\bot,\top\}$
+\end_inset
+
+ defines an ordered pair,
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $I=\mathbb{N}_{n}=\{0,...,n-1\}$
+\end_inset
+
+ (
+\begin_inset Formula $\forall n\in\mathbb{N}$
+\end_inset
+
+) defines an 
+\begin_inset Formula $n$
+\end_inset
+
+-tuple,
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $I=\mathbb{N}$
+\end_inset
+
+ defines a sequence.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Family of sets operations become indexed operations:
+\begin_inset Formula 
+\begin{gather*}
+\bigcup\nolimits_{i\in I}A_{i}=\{x:\exists i\in I,x\in A_{i}\},\\
+\bigcap\nolimits_{i\in I}A_{i}=\{x:\forall i\in I,x\in A_{i}\}.
+\end{gather*}
+
+\end_inset
+
+For intersection,
+ 
+\begin_inset Formula $I\neq\varnothing$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Minisec
+Indicator function
+\end_layout
+
+\begin_layout Definition
+Given a set 
+\begin_inset Formula $U$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\forall A\subseteq U$
+\end_inset
+
+,
+ its 
+\emph on
+indicator function
+\emph default
+ is
+\begin_inset Formula 
+\[
+\mathds{1}_{A}:U\to\mathbb{B}:x\mapsto\mathds{1}_{A}(x)=\begin{cases}
+\top & x\in A,\\
+\bot & x\notin A.
+\end{cases}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Cardinality
+\end_layout
+
+\begin_layout Definition
+Informally,
+ the cardinality of a set 
+\begin_inset Formula $S$
+\end_inset
+
+,
+ often denoted 
+\begin_inset Formula $|S|$
+\end_inset
+
+,
+ is the number of its members.
+ This number is the natural number 
+\begin_inset Formula $n\in\mathbb{N}$
+\end_inset
+
+ when there is a one-to-one correspondence between the set 
+\begin_inset Formula $S$
+\end_inset
+
+ and the set 
+\begin_inset Formula $\mathbb{N}_{n}$
+\end_inset
+
+ of the first 
+\begin_inset Formula $n$
+\end_inset
+
+ natural numbers.
+ Also,
+\begin_inset Formula 
+\[
+\vert\varnothing\vert=0.
+\]
+
+\end_inset
+
+A set with the cardinality of a natural number is called a finite set,
+ which applies in both cases.
+ Otherwise,
+ one has an infinite set.
+ Having the same cardinality of a proper subset is a characteristic property of infinite sets:
+ a set is infinite if and only if it has the same cardinality as one of its proper subsets.
+\end_layout
+
+\begin_layout Definition
+Infinite sets may have the same cardinalities still;
+ given sets 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\vert A\vert=\vert B|$
+\end_inset
+
+ iff 
+\begin_inset Formula $\exists f:A\to B$
+\end_inset
+
+ bijective.
+\end_layout
+
+\begin_layout Subsubsection
+External operations
+\end_layout
+
+\begin_layout Standard
+In 
+\begin_inset CommandInset ref
+LatexCommand formatted
+reference "subsec:Internal-operations"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+tuple "list"
+
+\end_inset
+
+,
+ all elements of sets produced by set operations belong to previously defined sets.
+ In this section,
+ other set operations are considered,
+ which produce sets whose elements can be outside all previously considered sets.
+\end_layout
+
+\begin_layout Minisec
+Cartesian product
+\end_layout
+
+\begin_layout Definition
+Given sets 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+,
+ their 
+\emph on
+Cartesian product
+\emph default
+ (or simply 
+\emph on
+product
+\emph default
+),
+ denoted 
+\begin_inset Formula $A\times B$
+\end_inset
+
+,
+ is the set of all ordered pairs 
+\begin_inset Formula $(a,b)$
+\end_inset
+
+ such that 
+\begin_inset Formula $a\in A$
+\end_inset
+
+ and 
+\begin_inset Formula $b\in B$
+\end_inset
+
+;
+ that is,
+\begin_inset Formula 
+\[
+A\times B=\{(a,b)|a\in A\wedge b\in B\}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The definition makes sense even if 
+\begin_inset Formula $A=B$
+\end_inset
+
+,
+ in which case we write 
+\begin_inset Formula $A\times A=A^{2}$
+\end_inset
+
+.
+ The graph of a function 
+\begin_inset Formula $f:A\to B$
+\end_inset
+
+ is the set of all ordered pairs 
+\begin_inset Formula $(a,f(a))$
+\end_inset
+
+ as 
+\begin_inset Formula $a$
+\end_inset
+
+ ranged over all elements of 
+\begin_inset Formula $A$
+\end_inset
+
+.
+ It is a subset of the Cartesian product 
+\begin_inset Formula $A\times B$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Definition
+Given an indexed family of sets 
+\begin_inset Formula $(A_{i})_{i\in I}$
+\end_inset
+
+,
+ the product
+\begin_inset Formula 
+\[
+\prod\nolimits_{i\in I}A_{i}
+\]
+
+\end_inset
+
+is the set of all indexed families of elements 
+\begin_inset Formula $(a_{i})_{i\in I}$
+\end_inset
+
+ such that 
+\begin_inset Formula $\forall i\in I$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a_{i}\in A_{i}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Minisec
+Set exponentiation
+\end_layout
+
+\begin_layout Definition
+Given sets 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+,
+ the 
+\emph on
+set exponentiation
+\emph default
+,
+ denoted 
+\begin_inset Formula $B^{A}$
+\end_inset
+
+,
+ is the set that has as elements all functions 
+\begin_inset Formula $A\rightarrow B$
+\end_inset
+
+,
+ i.e.:
+\begin_inset Formula 
+\[
+B^{A}=\{f:f:A\rightarrow B\}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Equivalently,
+ 
+\begin_inset Formula $B^{A}$
+\end_inset
+
+ can be viewed as the Cartesian product of a family,
+ indexed by 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ of sets that are all equal to 
+\begin_inset Formula $B$
+\end_inset
+
+.
+ This explains the terminology and the notation,
+ since exponentiation with integer exponents is a product where all factors are equal to the base:
+\begin_inset Formula 
+\[
+B^{A}=\prod\nolimits_{a\in A}B=\{(b_{a})_{a\in A}|\forall a\in A,b_{a}\in B\}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Minisec
+Power set
+\end_layout
+
+\begin_layout Definition
+The power set 
+\begin_inset Formula $\mathcal{P}(A)$
+\end_inset
+
+ of a set 
+\begin_inset Formula $A$
+\end_inset
+
+ is the set of of all subsets of 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ which include 
+\begin_inset Formula $\varnothing$
+\end_inset
+
+ and 
+\begin_inset Formula $A$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+There is a natural bijection between the subsets 
+\begin_inset Formula $B$
+\end_inset
+
+ of 
+\begin_inset Formula $A$
+\end_inset
+
+ and their indicator functions 
+\begin_inset Formula $\mathds{1}_{B}:A\to\mathbb{B}$
+\end_inset
+
+,
+ by which
+\begin_inset Formula 
+\[
+\mathcal{P}(A)=\mathbb{B}^{A}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In particular,
+ given 
+\begin_inset Formula $\vert\mathbb{B}|=2$
+\end_inset
+
+,
+ if 
+\begin_inset Formula $A$
+\end_inset
+
+ is finite,
+ 
+\begin_inset Formula $\vert\mathbb{B}^{A}\vert=2^{\vert A\vert}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Relations
+\end_layout
+
+\begin_layout Standard
+In mathematics,
+ a binary relation denotes some kind of relationship between two objects in a set,
+ which may or may not hold.
+\end_layout
+
+\begin_layout Definition
+Given a set 
+\begin_inset Formula $X$
+\end_inset
+
+,
+ a binary relation 
+\begin_inset Formula $\bigcirc$
+\end_inset
+
+ over 
+\begin_inset Formula $X$
+\end_inset
+
+ is a set of ordered pairs of elements from 
+\begin_inset Formula $X$
+\end_inset
+
+,
+ formally 
+\begin_inset Formula $\bigcirc\subseteq X\times X$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The statement 
+\begin_inset Formula $(a,b)\in\bigcirc$
+\end_inset
+
+ reads in infix notation as 
+\begin_inset Formula $a\bigcirc b$
+\end_inset
+
+.
+ The order of the elements is important;
+ if 
+\begin_inset Formula $a\neq b$
+\end_inset
+
+ the 
+\begin_inset Formula $b\bigcirc a$
+\end_inset
+
+ can be 
+\begin_inset Formula $\top$
+\end_inset
+
+ or 
+\begin_inset Formula $\bot$
+\end_inset
+
+ independently of 
+\begin_inset Formula $a\bigcirc b$
+\end_inset
+
+.
+ The complement of 
+\begin_inset Formula $\bigcirc$
+\end_inset
+
+ with the universal set 
+\begin_inset Formula $X\times X$
+\end_inset
+
+ is also a binary relation,
+ denoted 
+\begin_inset Formula $\cancel{\bigcirc}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\mathrel{\cancel{\bigcirc}}b=\neg(a\bigcirc b)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Naturally 
+\begin_inset Formula $\bigcirc\cap\cancel{\bigcirc}=\varnothing$
+\end_inset
+
+ and 
+\begin_inset Formula $\bigcirc\cup\cancel{\bigcirc}=X\times X$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Equivalence relation
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+equivalence relation
+\emph default
+ 
+\begin_inset Formula $\mathord{\sim}$
+\end_inset
+
+ is a binary relation on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ that is:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+reflexive 
+\begin_inset Formula $\forall a\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\sim a$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Description
+symmetric 
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\sim b$
+\end_inset
+
+ iff 
+\begin_inset Formula $b\sim a$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Description
+transitive 
+\begin_inset Formula $\forall a,b,c\in X$
+\end_inset
+
+ if 
+\begin_inset Formula $a\sim b$
+\end_inset
+
+ and 
+\begin_inset Formula $b\sim c$
+\end_inset
+
+ then 
+\begin_inset Formula $a\sim c$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Definition
+\begin_inset Formula $X$
+\end_inset
+
+ together with the relation 
+\begin_inset Formula $\sim$
+\end_inset
+
+ is called a 
+\emph on
+setoid
+\emph default
+.
+\end_layout
+
+\begin_layout Standard
+The relation 
+\begin_inset Formula $\nsim$
+\end_inset
+
+ on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ is 
+\emph on
+not
+\emph default
+ an equivalence relation (unless 
+\begin_inset Formula $X=\varnothing$
+\end_inset
+
+),
+ as,
+ contrary to an equivalence relation,
+ it is:
+\end_layout
+
+\begin_layout Description
+irreflexive 
+\begin_inset Formula $\forall a\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\sim a=\neg(a\nsim a)$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Minisec
+Related important definitions
+\end_layout
+
+\begin_layout Definition
+Given an equivalence relation 
+\begin_inset Formula $\sim$
+\end_inset
+
+ on 
+\begin_inset Formula $X$
+\end_inset
+
+ and 
+\begin_inset Formula $\forall a\in X$
+\end_inset
+
+,
+\begin_inset Formula 
+\[
+[a]=\{x\in X:x\sim a\}\subseteq X
+\]
+
+\end_inset
+
+is the equivalence class to which 
+\begin_inset Formula $a$
+\end_inset
+
+ belongs and is a representative of.
+ All elements of 
+\begin_inset Formula $X$
+\end_inset
+
+ equivalent to each other are also elements of the same equivalence class.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\forall b,c\in X$
+\end_inset
+
+,
+ either 
+\begin_inset Formula $b\sim c$
+\end_inset
+
+ and 
+\begin_inset Formula $[b]=[c]$
+\end_inset
+
+ or 
+\begin_inset Formula $b\nsim c$
+\end_inset
+
+ and 
+\begin_inset Formula $[b]\cap[c]=\varnothing$
+\end_inset
+
+.Therefore element of 
+\begin_inset Formula $[a]$
+\end_inset
+
+ can be a representative of 
+\begin_inset Formula $[a]$
+\end_inset
+
+,
+ or more strongly 
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+,
+\begin_inset Formula 
+\[
+a\sim b\Longleftrightarrow[a]=[b].
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+partition
+\emph default
+ of 
+\begin_inset Formula $X$
+\end_inset
+
+ is a set 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+ of nonempty subsets of 
+\begin_inset Formula $X$
+\end_inset
+
+,
+ such that every element of 
+\begin_inset Formula $X$
+\end_inset
+
+ is an element of a single element of 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+.
+ Each element of 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+ is a cell of the partition.
+ Moreover:
+\end_layout
+
+\begin_layout Itemize
+the elements of 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+ are pairwise disjoint,
+ or 
+\begin_inset Formula $\forall A,B\in\mathcal{S}$
+\end_inset
+
+,
+ 
+\begin_inset Formula $A\neq B\Rightarrow A\cap B=\varnothing$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Itemize
+and their union is 
+\begin_inset Formula $X$
+\end_inset
+
+,
+ or
+\begin_inset Formula 
+\[
+\bigcup\mathcal{S}=X
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The fundamental theorem of equivalence relations state that an equivalence relation 
+\begin_inset Formula $\sim$
+\end_inset
+
+ on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ partitions 
+\begin_inset Formula $X$
+\end_inset
+
+ by its equivalence classes.
+\end_layout
+
+\begin_layout Definition
+The set of all equivalence classes of 
+\begin_inset Formula $X$
+\end_inset
+
+ by an equivalence relation 
+\begin_inset Formula $\sim$
+\end_inset
+
+,
+ denoted 
+\begin_inset Formula $X/\mathord{\sim}\coloneqq\{[x]:x\in X\}$
+\end_inset
+
+,
+ is the 
+\emph on
+quotient set
+\emph default
+ of 
+\begin_inset Formula $X$
+\end_inset
+
+ by 
+\begin_inset Formula $\sim$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+According to the fundamental theorem,
+ 
+\begin_inset Formula $X/\mathord{\sim}$
+\end_inset
+
+ is the partition of 
+\begin_inset Formula $X$
+\end_inset
+
+ generated by 
+\begin_inset Formula $\sim$
+\end_inset
+
+.
+ 
+\begin_inset Formula $\sim$
+\end_inset
+
+ induces 
+\begin_inset Formula $=$
+\end_inset
+
+ (equality) on 
+\begin_inset Formula $X/\mathord{\sim}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Shaded
+position "t"
+hor_pos "c"
+has_inner_box 0
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width ""
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "default"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+Equality 
+\begin_inset Formula $=$
+\end_inset
+
+ is a trivial equivalence relation that partitions a set 
+\begin_inset Formula $X$
+\end_inset
+
+ to its elements (as singletons),
+ as,
+ by efinition,
+ every element in a set equals no other element in it.
+ For a family of sets 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+,
+ 
+\begin_inset Formula $=$
+\end_inset
+
+ is an equivalence relation.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Order
+\end_layout
+
+\begin_layout Standard
+In mathematics,
+ a partial order on a set is an arrangement such that,
+ for certain pairs of elements,
+ one precedes the other.
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+preorder
+\emph default
+ 
+\begin_inset Formula $\mathord{\lesssim}$
+\end_inset
+
+ is a binary relation on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ that is:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+reflexive 
+\begin_inset Formula $\forall a\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\lesssim a$
+\end_inset
+
+,
+ i.e.
+ every element is related to itself.
+\end_layout
+
+\begin_layout Description
+transitive 
+\begin_inset Formula $\forall a,b,c\in X$
+\end_inset
+
+ with 
+\begin_inset Formula $a\lesssim b$
+\end_inset
+
+ and 
+\begin_inset Formula $b\lesssim c$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\lesssim c$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Definition
+A set that is equipped with a preorder is called a 
+\emph on
+preordered set
+\emph default
+ (or 
+\emph on
+proset
+\emph default
+).
+\end_layout
+
+\begin_layout Standard
+Given a preorder 
+\begin_inset Formula $\lesssim$
+\end_inset
+
+ on 
+\begin_inset Formula $X$
+\end_inset
+
+ one may define an equivalence relation 
+\begin_inset Formula $\sim$
+\end_inset
+
+ on 
+\begin_inset Formula $X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+,
+ by
+\begin_inset Formula 
+\[
+a\lesssim b\wedge b\lesssim a\Longleftrightarrow a\sim b.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Minisec
+Partial
+\end_layout
+
+\begin_layout Standard
+The word partial is used to indicate that not every pair of elements needs to be comparable;
+ that is,
+ there may be pairs for which neither element precedes the other.
+ Partial orders thus generalize total orders,
+ in which every pair is comparable.
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+partial order
+\emph default
+ 
+\begin_inset Formula $\mathord{\leq}$
+\end_inset
+
+ is a preorder on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ that is also:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+antisymmetric 
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\leq b\wedge b\leq a\Longrightarrow a=b$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Formally,
+ a partial order is a binary relation that is reflexive,
+ antisymmetric and transitive.
+ A 
+\emph on
+partially ordered set
+\emph default
+ (
+\emph on
+poset
+\emph default
+ for short) is a set 
+\begin_inset Formula $X$
+\end_inset
+
+ (called the ground set of the order) equipped with a partial order.
+\end_layout
+
+\begin_layout Standard
+Given a preorder 
+\begin_inset Formula $\lesssim$
+\end_inset
+
+ on 
+\begin_inset Formula $X$
+\end_inset
+
+ and the equivalence relation 
+\begin_inset Formula $\sim$
+\end_inset
+
+ it implies,
+ one may define a partial order 
+\begin_inset Formula $\leq$
+\end_inset
+
+ on 
+\begin_inset Formula $X/\mathord{\sim}$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+,
+ by
+\begin_inset Formula 
+\[
+[a]\leq[b]\Longleftrightarrow a\lesssim b.
+\]
+
+\end_inset
+
+The induced equivalence relation trivializes to equality 
+\begin_inset Formula $=$
+\end_inset
+
+,
+ thanks to antisymmetry of a partial order.
+\end_layout
+
+\begin_layout Standard
+If reflexivity is replaced with irreflexivity (while keeping transitivity) then we get the definition of a strict partial order on 
+\begin_inset Formula $X$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+strict partial order
+\emph default
+ 
+\begin_inset Formula $<$
+\end_inset
+
+ is a binary relation on 
+\begin_inset Formula $X$
+\end_inset
+
+ that is:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+irreflexive 
+\begin_inset Formula $\forall a\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\nless a$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Description
+transitive 
+\begin_inset Formula $\forall a,b,c\in X$
+\end_inset
+
+ with 
+\begin_inset Formula $a<b$
+\end_inset
+
+ and 
+\begin_inset Formula $b<c$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a<c$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Any preorder 
+\begin_inset Formula $\lesssim$
+\end_inset
+
+ on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ gives rise to a strict partial order defined (using the induced equivalence relation 
+\begin_inset Formula $\sim$
+\end_inset
+
+),
+ 
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+,
+ by
+\begin_inset Formula 
+\[
+a<b\Longleftrightarrow a\lesssim b\wedge a\nsim b.
+\]
+
+\end_inset
+
+A partial order on 
+\begin_inset Formula $X$
+\end_inset
+
+ gives rise to the same strict partial order,
+ hence using the same name.
+\end_layout
+
+\begin_layout Minisec
+Total
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+total order
+\emph default
+ 
+\begin_inset Formula $\leq$
+\end_inset
+
+ is a partial order on some set 
+\begin_inset Formula $X$
+\end_inset
+
+ in which any two elements are comparable,
+ or that is:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+strongly
+\begin_inset space ~
+\end_inset
+
+connected 
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\leq b\vee b\leq a$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Definition
+Note that,
+ reflexivity in total orders follows from strong connectivity.
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+strict total order
+\emph default
+ 
+\begin_inset Formula $<$
+\end_inset
+
+ is a strict partial order on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ in which any two elements are comparable,
+ or that is:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+connected 
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\neq b\Longrightarrow a<b\vee b<a$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+A total order 
+\begin_inset Formula $\leq$
+\end_inset
+
+ on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ implies a strict total order 
+\begin_inset Formula $<$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\forall a,b\in X$
+\end_inset
+
+,
+ by
+\begin_inset Formula 
+\[
+a<b\Longleftrightarrow a\leq b\wedge a\neq b.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Minisec
+Extrema
+\end_layout
+
+\begin_layout Definition
+A poset can have at most one greatest and one least element:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+An element 
+\begin_inset Formula $\max X\in X$
+\end_inset
+
+ is the greatest element iff 
+\begin_inset Formula $\forall a\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\leq\max X$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+An element 
+\begin_inset Formula $\min X\in X$
+\end_inset
+
+ is the least element iff 
+\begin_inset Formula $\forall a\in X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\min X\leq a$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+\begin_inset Box Shaded
+position "t"
+hor_pos "c"
+has_inner_box 0
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width ""
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "default"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+For a family of sets 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\subseteq$
+\end_inset
+
+ is a partial order with 
+\begin_inset Formula $\subset$
+\end_inset
+
+ its strict partial order counter part,
+ with
+\begin_inset Formula 
+\[
+\min\mathcal{S}=\bigcap\mathcal{S}\text{ and }\max\mathcal{S}=\bigcup\mathcal{S},
+\]
+
+\end_inset
+
+is any of those are respectively (and indepentendly) included in the family.
+ 
+\begin_inset Formula $\subseteq$
+\end_inset
+
+ is not a total order.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
