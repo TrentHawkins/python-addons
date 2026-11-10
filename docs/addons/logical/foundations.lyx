@@ -333,7 +333,7 @@ axiom of extensionality
  or
 \begin_inset Formula 
 \[
-A=B\Longleftrightarrow\forall x(x\in A\Longleftrightarrow x\in B).
+A=B\Longleftrightarrow\forall x:x\in A\Longleftrightarrow x\in B.
 \]
 
 \end_inset
@@ -579,7 +579,7 @@ subset
  or
 \begin_inset Formula 
 \[
-A\subseteq B\Longleftrightarrow\forall x(x\in A\Longrightarrow x\in B).
+A\subseteq B\Longleftrightarrow\forall x:x\in A\Longrightarrow x\in B.
 \]
 
 \end_inset
@@ -650,14 +650,9 @@ Properties of containment
 
 \begin_layout Standard
 Containment is antisymmetric;
- 
-\begin_inset Formula $\forall A,B$
-\end_inset
-
- sets,
 \begin_inset Formula 
 \[
-A=B\Longleftrightarrow A\subseteq B\wedge A\supseteq B.
+\forall A,B:A=B\Longleftrightarrow A\subseteq B\wedge A\supseteq B.
 \]
 
 \end_inset
@@ -692,14 +687,9 @@ The empty set is a subset of every set:
 
 \begin_layout Standard
 Containment is also transitive;
- 
-\begin_inset Formula $\forall A,B,C$
-\end_inset
-
- sets,
 \begin_inset Formula 
 \[
-A\subseteq B\wedge B\subseteq C\Longrightarrow A\subseteq C.
+\forall A,B,C:A\subseteq B\wedge B\subseteq C\Longrightarrow A\subseteq C.
 \]
 
 \end_inset
@@ -789,7 +779,7 @@ If
  denoted
 \begin_inset Formula 
 \[
-\bigcap\nolimits\mathcal{S}=\bigcap\nolimits_{A\in\mathcal{S}}A=\{x:\forall A\in\mathcal{S},x\in A\},
+\bigcap\nolimits\mathcal{S}=\bigcap\nolimits_{A\in\mathcal{S}}A=\{x:\forall A\in\mathcal{S}:x\in A\},
 \]
 
 \end_inset
@@ -834,7 +824,7 @@ union
  That is,
 \begin_inset Formula 
 \[
-A\cup B=\{x|x\in A\vee x\in B\}.
+A\cup B=\{x:x\in A\vee x\in B\}.
 \]
 
 \end_inset
@@ -864,7 +854,7 @@ If
  denoted
 \begin_inset Formula 
 \[
-\bigcup\mathcal{S}=\bigcup\nolimits_{A\in\mathcal{S}}A=\{x:\exists A\in\mathcal{S},x\in A\},
+\bigcup\mathcal{S}=\bigcup\nolimits_{A\in\mathcal{S}}A=\{x:\exists A\in\mathcal{S}:x\in A\},
 \]
 
 \end_inset
@@ -913,7 +903,7 @@ set difference
  That is,
 \begin_inset Formula 
 \[
-A\setminus B=\{x|x\in A\wedge x\notin B\}.
+A\setminus B=\{x:x\in A\wedge x\notin B\}.
 \]
 
 \end_inset
@@ -950,7 +940,7 @@ complement
  Naively speaking,
 \begin_inset Formula 
 \[
-B^{\complement}=\{x|x\notin B\},
+B^{\complement}=\{x:x\notin B\},
 \]
 
 \end_inset
@@ -1179,15 +1169,10 @@ Special types of a function
 injective
 \emph default
  
-\begin_inset Formula $\forall x,y\in A$
+\begin_inset Formula $\forall x,y\in A:f(x)=f(y)\Longrightarrow x=y,$
 \end_inset
 
-,
- 
-\begin_inset Formula $f(x)=f(y)\Rightarrow x=y$
-\end_inset
 
-,
 \end_layout
 
 \begin_layout Description
@@ -1196,10 +1181,10 @@ injective
 surjective
 \emph default
  
-\begin_inset Formula $f(A)=B$
+\begin_inset Formula $f(A)=B,$
 \end_inset
 
-,
+
 \end_layout
 
 \begin_layout Description
@@ -1281,8 +1266,7 @@ An indexed family is a function that has an index set
 Family of sets operations become indexed operations:
 \begin_inset Formula 
 \begin{gather*}
-\bigcup\nolimits_{i\in I}A_{i}=\{x:\exists i\in I,x\in A_{i}\},\\
-\bigcap\nolimits_{i\in I}A_{i}=\{x:\forall i\in I,x\in A_{i}\}.
+\bigcup\nolimits_{i\in I}A_{i}=\{x:\exists i\in I:x\in A_{i}\}\text{ and }\bigcap\nolimits_{i\in I}A_{i}=\{x:\forall i\in I:x\in A_{i}\}.
 \end{gather*}
 
 \end_inset
@@ -1304,17 +1288,16 @@ Given a set
 \begin_inset Formula $U$
 \end_inset
 
-,
- 
-\begin_inset Formula $\forall A\subseteq U$
+ and a subset 
+\begin_inset Formula $A\subseteq U$
 \end_inset
 
 ,
- its 
+ the 
 \emph on
 indicator function
 \emph default
- is
+ of the latter is
 \begin_inset Formula 
 \[
 \mathds{1}_{A}:U\to\mathbb{B}:x\mapsto\mathds{1}_{A}(x)=\begin{cases}
@@ -1468,7 +1451,7 @@ product
  that is,
 \begin_inset Formula 
 \[
-A\times B=\{(a,b)|a\in A\wedge b\in B\}.
+A\times B=\{(a,b):a\in A\wedge b\in B\}.
 \]
 
 \end_inset
@@ -1530,12 +1513,7 @@ is the set of all indexed families of elements
 \end_inset
 
  such that 
-\begin_inset Formula $\forall i\in I$
-\end_inset
-
-,
- 
-\begin_inset Formula $a_{i}\in A_{i}$
+\begin_inset Formula $\forall i\in I:a_{i}\in A_{i}$
 \end_inset
 
 .
@@ -1573,7 +1551,7 @@ set exponentiation
  i.e.:
 \begin_inset Formula 
 \[
-B^{A}=\{f:f:A\rightarrow B\}.
+B^{A}=\{f:A\rightarrow B\}.
 \]
 
 \end_inset
@@ -1602,7 +1580,7 @@ Equivalently,
  since exponentiation with integer exponents is a product where all factors are equal to the base:
 \begin_inset Formula 
 \[
-B^{A}=\prod\nolimits_{a\in A}B=\{(b_{a})_{a\in A}|\forall a\in A,b_{a}\in B\}.
+B^{A}=\prod\nolimits_{a\in A}B=\{(b_{a})_{a\in A}:\forall a\in A:b_{a}\in B\}.
 \]
 
 \end_inset
@@ -1764,19 +1742,16 @@ The statement
 \begin_inset Formula $\cancel{\bigcirc}$
 \end_inset
 
-.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
 ,
- 
-\begin_inset Formula $a\mathrel{\cancel{\bigcirc}}b=\neg(a\bigcirc b)$
+ defined by
+\begin_inset Formula 
+\[
+\forall a,b\in X:a\mathrel{\cancel{\bigcirc}}b=\neg(a\bigcirc b).
+\]
+
 \end_inset
 
-.
+
 \end_layout
 
 \begin_layout Standard
@@ -1814,52 +1789,26 @@ equivalence relation
 \begin_deeper
 \begin_layout Description
 reflexive 
-\begin_inset Formula $\forall a\in X$
+\begin_inset Formula $\forall a\in X:a\sim a,$
 \end_inset
 
-,
- 
-\begin_inset Formula $a\sim a$
-\end_inset
 
-,
 \end_layout
 
 \begin_layout Description
 symmetric 
-\begin_inset Formula $\forall a,b\in X$
+\begin_inset Formula $\forall a,b\in X:a\sim b\Longleftrightarrow b\sim a,$
 \end_inset
 
-,
- 
-\begin_inset Formula $a\sim b$
-\end_inset
 
- iff 
-\begin_inset Formula $b\sim a$
-\end_inset
-
-,
 \end_layout
 
 \begin_layout Description
 transitive 
-\begin_inset Formula $\forall a,b,c\in X$
+\begin_inset Formula $\forall a,b,c\in X:a\sim b\wedge b\sim c\Longrightarrow a\sim c.$
 \end_inset
 
- if 
-\begin_inset Formula $a\sim b$
-\end_inset
 
- and 
-\begin_inset Formula $b\sim c$
-\end_inset
-
- then 
-\begin_inset Formula $a\sim c$
-\end_inset
-
-.
 \end_layout
 
 \end_deeper
@@ -1903,15 +1852,10 @@ not
 
 \begin_layout Description
 irreflexive 
-\begin_inset Formula $\forall a\in X$
+\begin_inset Formula $\forall a\in X:\neg(a\nsim a),$
 \end_inset
 
-,
- 
-\begin_inset Formula $a\sim a=\neg(a\nsim a)$
-\end_inset
 
-,
 \end_layout
 
 \begin_layout Minisec
@@ -1944,35 +1888,22 @@ is the equivalence class to which
 \end_inset
 
  belongs and is a representative of.
- All elements of 
+\end_layout
+
+\begin_layout Standard
+All elements of 
 \begin_inset Formula $X$
 \end_inset
 
  equivalent to each other are also elements of the same equivalence class.
-\end_layout
+\begin_inset Formula 
+\[
+\forall b,c\in X:(b\sim c\wedge[b]=[c])\vee(b\nsim c\wedge[b]\cap[c]=\varnothing)
+\]
 
-\begin_layout Standard
-\begin_inset Formula $\forall b,c\in X$
 \end_inset
 
-,
- either 
-\begin_inset Formula $b\sim c$
-\end_inset
-
- and 
-\begin_inset Formula $[b]=[c]$
-\end_inset
-
- or 
-\begin_inset Formula $b\nsim c$
-\end_inset
-
- and 
-\begin_inset Formula $[b]\cap[c]=\varnothing$
-\end_inset
-
-.Therefore element of 
+Therefore element of 
 \begin_inset Formula $[a]$
 \end_inset
 
@@ -1981,14 +1912,10 @@ is the equivalence class to which
 \end_inset
 
 ,
- or more strongly 
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
-,
+ or more strongly,
 \begin_inset Formula 
 \[
-a\sim b\Longleftrightarrow[a]=[b].
+\forall a,b\in X:a\sim b\Longleftrightarrow[a]=[b].
 \]
 
 \end_inset
@@ -2038,15 +1965,10 @@ the elements of
 
  are pairwise disjoint,
  or 
-\begin_inset Formula $\forall A,B\in\mathcal{S}$
+\begin_inset Formula $\forall A,B\in\mathcal{S}:A\neq B\Longrightarrow A\cap B=\varnothing,$
 \end_inset
 
-,
- 
-\begin_inset Formula $A\neq B\Rightarrow A\cap B=\varnothing$
-\end_inset
 
-,
 \end_layout
 
 \begin_layout Itemize
@@ -2058,7 +1980,7 @@ and their union is
  or
 \begin_inset Formula 
 \[
-\bigcup\mathcal{S}=X
+\bigcup\mathcal{S}=X.
 \]
 
 \end_inset
@@ -2093,11 +2015,14 @@ The set of all equivalence classes of
 
 ,
  denoted 
-\begin_inset Formula $X/\mathord{\sim}\coloneqq\{[x]:x\in X\}$
+\begin_inset Formula 
+\[
+X/\mathord{\sim}\coloneqq\{[x]:x\in X\},
+\]
+
 \end_inset
 
-,
- is the 
+is the 
 \emph on
 quotient set
 \emph default
@@ -2221,38 +2146,19 @@ preorder
 \begin_deeper
 \begin_layout Description
 reflexive 
-\begin_inset Formula $\forall a\in X$
+\begin_inset Formula $\forall a\in X:a\lesssim a,$
 \end_inset
 
-,
- 
-\begin_inset Formula $a\lesssim a$
-\end_inset
-
-,
  i.e.
- every element is related to itself.
+ every element is related to itself,
 \end_layout
 
 \begin_layout Description
 transitive 
-\begin_inset Formula $\forall a,b,c\in X$
+\begin_inset Formula $\forall a,b,c\in X:a\lesssim b\wedge b\lesssim c\Longrightarrow a\lesssim c.$
 \end_inset
 
- with 
-\begin_inset Formula $a\lesssim b$
-\end_inset
-
- and 
-\begin_inset Formula $b\lesssim c$
-\end_inset
-
-,
  
-\begin_inset Formula $a\lesssim c$
-\end_inset
-
-.
 \end_layout
 
 \end_deeper
@@ -2285,16 +2191,10 @@ Given a preorder
 \begin_inset Formula $X$
 \end_inset
 
-,
- 
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
-,
  by
 \begin_inset Formula 
 \[
-a\lesssim b\wedge b\lesssim a\Longleftrightarrow a\sim b.
+\forall a,b\in X:a\lesssim b\wedge b\lesssim a\Longleftrightarrow a\sim b.
 \]
 
 \end_inset
@@ -2333,12 +2233,7 @@ partial order
 \begin_deeper
 \begin_layout Description
 antisymmetric 
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
-,
- 
-\begin_inset Formula $a\leq b\wedge b\leq a\Longrightarrow a=b$
+\begin_inset Formula $\forall a,b\in X:a\leq b\wedge b\leq a\Longrightarrow a=b.$
 \end_inset
 
 
@@ -2386,16 +2281,10 @@ Given a preorder
 \begin_inset Formula $X/\mathord{\sim}$
 \end_inset
 
-,
- 
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
-,
  by
 \begin_inset Formula 
 \[
-[a]\leq[b]\Longleftrightarrow a\lesssim b.
+\forall a,b\in X:[a]\leq[b]\Longleftrightarrow a\lesssim b.
 \]
 
 \end_inset
@@ -2435,36 +2324,18 @@ strict partial order
 \begin_deeper
 \begin_layout Description
 irreflexive 
-\begin_inset Formula $\forall a\in X$
+\begin_inset Formula $\forall a\in X:a\nless a,$
 \end_inset
 
-,
- 
-\begin_inset Formula $a\nless a$
-\end_inset
 
-.
 \end_layout
 
 \begin_layout Description
 transitive 
-\begin_inset Formula $\forall a,b,c\in X$
+\begin_inset Formula $\forall a,b,c\in X:a<b\wedge b<c\Longrightarrow a<c.$
 \end_inset
 
- with 
-\begin_inset Formula $a<b$
-\end_inset
 
- and 
-\begin_inset Formula $b<c$
-\end_inset
-
-,
- 
-\begin_inset Formula $a<c$
-\end_inset
-
-.
 \end_layout
 
 \end_deeper
@@ -2481,16 +2352,10 @@ Any preorder
 \begin_inset Formula $\sim$
 \end_inset
 
-),
- 
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
-,
- by
+) by
 \begin_inset Formula 
 \[
-a<b\Longleftrightarrow a\lesssim b\wedge a\nsim b.
+\forall a,b\in X:a<b\Longleftrightarrow a\lesssim b\wedge a\nsim b.
 \]
 
 \end_inset
@@ -2531,15 +2396,10 @@ strongly
 \end_inset
 
 connected 
-\begin_inset Formula $\forall a,b\in X$
+\begin_inset Formula $\forall a,b\in X:a\leq b\vee b\leq a.$
 \end_inset
 
-,
- 
-\begin_inset Formula $a\leq b\vee b\leq a$
-\end_inset
 
-.
 \end_layout
 
 \end_deeper
@@ -2568,15 +2428,10 @@ strict total order
 \begin_deeper
 \begin_layout Description
 connected 
-\begin_inset Formula $\forall a,b\in X$
+\begin_inset Formula $\forall a,b\in X:a\neq b\Longrightarrow a<b\vee b<a.$
 \end_inset
 
-,
- 
-\begin_inset Formula $a\neq b\Longrightarrow a<b\vee b<a$
-\end_inset
 
-.
 \end_layout
 
 \end_deeper
@@ -2593,16 +2448,10 @@ A total order
 \begin_inset Formula $<$
 \end_inset
 
-,
- 
-\begin_inset Formula $\forall a,b\in X$
-\end_inset
-
-,
  by
 \begin_inset Formula 
 \[
-a<b\Longleftrightarrow a\leq b\wedge a\neq b.
+\forall a,b\in X:a<b\Longleftrightarrow a\leq b\wedge a\neq b.
 \]
 
 \end_inset
@@ -2625,15 +2474,10 @@ An element
 \end_inset
 
  is the greatest element iff 
-\begin_inset Formula $\forall a\in X$
+\begin_inset Formula $\forall a\in X:a\leq\max X,$
 \end_inset
 
-,
- 
-\begin_inset Formula $a\leq\max X$
-\end_inset
 
-.
 \end_layout
 
 \begin_layout Itemize
@@ -2642,15 +2486,10 @@ An element
 \end_inset
 
  is the least element iff 
-\begin_inset Formula $\forall a\in X$
+\begin_inset Formula $\forall a\in X:\min X\leq a.$
 \end_inset
 
-,
- 
-\begin_inset Formula $\min X\leq a$
-\end_inset
 
-.
 \end_layout
 
 \end_deeper
@@ -2697,11 +2536,6 @@ For a family of sets
 \end_inset
 
 is any of those are respectively (and indepentendly) included in the family.
- 
-\begin_inset Formula $\subseteq$
-\end_inset
-
- is not a total order.
 \end_layout
 
 \end_inset
