@@ -254,7 +254,7 @@ Sets
 Basic notions
 \end_layout
 
-\begin_layout Definition
+\begin_layout Standard
 In mathematics,
  a set is a collection of different things,
  called elements or members of the set.
@@ -273,7 +273,7 @@ family
  such as for the set of the prime numbers or the set of all students in a given class.
 \end_layout
 
-\begin_layout Standard
+\begin_layout Definition
 If 
 \begin_inset Formula $x$
 \end_inset
@@ -492,6 +492,18 @@ denotes the set of all
 such that
 \emph default
 .
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -2067,26 +2079,7 @@ According to the fundamental theorem,
 .
 \end_layout
 
-\begin_layout Standard
-\begin_inset Box Shaded
-position "t"
-hor_pos "c"
-has_inner_box 0
-inner_pos "t"
-use_parbox 0
-use_makebox 0
-width ""
-special "none"
-height "1in"
-height_special "totalheight"
-thickness "0.4pt"
-separation "3pt"
-shadowsize "4pt"
-framecolor "default"
-backgroundcolor "none"
-status open
-
-\begin_layout Plain Layout
+\begin_layout Remark
 Equality 
 \begin_inset Formula $=$
 \end_inset
@@ -2109,11 +2102,6 @@ Equality
 \end_inset
 
  is an equivalence relation.
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Subsubsection
@@ -2493,26 +2481,7 @@ An element
 \end_layout
 
 \end_deeper
-\begin_layout Standard
-\begin_inset Box Shaded
-position "t"
-hor_pos "c"
-has_inner_box 0
-inner_pos "t"
-use_parbox 0
-use_makebox 0
-width ""
-special "none"
-height "1in"
-height_special "totalheight"
-thickness "0.4pt"
-separation "3pt"
-shadowsize "4pt"
-framecolor "default"
-backgroundcolor "none"
-status open
-
-\begin_layout Plain Layout
+\begin_layout Remark
 For a family of sets 
 \begin_inset Formula $\mathcal{S}$
 \end_inset
@@ -2537,6 +2506,13 @@ For a family of sets
 
 is any of those are respectively (and indepentendly) included in the family.
 \end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
 
 \end_inset
 

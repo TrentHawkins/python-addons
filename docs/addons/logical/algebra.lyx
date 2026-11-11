@@ -1,0 +1,1287 @@
+#LyX 2.5 created this file. For more info see https://www.lyx.org/
+\lyxformat 643
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass scrartcl
+\begin_preamble
+%\usepackage{bm}
+\usepackage{bbm}
+\usepackage{xcolor}
+\usepackage{cleveref}
+%\usepackage{csquotes}
+%\usepackage{textcomp}
+%\usepackage{textgreek}
+%\usepackage{pdflscape}
+
+\definecolor{red}{rgb}{0.8,0.0,0.0}
+\definecolor{green}{rgb}{0.2,0.6,0.0}
+\definecolor{blue}{rgb}{0.2,0.4,1.0}
+\definecolor{magenta}{rgb}{0.6,0.2,0.8}
+\addtokomafont{disposition}{\rmfamily}
+\addtokomafont{descriptionlabel}{\rmfamily}
+\setlength{\columnseprule}{0.4pt}
+\renewcommand{\arraystretch}{1.5}
+\relpenalty=10000
+\binoppenalty=10000
+% Float policy: at most one figure/table per text page, and avoid small float-only pages.
+\setcounter{topnumber}{1}
+\setcounter{bottomnumber}{0}
+\setcounter{totalnumber}{1}
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0}
+\renewcommand{\textfraction}{0.10}
+\renewcommand{\floatpagefraction}{0.75}
+
+% Typewriter font: Fira Code, for its programming ligatures, with graceful fallbacks.
+% Fira Code is not part of TeX Live, so it is taken from the system when installed
+% there, Retina weight preferred; otherwise TeX Live's own Fira Mono keeps the same
+% design without the ligatures. LyX loads fontspec before this preamble, so the test
+% is available here, and the choice made here overrides the document settings.
+\IfFontExistsTF{Fira Code}{%
+  \IfFontExistsTF{Fira Code Retina}
+    {\setmonofont{Fira Code}[UprightFont=* Retina, BoldFont=* Bold, Contextuals=Alternate, Scale=MatchLowercase]}
+    {\setmonofont{Fira Code}[Contextuals=Alternate, Scale=MatchLowercase]}%
+}{%
+  \IfFontExistsTF{Fira Mono}{\setmonofont{Fira Mono}[Scale=MatchLowercase]}{}%
+}
+
+\usepackage[framemethod=TikZ]{mdframed}
+
+\definecolor{code}{HTML}{EEEEEE}
+\definecolor{codeborder}{HTML}{DDDDDD}
+
+\mdfdefinestyle{codebox}{
+    backgroundcolor=code,
+    linecolor=codeborder,
+    linewidth=0.5pt,
+    roundcorner=7.5pt,
+    innerleftmargin=7.5pt,
+    innerrightmargin=7.5pt,
+    innertopmargin=7.5pt,
+    innerbottommargin=7.5pt,
+    skipabove=\glueexpr 3.75pt + \parskip\relax,
+}
+\mdfsetup{
+    skipbelow=\glueexpr 6.25pt - \parskip\relax
+}
+\surroundwithmdframed[style=codebox]{minted}
+% Listings included from files arrive as \inputminted, a command rather than an
+% environment, so the hook above never sees them. Give them the same box. Deferred,
+% because LyX loads minted after this preamble.
+\AtBeginDocument{%
+  \let\PlainInputMinted\inputminted
+  \renewcommand{\inputminted}[3][]{%
+    \begin{mdframed}[style=codebox]\PlainInputMinted[#1]{#2}{#3}\end{mdframed}}%
+}
+% minted 3 boxes every hyphen, defining \PYGZhy as \mbox{-}, so that a line can never
+% break inside an operator such as ->. The box also hides the hyphen from the font's
+% shaper, so the arrow ligature never forms. Listings here never break at hyphens
+% anyway, fvextra forbids it, so the patch is switched off. Harmless with a minted
+% that does not define it.
+\makeatletter
+\AtBeginDocument{\let\minted@patch@PygmentsZhy\relax}
+\makeatother
+
+\usepackage{tcolorbox}
+\usepackage{scalefnt}
+\usepackage{dsfont}
+
+\newcommand{\InlineCodeScale}{0.9  }
+\newcommand{\InlineCodeRaise}{0.1em}
+
+\AtBeginDocument{%
+  \setmintedinline{%
+    bgcolor=none,
+    breaklines=false,
+    fontsize={\scalefont{\InlineCodeScale}},
+    fontseries=auto,
+    fontshape=auto
+  }%
+  \renewcommand{\FancyVerbFormatInline}[1]{%
+    \raisebox{\InlineCodeRaise}{%
+      \tcbox[
+        on line,
+        colback=code,
+        colframe=codeborder,
+        boxrule=0.5pt,
+        arc=1.75pt,
+        outer arc=2.25pt,
+        boxsep=0pt,
+        left=1.5pt,
+        right=1.5pt,
+        top=1.0pt,
+        bottom=0.5pt
+      ]{\strut\smash{#1}}%
+    }%
+  }%
+  \renewmdenv[style=codebox]{shaded}%
+}
+\end_preamble
+\use_default_options true
+\master main.lyx
+\begin_modules
+fix-cm
+fixme
+theorems-ams-bytype
+theorems-sec-bytype
+eqs-within-sections
+\end_modules
+\maintain_unincluded_children no
+\language english
+\language_package default
+\inputencoding utf8
+\fontencoding auto
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "ADOBESourceCodePro" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts true
+\font_sc false
+\font_roman_osf false
+\font_sans_osf false
+\font_typewriter_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format pdf5
+\output_sync 1
+\bibtex_command biber
+\index_command default
+\float_placement H
+\float_alignment center
+\paperfontsize 9
+\spacing single
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks true
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize letter
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine biblatex
+\cite_engine_type authoryear
+\biblio_style plain
+\biblio_options maxbibnames=99
+\biblatex_bibstyle numeric
+\biblatex_citestyle numeric
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date true
+\justification false
+\crossref_package refstyle
+\use_formatted_ref 0
+\use_minted 1
+\use_lineno 0
+\backgroundcolor none
+\fontcolor none
+\notefontcolor lightgray
+\boxbgcolor black
+\table_border_color default
+\table_odd_row_color default
+\table_even_row_color default
+\table_alt_row_colors_start 1
+\index Index
+\shortcut idx
+\color #006600
+\end_index
+\leftmargin 0.75in
+\topmargin 1in
+\rightmargin 0.75in
+\bottommargin 1in
+\headheight 0.5in
+\headsep 0.5in
+\footskip 0.5in
+\columnsep 0.25in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation skip
+\defskip halfline
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 1
+\papercolumns 1
+\papersides 1
+\paperpagestyle headings
+\tablestyle No_Borders
+\listings_params "style=friendly"
+\bullet 1 0 9 -1
+\bullet 3 0 7 -1
+\tracking_changes false
+\output_changes false
+\change_bars false
+\postpone_fragile_content false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\docbook_table_output 0
+\docbook_mathml_prefix 1
+\docbook_mathml_version 0
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\id}{\operatorname{id}}
+{\mathrm{id}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Algebra
+\end_layout
+
+\begin_layout Standard
+In mathematics,
+ a binary operation is a king of binary function,
+ i.e.
+ given a pair of input values (operands),
+ it produces an output value.
+ Some definitions require the two inputs and the output to be elements of the same set.
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+binary operation
+\emph default
+ on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ is a function
+\begin_inset Formula 
+\[
+\bullet_{X}:X\times X\to X,
+\]
+
+\end_inset
+
+mapping pairs of elements of 
+\begin_inset Formula $X$
+\end_inset
+
+ to elements of 
+\begin_inset Formula $X$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Binary operations are usually written using infix notation such as 
+\begin_inset Formula $a\bullet_{X}b$
+\end_inset
+
+ rather than by functional notation.
+\end_layout
+
+\begin_layout Definition
+Let 
+\begin_inset Formula $X$
+\end_inset
+
+ be a set equipped with one or several methods of producing elements of 
+\begin_inset Formula $S$
+\end_inset
+
+ from other elements of 
+\begin_inset Formula $S$
+\end_inset
+
+ (operations).
+ A subset 
+\begin_inset Formula $A\subseteq X$
+\end_inset
+
+ is said to be 
+\emph on
+closed
+\emph default
+ under these methods if an input of (purely) elements of 
+\begin_inset Formula $A$
+\end_inset
+
+ always results in an element still in 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ or
+\begin_inset Formula 
+\[
+\forall a,b\in X:a\bullet_{X}b\in X.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It follows that for a subset 
+\begin_inset Formula $A\subseteq X$
+\end_inset
+
+,
+ there is a smallest closed subset 
+\begin_inset Formula $\bar{A}\subseteq S$
+\end_inset
+
+ such that 
+\begin_inset Formula $A\subseteq\bar{A}$
+\end_inset
+
+ (it is the intersection fo all closed subsets that contain 
+\begin_inset Formula $A$
+\end_inset
+
+).
+ Depending on the context,
+ 
+\begin_inset Formula $\bar{A}$
+\end_inset
+
+ is called the closure of 
+\begin_inset Formula $A$
+\end_inset
+
+.
+ If 
+\begin_inset Formula $A\subseteq X$
+\end_inset
+
+ is closed then 
+\begin_inset Formula $\bar{A}=A$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Sets with a single operation
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+magma
+\emph default
+ is set 
+\begin_inset Formula $M$
+\end_inset
+
+ with an operation
+\begin_inset Formula 
+\[
+\bullet_{M}:M\times M\to M:x,y\mapsto x\bullet_{M}y
+\]
+
+\end_inset
+
+that under which 
+\begin_inset Formula $M$
+\end_inset
+
+ is:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+closed 
+\begin_inset Formula $\forall x,y\in M$
+\end_inset
+
+,
+ 
+\begin_inset Formula $x\bullet_{M}y\in M$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Minisec
+Morphisms
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+morphism
+\emph default
+ of magmas 
+\begin_inset Formula $M$
+\end_inset
+
+ and 
+\begin_inset Formula $N$
+\end_inset
+
+ is a function 
+\begin_inset Formula $f:M\to N$
+\end_inset
+
+ that preserves the binary operation:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset Formula $\forall x,y\in M$
+\end_inset
+
+,
+ 
+\begin_inset Formula $f(x\bullet_{M}y)=f(x)\bullet_{N}f(y)$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Special types of a morphism 
+\begin_inset Formula $f:M\to N$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Description
+
+\emph on
+monomorphism
+\emph default
+ 
+\begin_inset Formula $f$
+\end_inset
+
+ is injective,
+\end_layout
+
+\begin_layout Description
+
+\emph on
+epimorphism
+\emph default
+ 
+\begin_inset Formula $f$
+\end_inset
+
+ is surjective,
+\end_layout
+
+\begin_layout Description
+isomorphism 
+\begin_inset Formula $f$
+\end_inset
+
+ is bijective.
+\end_layout
+
+\begin_layout Standard
+When 
+\begin_inset Formula $M=N$
+\end_inset
+
+ specifically:
+\end_layout
+
+\begin_layout Description
+
+\emph on
+endomorphism
+\emph default
+ 
+\begin_inset Formula $f$
+\end_inset
+
+ is a morphism,
+\end_layout
+
+\begin_layout Description
+
+\emph on
+automorphism
+\emph default
+an 
+\begin_inset Formula $f$
+\end_inset
+
+ is an isomorphism.
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+semigroup
+\emph default
+ is a magma 
+\begin_inset Formula $S$
+\end_inset
+
+ the operation 
+\begin_inset Formula $\bullet_{S}$
+\end_inset
+
+ of which is:
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+associative 
+\begin_inset Formula $\forall a,b,c\in S$
+\end_inset
+
+,
+ 
+\begin_inset Formula $(a\bullet_{S}b)\bullet_{S}c=a\bullet_{S}b\bullet_{S}c=a\bullet_{S}(b\bullet_{S}c)$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+More succinctly,
+ a semigroup is an associative magma.
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+semigroup congruence
+\emph default
+ 
+\begin_inset Formula $\sim$
+\end_inset
+
+ is an equivalence relation on a semigroup 
+\begin_inset Formula $S$
+\end_inset
+
+ that is compatible with the semigroup operation 
+\begin_inset Formula $\bullet_{S}$
+\end_inset
+
+.
+ That is,
+ 
+\begin_inset Formula $\forall a,a^{\prime},b,b^{\prime}$
+\end_inset
+
+,
+ such that 
+\begin_inset Formula $a\sim b$
+\end_inset
+
+ and 
+\begin_inset Formula $a^{\prime}\sim b^{\prime}$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\bullet_{S}a^{\prime}\sim b\bullet_{S}b^{\prime}$
+\end_inset
+
+ .
+\end_layout
+
+\begin_layout Definition
+Like any equivalence relation,
+ a semigroup congruence 
+\begin_inset Formula $\sim$
+\end_inset
+
+ induces congruence classes,
+ 
+\begin_inset Formula $\forall a\in S$
+\end_inset
+
+,
+\begin_inset Formula 
+\[
+[a]=\{x\in S|x\sim a\},
+\]
+
+\end_inset
+
+and the semigroup operation 
+\begin_inset Formula $\bullet_{S}$
+\end_inset
+
+ induces a binary operation 
+\begin_inset Formula $\bullet_{\sim}$
+\end_inset
+
+ on the congruence classes.
+ 
+\begin_inset Formula $\forall a,b\in S$
+\end_inset
+
+,
+\begin_inset Formula 
+\[
+[a]\bullet_{\sim}[b]=[a\bullet_{S}b].
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Exercise
+Because 
+\begin_inset Formula $\sim$
+\end_inset
+
+ is a congruence,
+ the set of all congruence classes of 
+\begin_inset Formula $\sim$
+\end_inset
+
+ forms a semigroup with 
+\begin_inset Formula $\bullet_{\sim}$
+\end_inset
+
+,
+ called the 
+\emph on
+quotient semigroup
+\emph default
+,
+ denoted 
+\begin_inset Formula $S/\mathord{\sim}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Proof
+...
+\end_layout
+
+\begin_layout Standard
+A subset 
+\begin_inset Formula $A$
+\end_inset
+
+ of a semigroup 
+\begin_inset Formula $S$
+\end_inset
+
+,
+ is a 
+\emph on
+subsemigroup
+\emph default
+ iff 
+\begin_inset Formula $A$
+\end_inset
+
+ is closed under 
+\begin_inset Formula $\bullet_{S}$
+\end_inset
+
+,
+ or
+\begin_inset Formula $\bar{A}=A$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+A semigroup morphism is called a 
+\emph on
+homomorphism
+\emph default
+ specifically.
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+monoid
+\emph default
+ is a semigroup 
+\begin_inset Formula $M$
+\end_inset
+
+ the operation 
+\begin_inset Formula $\bullet_{M}$
+\end_inset
+
+ of which (additionally) has
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+identity
+\begin_inset space ~
+\end_inset
+
+element 
+\begin_inset Formula $\exists!\mathds{1}_{M}\in M$
+\end_inset
+
+,
+ such that 
+\begin_inset Formula $\forall a\in S$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\mathds{1}_{M}\bullet_{M}a=a=a\bullet_{M}\mathds{1}_{M}$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+In other words,
+ a monoid is a semigroup with and identity element.
+\end_layout
+
+\begin_layout Exercise
+The identity element of a monoid is unique.
+\end_layout
+
+\begin_layout Proof
+Let 
+\begin_inset Formula $\mathds{1}_{M},\mathds{1}^{\prime}_{M}\in M$
+\end_inset
+
+ be identity elements.
+\end_layout
+
+\begin_layout Proof
+...
+\end_layout
+
+\begin_layout Standard
+A 
+\emph on
+submonoid
+\emph default
+ of a monoid 
+\begin_inset Formula $M$
+\end_inset
+
+ is a subset 
+\begin_inset Formula $N\subseteq M$
+\end_inset
+
+ that is closed under the monoid operation 
+\begin_inset Formula $\bullet_{M}$
+\end_inset
+
+ and 
+\begin_inset Formula $\mathds{1}_{M}\in N$
+\end_inset
+
+.
+ In this case,
+ 
+\begin_inset Formula $N$
+\end_inset
+
+ is a monoid under the binary operation 
+\begin_inset Formula $\bullet_{M}$
+\end_inset
+
+ inherited from 
+\begin_inset Formula $M$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+A 
+\emph on
+monoid homomorphism
+\emph default
+ 
+\begin_inset Formula $f:M\to N$
+\end_inset
+
+ is a semigroup homomorphism for which
+\begin_inset Formula 
+\[
+f(\mathds{1}_{M})=\mathds{1}_{N}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Definition
+A 
+\emph on
+group
+\emph default
+ is a monoid 
+\begin_inset Formula $G$
+\end_inset
+
+ the operation 
+\begin_inset Formula $\bullet_{G}$
+\end_inset
+
+ of which (additionally) supports
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+inverse
+\begin_inset space ~
+\end_inset
+
+elements 
+\begin_inset Formula $\forall a\in G$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\exists!a^{\prime}\in G$
+\end_inset
+
+ such that,
+ 
+\begin_inset Formula $a\bullet_{G}a^{\prime}=\mathds{1}_{G}=a^{\prime}\bullet_{G}a$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Exercise
+The inverse of an element of a group is unique.
+\end_layout
+
+\begin_layout Proof
+\begin_inset Formula $\forall a\in G$
+\end_inset
+
+,
+ let 
+\begin_inset Formula $a^{\prime},a^{\prime\prime}\in G$
+\end_inset
+
+ be inverse elements of 
+\begin_inset Formula $a$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Proof
+...
+\end_layout
+
+\begin_layout Standard
+The (unique) inverse element of 
+\begin_inset Formula $a\in G$
+\end_inset
+
+ is commonly denoted 
+\begin_inset Formula $\neg_{G}a$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+A subgroup of a group 
+\begin_inset Formula $G$
+\end_inset
+
+ is a subset 
+\begin_inset Formula $H\subseteq G$
+\end_inset
+
+ that is closed under the group operation 
+\begin_inset Formula $\bullet_{G}$
+\end_inset
+
+ and under the inverse,
+ meaning that 
+\begin_inset Formula $\forall a\in H$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\neg_{G}a\in H$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Exercise
+A subset 
+\begin_inset Formula $H$
+\end_inset
+
+ of a group 
+\begin_inset Formula $G$
+\end_inset
+
+ is a subgroup of 
+\begin_inset Formula $G$
+\end_inset
+
+ iff 
+\begin_inset Formula $\forall a,b\in H$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\bullet_{G}\neg_{G}b\in H$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Proof
+We have to prove that both directions hold:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset Formula $\forall a,b\in H$
+\end_inset
+
+,
+ 
+\begin_inset Formula $a\bullet_{G}b\in H$
+\end_inset
+
+ and 
+\begin_inset Formula $\neg b\in H$
+\end_inset
+
+,
+ therefore (because 
+\begin_inset Formula $a,b^{-1}\in H$
+\end_inset
+
+) 
+\begin_inset Formula $a\bullet_{G}\neg_{G}b\in H$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+Conversly,
+ ...
+\end_layout
+
+\end_deeper
+\begin_layout Definition
+A group
+\emph on
+ homomorphism
+\emph default
+ 
+\begin_inset Formula $\varphi:G\to H$
+\end_inset
+
+ is a semigroup homomorphism.
+\end_layout
+
+\begin_layout Exercise
+For a group homomorphism 
+\begin_inset Formula $\varphi:G\to H$
+\end_inset
+
+:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset Formula $\varphi(\mathds{1}_{G})=\mathds{1}_{H}$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\forall a\in G$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\varphi(\neg_{G}a)=\neg_{H}\varphi(a).$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Proof
+...
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+identity homomorphism
+\emph default
+ of a group 
+\begin_inset Formula $G$
+\end_inset
+
+ is the automorphism 
+\begin_inset Formula $\id_{G}:G\to G$
+\end_inset
+
+ that maps each element of 
+\begin_inset Formula $G$
+\end_inset
+
+ to itself,
+ i.e.
+ 
+\begin_inset Formula $\forall a\in G$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\id_{G}a=a$
+\end_inset
+
+.
+ An 
+\emph on
+inverse homomorphism
+\emph default
+ of a monomorphism 
+\begin_inset Formula $\varphi:G\to H$
+\end_inset
+
+ is a monomorphism 
+\begin_inset Formula $\varphi^{-1}:H\to G$
+\end_inset
+
+ such that
+\begin_inset Formula 
+\[
+\varphi^{-1}\circ\varphi:G\to H\to G=\id_{G}\text{ and }\varphi\circ\varphi^{-1}:H\to G\to H=\id_{H}.
+\]
+
+\end_inset
+
+Therefore an isomorphism (bijective homomorphism) is a homomorphism that has an inverse homomporhpism (isomorphism).
+\end_layout
+
+\begin_layout Proposition
+The set 
+\begin_inset Formula $\varPhi_{G}$
+\end_inset
+
+ of all automorphisms (homomorphism with an inverse) on a group 
+\begin_inset Formula $G$
+\end_inset
+
+,
+ form a group under the operation of function composition 
+\begin_inset Formula $\circ:\varPhi_{G}\times\varPhi_{G}\to\varPhi_{G}$
+\end_inset
+
+,
+ with identity element the identity homomorphism 
+\begin_inset Formula $\id_{G}$
+\end_inset
+
+ and their inverse homomorphism as their inverse element.
+\end_layout
+
+\begin_layout Proof
+Sequentially:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset Formula $\varPhi_{G}$
+\end_inset
+
+ with composition 
+\begin_inset Formula $\circ$
+\end_inset
+
+ is a magma.
+ 
+\begin_inset Formula $\forall\varphi,\vartheta:G\to G$
+\end_inset
+
+ automorphisms,
+ 
+\begin_inset Formula $\varphi\circ\vartheta:G\to G$
+\end_inset
+
+ is a bijective homomorphism,
+ ergo an automorphism,
+ therefore 
+\begin_inset Formula $\varPhi_{G}$
+\end_inset
+
+ is closed under 
+\begin_inset Formula $\circ$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\varPhi_{G}$
+\end_inset
+
+ with composition 
+\begin_inset Formula $\circ$
+\end_inset
+
+ is a semigroup.
+ 
+\begin_inset Formula $\forall\varphi,\vartheta,\varsigma:G\to G$
+\end_inset
+
+:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset Formula $(\varphi\circ\vartheta)\circ\varsigma:G\to G:a\mapsto(\varphi\circ\vartheta)(\varsigma(a))=\varphi(\vartheta(\varsigma(a)))$
+\end_inset
+
+ because 
+\begin_inset Formula $\varphi\circ\vartheta:G\to G:a=\varphi(\vartheta(a))$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\varphi\circ(\vartheta\circ\varsigma):G\to G:a\mapsto\varphi((\vartheta\circ\varsigma)(a))=\varphi(\vartheta(\varsigma(a)))$
+\end_inset
+
+ because 
+\begin_inset Formula $\vartheta\circ\varsigma:G\to G:a\mapsto\vartheta(\varsigma(a))$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\begin_inset Formula $\varPhi_{G}$
+\end_inset
+
+ with composition 
+\begin_inset Formula $\circ$
+\end_inset
+
+ is a monoid,
+ with 
+\begin_inset Formula $\id_{G}$
+\end_inset
+
+ the identity element.
+ 
+\begin_inset Formula $\forall\varphi:G\to G$
+\end_inset
+
+,
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset Formula $\varphi\circ\id_{G}:G\to G:a=\varphi(\id_{G}a)=\varphi(a)$
+\end_inset
+
+ therefore 
+\begin_inset Formula $\varphi\circ\id_{G}=\varphi$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\id_{G}\circ\varphi:G\to G:a=\id_{G}\varphi(a)=\varphi(a)$
+\end_inset
+
+ therefore 
+\begin_inset Formula $\id_{G}\circ\varphi=\varphi$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\begin_inset Formula $\varPhi_{G}$
+\end_inset
+
+ with composition 
+\begin_inset Formula $\circ$
+\end_inset
+
+ is a group,
+ with the inverse homomorphism 
+\begin_inset Formula $\varphi^{-1}$
+\end_inset
+
+ as the inverse element 
+\begin_inset Formula $\neg\varphi$
+\end_inset
+
+ for each homomoorphism 
+\begin_inset Formula $\varphi:G\to G$
+\end_inset
+
+.
+ By definition of the inverse homomorphism 
+\begin_inset Formula $\varphi^{-1}$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+\neg\varphi\circ\phi=\varphi^{-1}\circ\varphi=\id_{G}=\varphi\circ\varphi^{-1}=\varphi\circ\neg\phi
+\]
+
+\end_inset
+
+as automorphisms by definition (codomain matches domain) point to the same identity homomorphism when composed with their inverse.
+\end_layout
+
+\end_deeper
+\end_body
+\end_document
