@@ -5,7 +5,7 @@ from math import gcd
 from typing import Self
 
 
-class Scalar:
+class Dist:
 
 	__slots__ = (
 		"numer",
@@ -33,8 +33,8 @@ class Scalar:
 
 		self = super().__new__(cls)
 
-		super(Scalar, self).__setattr__("numer", numer // norm)
-		super(Scalar, self).__setattr__("denom", denom // norm)
+		super(Dist, self).__setattr__("numer", numer // norm)
+		super(Dist, self).__setattr__("denom", denom // norm)
 
 		return self
 
@@ -47,7 +47,7 @@ class Scalar:
 	def __hash__(self) -> int:
 		return hash((self.numer, self.denom))
 
-	def __add__(self, value: Scalar) -> Self:
+	def __add__(self, value: Dist) -> Self:
 		cls = type(self)
 
 		return cls(
@@ -55,11 +55,11 @@ class Scalar:
 			self.denom * value.denom,
 		)
 
-	def __matmul__(self, value: Scalar) -> Self:
+	def __matmul__(self, value: Dist) -> Self:
 		return ~(~self + ~value)
 
-	def __and__(self, value: Scalar) -> Self:
-		if not isinstance(value, Scalar):
+	def __and__(self, value: Dist) -> Self:
+		if not isinstance(value, Dist):
 			return NotImplemented
 
 		cls = type(self)
@@ -69,16 +69,16 @@ class Scalar:
 			self.denom * value.denom,
 		)
 
-	def  __or__ (self, value: Scalar) -> Self: return ~(~self & ~value)
-	def  __sub__(self, value: Scalar) -> Self: return    self & ~value
+	def  __or__ (self, value: Dist) -> Self: return ~(~self & ~value)
+	def  __sub__(self, value: Dist) -> Self: return    self & ~value
 
-	def  __xor__(self, value: Scalar) -> Self: return (self @ value) - (self & value)
+	def  __xor__(self, value: Dist) -> Self: return (self @ value) - (self & value)
 #	def  __xor__(self, value: scalar) -> Self: return (self | value) - (self & value)
 #	def  __xor__(self, value: scalar) -> Self: return (self - value) | (value - self)
 
-	def __ror__ (self, value: Scalar) -> Self: return NotImplemented
-	def __rand__(self, value: Scalar) -> Self: return NotImplemented
-	def __rxor__(self, value: Scalar) -> Self: return NotImplemented
+	def __ror__ (self, value: Dist) -> Self: return NotImplemented
+	def __rand__(self, value: Dist) -> Self: return NotImplemented
+	def __rxor__(self, value: Dist) -> Self: return NotImplemented
 
 	def __invert__(self) -> Self:
 		cls = type(self)
@@ -88,14 +88,14 @@ class Scalar:
 			self.numer,
 		)
 
-	def __le__(self, value: Scalar) -> bool: return self.numer * value.denom <= value.numer * self.denom
-	def __ge__(self, value: Scalar) -> bool: return self.numer * value.denom >= value.numer * self.denom
-	def __eq__(self, value: Scalar) -> bool:
+	def __le__(self, value: Dist) -> bool: return self.numer * value.denom <= value.numer * self.denom
+	def __ge__(self, value: Dist) -> bool: return self.numer * value.denom >= value.numer * self.denom
+	def __eq__(self, value: Dist) -> bool:
 		return self <= value and self >= value
 
-	def __ne__(self, value: Scalar) -> bool: return                   not self == value
-	def __lt__(self, value: Scalar) -> bool: return self <= value and not self == value
-	def __gt__(self, value: Scalar) -> bool: return self >= value and not self == value
+	def __ne__(self, value: Dist) -> bool: return                   not self == value
+	def __lt__(self, value: Dist) -> bool: return self <= value and not self == value
+	def __gt__(self, value: Dist) -> bool: return self >= value and not self == value
 
 
 	@classmethod
@@ -113,7 +113,7 @@ class Scalar:
 		)
 
 
-class Bool(Scalar):
+class Bool(Dist):
 
 	__slots__ = ()
 
@@ -133,12 +133,12 @@ class Bool(Scalar):
 		return bool(self.denom)
 
 
-class Prob(Scalar):
+class Prob(Dist):
 
 	__slots__ = ()
 
 
-	def __mul__(self, value: Scalar) -> Self:
+	def __mul__(self, value: Dist) -> Self:
 		cls = type(self)
 
 		numer = self.numer * value.numer

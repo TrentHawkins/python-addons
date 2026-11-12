@@ -85,22 +85,22 @@
 \makeatother
 
 \usepackage{tcolorbox}
-\usepackage{scalefnt}
+%\usepackage{scalefnt}
 \usepackage{dsfont}
 
-\newcommand{\InlineCodeScale}{0.9  }
-\newcommand{\InlineCodeRaise}{0.1em}
+%\newcommand{\InlineCodeScale}{ 1.0  }
+%\newcommand{\InlineCodeRaise}{-10.0em}
 
 \AtBeginDocument{%
   \setmintedinline{%
     bgcolor=none,
     breaklines=false,
-    fontsize={\scalefont{\InlineCodeScale}},
+    %fontsize={\scalefont{\InlineCodeScale}},
     fontseries=auto,
     fontshape=auto
   }%
   \renewcommand{\FancyVerbFormatInline}[1]{%
-    \raisebox{\InlineCodeRaise}{%
+    %\raisebox{\InlineCodeRaise}{%
       \tcbox[
         on line,
         colback=code,
@@ -111,13 +111,22 @@
         boxsep=0pt,
         left=1.5pt,
         right=1.5pt,
-        top=1.0pt,
+        top=1.5pt,
         bottom=0.5pt
       ]{\strut\smash{#1}}%
     }%
-  }%
+  %}%
   \renewmdenv[style=codebox]{shaded}%
 }
+
+\newcommand*{\centerdotfill}{%
+  \leavevmode
+  \cleaders\hbox to \fontdimen2\font{\hss\(\cdot\)\hss}\hfill
+  \kern0pt
+}
+\DeclareTOCStyleEntries[
+  linefill = {\enspace\centerdotfill}
+]{tocline}{section,subsection,subsubsection}
 \end_preamble
 \use_default_options true
 \master main.lyx
@@ -301,7 +310,7 @@ is in
 
 ,
  and one writes 
-\begin_inset Formula $x\in A$
+\begin_inset Formula $x:A$
 \end_inset
 
 .
@@ -318,7 +327,7 @@ is in
 
 \emph default
  is written a 
-\begin_inset Formula $x\notin A$
+\begin_inset Formula $\neg x:A$
 \end_inset
 
 .
@@ -333,7 +342,7 @@ axiom of extensionality
  or
 \begin_inset Formula 
 \[
-A=B\Longleftrightarrow\forall x:x\in A\Longleftrightarrow x\in B.
+A=B\Longleftrightarrow\forall x\mid x:A\Longleftrightarrow x:B.
 \]
 
 \end_inset
@@ -464,7 +473,7 @@ Set–builder notation specifies a set as being the set of all elements that sat
  then
 \begin_inset Formula 
 \[
-\{x:\varpi(x)\}
+\{x\mid\varpi(x)\}
 \]
 
 \end_inset
@@ -484,7 +493,7 @@ denotes the set of all
 .
  In this notation,
  
-\begin_inset Formula $:$
+\begin_inset Formula $\mid$
 \end_inset
 
  is read as 
@@ -494,16 +503,137 @@ such that
 .
 \end_layout
 
-\begin_layout Standard
+\begin_layout Subsubsection*
 \begin_inset CommandInset line
 LatexCommand rule
-offset "0.5ex"
+offset "0.55ex"
 width "100col%"
 height "1pt"
 
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+In 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ (and all object–oriented programming languages),
+ objects are identified (and specified) by 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+type
+\end_layout
+
+\end_inset
+
+,
+ which however has a richer structure than classical sets;
+ they hold attributes (and methods),
+ which also can potentially make them mutable,
+ a notion not describable in classical set theory.
+ The closest analog of the mathematical objects described in this introductory part is a special family of types that are:
+\end_layout
+
+\begin_layout Description
+hashable Identified by the 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+typing.Hashable
+\end_layout
+
+\end_inset
+
+ protocol,
+ where hashability offers a kind of element seperability,
+ as prescribed by the axiom of extentionality.
+ This protocol required the implementation of 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__hash__
+\end_layout
+
+\end_inset
+
+ which allows the discernability of instances of a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+type
+\end_layout
+
+\end_inset
+
+ in contexts that matter.
+\end_layout
+
+\begin_layout Description
+immutability Technically,
+ for a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+type
+\end_layout
+
+\end_inset
+
+ to correspond to a classical set,
+ its instances must be immutable too,
+ so that their hashable identity remains valid.
+ To make a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+type
+\end_layout
+
+\end_inset
+
+ immutable in 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ usually involves some boilerplat that offers nothing to the arguments developed here and shall be ommited from displayed code.
 \end_layout
 
 \begin_layout Subsection
@@ -591,7 +721,7 @@ subset
  or
 \begin_inset Formula 
 \[
-A\subseteq B\Longleftrightarrow\forall x:x\in A\Longrightarrow x\in B.
+A\subseteq B\Longleftrightarrow\forall x\mid x:A\Longrightarrow x:B.
 \]
 
 \end_inset
@@ -664,7 +794,7 @@ Properties of containment
 Containment is antisymmetric;
 \begin_inset Formula 
 \[
-\forall A,B:A=B\Longleftrightarrow A\subseteq B\wedge A\supseteq B.
+\forall A,B\mid A=B\Longleftrightarrow A\subseteq B\wedge A\supseteq B.
 \]
 
 \end_inset
@@ -701,7 +831,7 @@ The empty set is a subset of every set:
 Containment is also transitive;
 \begin_inset Formula 
 \[
-\forall A,B,C:A\subseteq B\wedge B\subseteq C\Longrightarrow A\subseteq C.
+\forall A,B,C\mid A\subseteq B\wedge B\subseteq C\Longrightarrow A\subseteq C.
 \]
 
 \end_inset
@@ -758,7 +888,7 @@ intersection
  That is,
 \begin_inset Formula 
 \[
-A\cap B=\{x:x\in A\wedge x\in B\}.
+A\cap B=\{x\mid x:A\wedge x:B\}.
 \]
 
 \end_inset
@@ -791,7 +921,7 @@ If
  denoted
 \begin_inset Formula 
 \[
-\bigcap\nolimits\mathcal{S}=\bigcap\nolimits_{A\in\mathcal{S}}A=\{x:\forall A\in\mathcal{S}:x\in A\},
+\bigcap\nolimits\mathcal{S}=\bigcap\nolimits_{A:\mathcal{S}}A=\{x\mid\forall A:\mathcal{S}\mid x:A\},
 \]
 
 \end_inset
@@ -836,7 +966,7 @@ union
  That is,
 \begin_inset Formula 
 \[
-A\cup B=\{x:x\in A\vee x\in B\}.
+A\cup B=\{x\mid x:A\vee x:B\}.
 \]
 
 \end_inset
@@ -866,7 +996,7 @@ If
  denoted
 \begin_inset Formula 
 \[
-\bigcup\mathcal{S}=\bigcup\nolimits_{A\in\mathcal{S}}A=\{x:\exists A\in\mathcal{S}:x\in A\},
+\bigcup\mathcal{S}=\bigcup\nolimits_{A:\mathcal{S}}A=\{x\mid\exists A:\mathcal{S}\mid x:A\},
 \]
 
 \end_inset
@@ -915,7 +1045,7 @@ set difference
  That is,
 \begin_inset Formula 
 \[
-A\setminus B=\{x:x\in A\wedge x\notin B\}.
+A\setminus B=\{x\mid x:A\wedge\neg x:B\}.
 \]
 
 \end_inset
@@ -952,7 +1082,7 @@ complement
  Naively speaking,
 \begin_inset Formula 
 \[
-B^{\complement}=\{x:x\notin B\},
+B^{\complement}=\{x\mid\neg x:B\},
 \]
 
 \end_inset
@@ -1082,7 +1212,7 @@ The notation
 \end_inset
 
  to an element 
-\begin_inset Formula $x\in A$
+\begin_inset Formula $x:A$
 \end_inset
 
  is denoted 
@@ -1158,7 +1288,7 @@ codomain
 :
 \begin_inset Formula 
 \[
-f(A)=\{f(x):x\in A\}
+f(A)=\{f(x)\mid x:A\}
 \]
 
 \end_inset
@@ -1181,7 +1311,7 @@ Special types of a function
 injective
 \emph default
  
-\begin_inset Formula $\forall x,y\in A:f(x)=f(y)\Longrightarrow x=y,$
+\begin_inset Formula $\forall x,y:A\mid f(x)=f(y)\Longrightarrow x=y,$
 \end_inset
 
 
@@ -1256,7 +1386,7 @@ An indexed family is a function that has an index set
 \end_inset
 
  (
-\begin_inset Formula $\forall n\in\mathbb{N}$
+\begin_inset Formula $\forall n:\mathbb{N}$
 \end_inset
 
 ) defines an 
@@ -1278,7 +1408,7 @@ An indexed family is a function that has an index set
 Family of sets operations become indexed operations:
 \begin_inset Formula 
 \begin{gather*}
-\bigcup\nolimits_{i\in I}A_{i}=\{x:\exists i\in I:x\in A_{i}\}\text{ and }\bigcap\nolimits_{i\in I}A_{i}=\{x:\forall i\in I:x\in A_{i}\}.
+\bigcup\nolimits_{i:I}A_{i}=\{x\mid\exists i:I\mid x:A_{i}\}\text{ and }\bigcap\nolimits_{i:I}A_{i}=\{x\mid\forall i:I\mid x:A_{i}\}.
 \end{gather*}
 
 \end_inset
@@ -1312,9 +1442,9 @@ indicator function
  of the latter is
 \begin_inset Formula 
 \[
-\mathds{1}_{A}:U\to\mathbb{B}:x\mapsto\mathds{1}_{A}(x)=\begin{cases}
-\top & x\in A,\\
-\bot & x\notin A.
+\mathds{1}_{A}:U\to\mathbb{B}\mid x\mapsto\mathds{1}_{A}(x)=\begin{cases}
+\top & \hphantom{\neg}x:A,\\
+\bot & \neg x:A.
 \end{cases}
 \]
 
@@ -1341,7 +1471,7 @@ Informally,
 ,
  is the number of its members.
  This number is the natural number 
-\begin_inset Formula $n\in\mathbb{N}$
+\begin_inset Formula $n:\mathbb{N}$
 \end_inset
 
  when there is a one-to-one correspondence between the set 
@@ -1452,18 +1582,18 @@ product
 \end_inset
 
  such that 
-\begin_inset Formula $a\in A$
+\begin_inset Formula $a:A$
 \end_inset
 
  and 
-\begin_inset Formula $b\in B$
+\begin_inset Formula $b:B$
 \end_inset
 
 ;
  that is,
 \begin_inset Formula 
 \[
-A\times B=\{(a,b):a\in A\wedge b\in B\}.
+A\times B=\{(a,b)\mid a:A\wedge b:B\}.
 \]
 
 \end_inset
@@ -1508,24 +1638,24 @@ The definition makes sense even if
 
 \begin_layout Definition
 Given an indexed family of sets 
-\begin_inset Formula $(A_{i})_{i\in I}$
+\begin_inset Formula $(A_{i})_{i:I}$
 \end_inset
 
 ,
  the product
 \begin_inset Formula 
 \[
-\prod\nolimits_{i\in I}A_{i}
+\prod\nolimits_{i:I}A_{i}
 \]
 
 \end_inset
 
 is the set of all indexed families of elements 
-\begin_inset Formula $(a_{i})_{i\in I}$
+\begin_inset Formula $(a_{i})_{i:I}$
 \end_inset
 
  such that 
-\begin_inset Formula $\forall i\in I:a_{i}\in A_{i}$
+\begin_inset Formula $\forall i:I\mid a_{i}:A_{i}$
 \end_inset
 
 .
@@ -1592,7 +1722,7 @@ Equivalently,
  since exponentiation with integer exponents is a product where all factors are equal to the base:
 \begin_inset Formula 
 \[
-B^{A}=\prod\nolimits_{a\in A}B=\{(b_{a})_{a\in A}:\forall a\in A:b_{a}\in B\}.
+B^{A}=\prod\nolimits_{a:A}B=\{(b_{a})_{a:A}\mid\forall a:A\mid b_{a}:B\}.
 \]
 
 \end_inset
@@ -1711,7 +1841,7 @@ Given a set
 
 \begin_layout Standard
 The statement 
-\begin_inset Formula $(a,b)\in\bigcirc$
+\begin_inset Formula $(a,b):\bigcirc$
 \end_inset
 
  reads in infix notation as 
@@ -1758,7 +1888,7 @@ The statement
  defined by
 \begin_inset Formula 
 \[
-\forall a,b\in X:a\mathrel{\cancel{\bigcirc}}b=\neg(a\bigcirc b).
+\forall a,b:X\mid a\mathrel{\cancel{\bigcirc}}b=\neg(a\bigcirc b).
 \]
 
 \end_inset
@@ -1801,7 +1931,7 @@ equivalence relation
 \begin_deeper
 \begin_layout Description
 reflexive 
-\begin_inset Formula $\forall a\in X:a\sim a,$
+\begin_inset Formula $\forall a:X\mid a\sim a,$
 \end_inset
 
 
@@ -1809,7 +1939,7 @@ reflexive
 
 \begin_layout Description
 symmetric 
-\begin_inset Formula $\forall a,b\in X:a\sim b\Longleftrightarrow b\sim a,$
+\begin_inset Formula $\forall a,b:X\mid a\sim b\Longleftrightarrow b\sim a,$
 \end_inset
 
 
@@ -1817,7 +1947,7 @@ symmetric
 
 \begin_layout Description
 transitive 
-\begin_inset Formula $\forall a,b,c\in X:a\sim b\wedge b\sim c\Longrightarrow a\sim c.$
+\begin_inset Formula $\forall a,b,c:X\mid a\sim b\wedge b\sim c\Longrightarrow a\sim c.$
 \end_inset
 
 
@@ -1864,7 +1994,7 @@ not
 
 \begin_layout Description
 irreflexive 
-\begin_inset Formula $\forall a\in X:\neg(a\nsim a),$
+\begin_inset Formula $\forall a:X\mid\neg(a\nsim a),$
 \end_inset
 
 
@@ -1884,13 +2014,13 @@ Given an equivalence relation
 \end_inset
 
  and 
-\begin_inset Formula $\forall a\in X$
+\begin_inset Formula $\forall a:X$
 \end_inset
 
 ,
 \begin_inset Formula 
 \[
-[a]=\{x\in X:x\sim a\}\subseteq X
+[a]=\{x:X\mid x\sim a\}\subseteq X
 \]
 
 \end_inset
@@ -1910,7 +2040,7 @@ All elements of
  equivalent to each other are also elements of the same equivalence class.
 \begin_inset Formula 
 \[
-\forall b,c\in X:(b\sim c\wedge[b]=[c])\vee(b\nsim c\wedge[b]\cap[c]=\varnothing)
+\forall b,c:X\mid(b\sim c\wedge[b]=[c])\vee(b\nsim c\wedge[b]\cap[c]=\varnothing)
 \]
 
 \end_inset
@@ -1927,7 +2057,7 @@ Therefore element of
  or more strongly,
 \begin_inset Formula 
 \[
-\forall a,b\in X:a\sim b\Longleftrightarrow[a]=[b].
+\forall a,b:X\mid a\sim b\Longleftrightarrow[a]=[b].
 \]
 
 \end_inset
@@ -1977,7 +2107,7 @@ the elements of
 
  are pairwise disjoint,
  or 
-\begin_inset Formula $\forall A,B\in\mathcal{S}:A\neq B\Longrightarrow A\cap B=\varnothing,$
+\begin_inset Formula $\forall A,B:\mathcal{S}\mid A\neq B\Longrightarrow A\cap B=\varnothing,$
 \end_inset
 
 
@@ -2029,7 +2159,7 @@ The set of all equivalence classes of
  denoted 
 \begin_inset Formula 
 \[
-X/\mathord{\sim}\coloneqq\{[x]:x\in X\},
+X/\mathord{\sim}\coloneqq\{[x]\mid x:X\},
 \]
 
 \end_inset
@@ -2134,7 +2264,7 @@ preorder
 \begin_deeper
 \begin_layout Description
 reflexive 
-\begin_inset Formula $\forall a\in X:a\lesssim a,$
+\begin_inset Formula $\forall a:X\mid a\lesssim a,$
 \end_inset
 
  i.e.
@@ -2143,7 +2273,7 @@ reflexive
 
 \begin_layout Description
 transitive 
-\begin_inset Formula $\forall a,b,c\in X:a\lesssim b\wedge b\lesssim c\Longrightarrow a\lesssim c.$
+\begin_inset Formula $\forall a,b,c:X\mid a\lesssim b\wedge b\lesssim c\Longrightarrow a\lesssim c.$
 \end_inset
 
  
@@ -2182,7 +2312,7 @@ Given a preorder
  by
 \begin_inset Formula 
 \[
-\forall a,b\in X:a\lesssim b\wedge b\lesssim a\Longleftrightarrow a\sim b.
+\forall a,b:X\mid a\lesssim b\wedge b\lesssim a\Longleftrightarrow a\sim b.
 \]
 
 \end_inset
@@ -2221,7 +2351,7 @@ partial order
 \begin_deeper
 \begin_layout Description
 antisymmetric 
-\begin_inset Formula $\forall a,b\in X:a\leq b\wedge b\leq a\Longrightarrow a=b.$
+\begin_inset Formula $\forall a,b:X\mid a\leq b\wedge b\leq a\Longrightarrow a=b.$
 \end_inset
 
 
@@ -2272,7 +2402,7 @@ Given a preorder
  by
 \begin_inset Formula 
 \[
-\forall a,b\in X:[a]\leq[b]\Longleftrightarrow a\lesssim b.
+\forall a,b:X\mid[a]\leq[b]\Longleftrightarrow a\lesssim b.
 \]
 
 \end_inset
@@ -2312,7 +2442,7 @@ strict partial order
 \begin_deeper
 \begin_layout Description
 irreflexive 
-\begin_inset Formula $\forall a\in X:a\nless a,$
+\begin_inset Formula $\forall a:X\mid a\nless a,$
 \end_inset
 
 
@@ -2320,7 +2450,7 @@ irreflexive
 
 \begin_layout Description
 transitive 
-\begin_inset Formula $\forall a,b,c\in X:a<b\wedge b<c\Longrightarrow a<c.$
+\begin_inset Formula $\forall a,b,c:X\mid a<b\wedge b<c\Longrightarrow a<c.$
 \end_inset
 
 
@@ -2343,7 +2473,7 @@ Any preorder
 ) by
 \begin_inset Formula 
 \[
-\forall a,b\in X:a<b\Longleftrightarrow a\lesssim b\wedge a\nsim b.
+\forall a,b:X\mid a<b\Longleftrightarrow a\lesssim b\wedge a\nsim b.
 \]
 
 \end_inset
@@ -2384,7 +2514,7 @@ strongly
 \end_inset
 
 connected 
-\begin_inset Formula $\forall a,b\in X:a\leq b\vee b\leq a.$
+\begin_inset Formula $\forall a,b:X\mid a\leq b\vee b\leq a.$
 \end_inset
 
 
@@ -2416,7 +2546,7 @@ strict total order
 \begin_deeper
 \begin_layout Description
 connected 
-\begin_inset Formula $\forall a,b\in X:a\neq b\Longrightarrow a<b\vee b<a.$
+\begin_inset Formula $\forall a,b:X\mid a\neq b\Longrightarrow a<b\vee b<a.$
 \end_inset
 
 
@@ -2439,7 +2569,7 @@ A total order
  by
 \begin_inset Formula 
 \[
-\forall a,b\in X:a<b\Longleftrightarrow a\leq b\wedge a\neq b.
+\forall a,b:X\mid a<b\Longleftrightarrow a\leq b\wedge a\neq b.
 \]
 
 \end_inset
@@ -2458,11 +2588,11 @@ A poset can have at most one greatest and one least element:
 \begin_deeper
 \begin_layout Itemize
 An element 
-\begin_inset Formula $\max X\in X$
+\begin_inset Formula $\max X:X$
 \end_inset
 
  is the greatest element iff 
-\begin_inset Formula $\forall a\in X:a\leq\max X,$
+\begin_inset Formula $\forall a:X\mid a\leq\max X,$
 \end_inset
 
 
@@ -2470,11 +2600,11 @@ An element
 
 \begin_layout Itemize
 An element 
-\begin_inset Formula $\min X\in X$
+\begin_inset Formula $\min X:X$
 \end_inset
 
  is the least element iff 
-\begin_inset Formula $\forall a\in X:\min X\leq a.$
+\begin_inset Formula $\forall a:X\mid\min X\leq a.$
 \end_inset
 
 
@@ -2507,12 +2637,198 @@ For a family of sets
 is any of those are respectively (and indepentendly) included in the family.
 \end_layout
 
-\begin_layout Standard
+\begin_layout Subsection*
 \begin_inset CommandInset line
 LatexCommand rule
-offset "0.5ex"
+offset "0.6ex"
 width "100col%"
 height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We now have enough to start a small 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ project to display the concepts developed into a usable 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+type
+\end_layout
+
+\end_inset
+
+ we shall call 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+Dist
+\end_layout
+
+\end_inset
+
+ (to be clear later why).
+ Firstly we will motivate the example choice by referencing how some typical number systems are constructed,
+ assuming the existence of the natural numbers
+\begin_inset Formula 
+\[
+\mathbb{N}=\{0,1,2,\ldots\}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The set of integers 
+\begin_inset Formula $\mathbb{Z}$
+\end_inset
+
+ that include negative number can be represented by natural number differences.
+ But 
+\begin_inset Formula $\mathbb{N}$
+\end_inset
+
+ only supports 
+\begin_inset Formula $+$
+\end_inset
+
+.
+ Let 
+\begin_inset Formula $\mathord{\sim}$
+\end_inset
+
+ stand for an equivalence relation on 
+\begin_inset Formula $\mathbb{N}\times\mathbb{N}$
+\end_inset
+
+ defined by
+\begin_inset Formula 
+\[
+\forall(a,b),(a^{\prime},b^{\prime})\in\mathbb{N}\mid(a,b)\sim(a^{\prime},b^{\prime})\Longleftrightarrow a+b^{\prime}=a^{\prime}+b.
+\]
+
+\end_inset
+
+Each integer can then be identified with a pair of naturals,
+ but obtain several representations.
+ Picking the one that has a 0 amongst the natural numbers in its pair is the canonical representation,
+ and nonetheless,
+\begin_inset Formula 
+\[
+\mathbb{Z}=(\mathbb{N}\times\mathbb{N})/\mathord{\sim}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Similarly the set of rationals 
+\begin_inset Formula $\mathbb{Q}$
+\end_inset
+
+,
+ seen as fractions,
+ stem from the equivalence relation 
+\begin_inset Formula $\sim$
+\end_inset
+
+ on the integers 
+\begin_inset Formula $\mathbb{Z}$
+\end_inset
+
+,
+ defined by
+\begin_inset Formula 
+\[
+\forall(a,b),(a^{\prime},b^{\prime})\in\mathbb{Z}\mid(a,b)\sim(a^{\prime},b^{\prime})\Longleftrightarrow ab^{\prime}=a^{\prime}b,
+\]
+
+\end_inset
+
+by which
+\begin_inset Formula 
+\[
+\mathbb{Q}=(\mathbb{Z}\times\mathbb{Z}^{*})/\mathord{\sim}.
+\]
+
+\end_inset
+
+Note the exclusion of 0 from the denominators,
+ to avoid division by 0.
+\end_layout
+
+\begin_layout Standard
+The set we actually wish to model is that of the positive rationals
+\begin_inset Formula 
+\[
+\mathbb{Q}^{+}=(\mathbb{N}^{*}\times\mathbb{N}^{*})/\mathord{\sim}.
+\]
+
+\end_inset
+
+By including 0 we reach the non–negative rationals 
+\begin_inset Formula $(\mathbb{N}\times\mathbb{N}^{*})/\mathord{\sim}$
+\end_inset
+
+.
+ Unlike with the rationals though,
+ the non–negative rationals support a well defined 
+\begin_inset Formula $\infty$
+\end_inset
+
+ with respect to dividing by 0,
+ therefore we arrive at the closed non-negative rationals:
+\begin_inset Formula 
+\[
+\bar{\mathbb{Q}}^{+}=(\mathbb{N}\times\mathbb{N})/\mathord{\sim},
+\]
+
+\end_inset
+
+which is the well-behaved representable numeric system that we shall model with 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand inputminted
+filename "listings/dist.py"
+lstparams "language=Python,fontfamily=tt,fontsize={\\tiny},breaklines=true,tabsize=4"
+literal "false"
 
 \end_inset
 

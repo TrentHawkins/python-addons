@@ -9,7 +9,7 @@ from operator import add, and_, matmul, or_, sub, xor
 
 import pytest
 
-from addons import Bool, Prob, Scalar
+from addons import Bool, Prob, Dist
 
 
 class TestScalar:
@@ -17,18 +17,18 @@ class TestScalar:
 	components = ((0, 1), (1, 3), (1, 2), (1, 1), (2, 1), (3, 1), (1, 0))
 	pairs = tuple(product(components, repeat = 2))
 	associative = (add, matmul, and_, or_)
-	carriers = (Scalar, Bool, Prob)
+	carriers = (Dist, Bool, Prob)
 
-	class Specialized(Scalar):
+	class Specialized(Dist):
 		__slots__ = ()
 
 	@staticmethod
-	def probability(value: Scalar) -> Fraction:
+	def probability(value: Dist) -> Fraction:
 		return Fraction(value.denom, value.numer + value.denom)
 
 	@pytest.mark.parametrize("left, right", pairs)
 	def test_comparisons_follow_exact_difficulty(self, left: tuple[int, int], right: tuple[int, int]):
-		a, b = Scalar(*left), Scalar(*right)
+		a, b = Dist(*left), Dist(*right)
 		p, q = self.probability(a), self.probability(b)
 
 		assert (a == b) == (p == q)
@@ -39,10 +39,10 @@ class TestScalar:
 		assert (a >= b) == (p <= q)
 
 	def test_order_is_transitive_and_complement_reverses_it(self):
-		values = [Scalar(*pair) for pair in self.components]
+		values = [Dist(*pair) for pair in self.components]
 
 		assert sorted(reversed(values)) == values
-		assert Scalar.min() < Scalar(1, 1) < Scalar.max()
+		assert Dist.min() < Dist(1, 1) < Dist.max()
 
 		for a, b, c in product(values, repeat = 3):
 			if a <= b <= c:
@@ -52,20 +52,20 @@ class TestScalar:
 
 	def test_comparison_does_not_round_through_float(self):
 		scale = 10 ** 100
-		a, b = Scalar(scale, 1), Scalar(scale + 1, 1)
+		a, b = Dist(scale, 1), Dist(scale + 1, 1)
 
 		assert float(a) == float(b)
 		assert a < b
 		assert a != b
 
 	def test_normalized_values_and_subclasses_hash_equally(self):
-		a, b, c = Scalar(1, 2), Scalar(2, 4), self.Specialized(3, 6)
+		a, b, c = Dist(1, 2), Dist(2, 4), self.Specialized(3, 6)
 
 		assert a == b == c == a
 		assert hash(a) == hash(b) == hash(c)
 		assert len({a, b, c}) == 1
-		assert Scalar(0, 9) == Scalar.min()
-		assert Scalar(0, 0) == Scalar(9, 0) == Scalar.max()
+		assert Dist(0, 9) == Dist.min()
+		assert Dist(0, 0) == Dist(9, 0) == Dist.max()
 		assert self.Specialized.min() < c
 
 	def test_endpoint_equality_and_hashing_agree_across_carriers(self):
@@ -78,7 +78,7 @@ class TestScalar:
 
 	@pytest.mark.parametrize("left, right", pairs)
 	def test_operations_keep_their_probability_meaning(self, left: tuple[int, int], right: tuple[int, int]):
-		a, b = Scalar(*left), Scalar(*right)
+		a, b = Dist(*left), Dist(*right)
 		p, q = self.probability(a), self.probability(b)
 		expected_sum = p * q / (p + q - p * q) if p or q else Fraction(0)
 		expected_dual = (p + q - 2 * p * q) / (1 - p * q) if p * q != 1 else Fraction(1)
@@ -95,14 +95,14 @@ class TestScalar:
 		assert ~(a + b) == (~a @ ~b)
 
 	def test_associative_operations_remain_associative(self):
-		values = [Scalar(*pair) for pair in self.components]
+		values = [Dist(*pair) for pair in self.components]
 
 		for operation in self.associative:
 			for a, b, c in product(values, repeat = 3):
 				assert operation(operation(a, b), c) == operation(a, operation(b, c))
 
 	@pytest.mark.parametrize("cls", carriers)
-	def test_state_is_read_only(self, cls: type[Scalar]):
+	def test_state_is_read_only(self, cls: type[Dist]):
 		value = cls.min()
 
 		assert not hasattr(value, "__dict__")
@@ -119,7 +119,7 @@ class TestScalar:
 
 	@pytest.mark.parametrize("cls", carriers)
 	@pytest.mark.parametrize("numer, denom", [(-1, 1), (1, -1), (-1, -1)])
-	def test_negative_components_are_rejected(self, cls: type[Scalar], numer: int, denom: int):
+	def test_negative_components_are_rejected(self, cls: type[Dist], numer: int, denom: int):
 		with pytest.raises(ValueError):
 			cls(numer, denom)
 
@@ -133,8 +133,8 @@ class TestScalar:
 			assert type(value) is self.Specialized
 
 	def test_shared_carrier_has_no_product_or_midpoint(self):
-		assert not hasattr(Scalar, "__mul__")
-		assert not hasattr(Scalar, "mid")
+		assert not hasattr(Dist, "__mul__")
+		assert not hasattr(Dist, "mid")
 
 
 class TestBool:

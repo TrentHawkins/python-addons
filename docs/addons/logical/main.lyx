@@ -56,11 +56,11 @@
     backgroundcolor=code,
     linecolor=codeborder,
     linewidth=0.5pt,
-    roundcorner=7.5pt,
-    innerleftmargin=7.5pt,
-    innerrightmargin=7.5pt,
-    innertopmargin=7.5pt,
-    innerbottommargin=7.5pt,
+    roundcorner=5pt,
+    innerleftmargin=5pt,
+    innerrightmargin=5pt,
+    innertopmargin=5pt,
+    innerbottommargin=5pt,
     skipabove=\glueexpr 3.75pt + \parskip\relax,
 }
 \mdfsetup{
@@ -85,22 +85,22 @@
 \makeatother
 
 \usepackage{tcolorbox}
-\usepackage{scalefnt}
+%\usepackage{scalefnt}
 \usepackage{dsfont}
 
-\newcommand{\InlineCodeScale}{0.9  }
-\newcommand{\InlineCodeRaise}{0.1em}
+%\newcommand{\InlineCodeScale}{ 1.0  }
+%\newcommand{\InlineCodeRaise}{-10.0em}
 
 \AtBeginDocument{%
   \setmintedinline{%
     bgcolor=none,
     breaklines=false,
-    fontsize={\scalefont{\InlineCodeScale}},
+    %fontsize={\scalefont{\InlineCodeScale}},
     fontseries=auto,
     fontshape=auto
   }%
   \renewcommand{\FancyVerbFormatInline}[1]{%
-    \raisebox{\InlineCodeRaise}{%
+    %\raisebox{\InlineCodeRaise}{%
       \tcbox[
         on line,
         colback=code,
@@ -111,13 +111,22 @@
         boxsep=0pt,
         left=1.5pt,
         right=1.5pt,
-        top=1.0pt,
+        top=1.5pt,
         bottom=0.5pt
       ]{\strut\smash{#1}}%
     }%
-  }%
+  %}%
   \renewmdenv[style=codebox]{shaded}%
 }
+
+\newcommand*{\centerdotfill}{%
+  \leavevmode
+  \cleaders\hbox to \fontdimen2\font{\hss\(\cdot\)\hss}\hfill
+  \kern0pt
+}
+\DeclareTOCStyleEntries[
+  linefill = {\enspace\centerdotfill}
+]{tocline}{section,subsection,subsubsection}
 \end_preamble
 \use_default_options true
 \begin_modules
