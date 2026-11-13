@@ -56,14 +56,14 @@
     backgroundcolor=code,
     linecolor=codeborder,
     linewidth=0.5pt,
-    roundcorner=7.5pt,
-    innerleftmargin=7.5pt,
-    innerrightmargin=7.5pt,
-    innertopmargin=7.5pt,
-    innerbottommargin=7.5pt,
-    skipabove=\glueexpr 3.75pt + \parskip\relax,
+    roundcorner=5pt,
+    innerleftmargin=5pt,
+    innerrightmargin=5pt,
+    innertopmargin=5pt,
+    innerbottommargin=5pt
 }
 \mdfsetup{
+    skipabove=\glueexpr 3.75pt + \parskip\relax,
     skipbelow=\glueexpr 6.25pt - \parskip\relax
 }
 \surroundwithmdframed[style=codebox]{minted}
@@ -91,7 +91,17 @@
 %\newcommand{\InlineCodeScale}{ 1.0  }
 %\newcommand{\InlineCodeRaise}{-10.0em}
 
+\makeatletter
 \AtBeginDocument{%
+  \AddToHook{cmd/FV@ListProcessLastLine/before}{%
+    \def\FV@Line{}%
+    \global\advance\FV@CodeLineNo\@ne
+    \FV@StepLineNo
+    \FV@ProcessLine{}%
+  }%
+  \renewcommand{\theFancyVerbLine}{%
+    \ttfamily\scriptsize\arabic{FancyVerbLine}%
+  }%
   \setmintedinline{%
     bgcolor=none,
     breaklines=false,
@@ -118,6 +128,7 @@
   %}%
   \renewmdenv[style=codebox]{shaded}%
 }
+\makeatother
 
 \newcommand*{\centerdotfill}{%
   \leavevmode
@@ -234,7 +245,7 @@ eqs-within-sections
 \papersides 1
 \paperpagestyle headings
 \tablestyle No_Borders
-\listings_params "style=friendly"
+\listings_params "style=friendly,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4,stripnl=true,linenos=true,numbersep=10pt"
 \bullet 1 0 9 -1
 \bullet 3 0 7 -1
 \tracking_changes false
@@ -392,6 +403,72 @@ A singleton is a set with exactly one element.
 ) and the latter has no elements at all.
 \end_layout
 
+\begin_layout Standard
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The axiom of extensionality requires a notion of distinction in 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+,
+ which is scoped by overloading 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__hash__
+\end_layout
+
+\end_inset
+
+ with it,
+ for reason that will become apparent later about what 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__eq__
+\end_layout
+
+\end_inset
+
+ shall stand for.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand inputminted
+filename "/home/terraformer/Documents/Research/python-addons/src/addons/typing/__init__.py"
+lstparams "language=Python,rangestartstringline={class Extensible}"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsubsection
 Specifying a set
 \end_layout
@@ -501,139 +578,6 @@ denotes the set of all
 such that
 \emph default
 .
-\end_layout
-
-\begin_layout Subsubsection*
-\begin_inset CommandInset line
-LatexCommand rule
-offset "0.55ex"
-width "100col%"
-height "1pt"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-In 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-python
-\end_layout
-
-\end_inset
-
- (and all object–oriented programming languages),
- objects are identified (and specified) by 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-type
-\end_layout
-
-\end_inset
-
-,
- which however has a richer structure than classical sets;
- they hold attributes (and methods),
- which also can potentially make them mutable,
- a notion not describable in classical set theory.
- The closest analog of the mathematical objects described in this introductory part is a special family of types that are:
-\end_layout
-
-\begin_layout Description
-hashable Identified by the 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-typing.Hashable
-\end_layout
-
-\end_inset
-
- protocol,
- where hashability offers a kind of element seperability,
- as prescribed by the axiom of extentionality.
- This protocol required the implementation of 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-__hash__
-\end_layout
-
-\end_inset
-
- which allows the discernability of instances of a 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-type
-\end_layout
-
-\end_inset
-
- in contexts that matter.
-\end_layout
-
-\begin_layout Description
-immutability Technically,
- for a 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-type
-\end_layout
-
-\end_inset
-
- to correspond to a classical set,
- its instances must be immutable too,
- so that their hashable identity remains valid.
- To make a 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-type
-\end_layout
-
-\end_inset
-
- immutable in 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-python
-\end_layout
-
-\end_inset
-
- usually involves some boilerplat that offers nothing to the arguments developed here and shall be ommited from displayed code.
 \end_layout
 
 \begin_layout Subsection

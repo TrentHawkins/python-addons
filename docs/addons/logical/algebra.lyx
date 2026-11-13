@@ -56,14 +56,14 @@
     backgroundcolor=code,
     linecolor=codeborder,
     linewidth=0.5pt,
-    roundcorner=7.5pt,
-    innerleftmargin=7.5pt,
-    innerrightmargin=7.5pt,
-    innertopmargin=7.5pt,
-    innerbottommargin=7.5pt,
-    skipabove=\glueexpr 3.75pt + \parskip\relax,
+    roundcorner=5pt,
+    innerleftmargin=5pt,
+    innerrightmargin=5pt,
+    innertopmargin=5pt,
+    innerbottommargin=5pt
 }
 \mdfsetup{
+    skipabove=\glueexpr 3.75pt + \parskip\relax,
     skipbelow=\glueexpr 6.25pt - \parskip\relax
 }
 \surroundwithmdframed[style=codebox]{minted}
@@ -91,7 +91,17 @@
 %\newcommand{\InlineCodeScale}{ 1.0  }
 %\newcommand{\InlineCodeRaise}{-10.0em}
 
+\makeatletter
 \AtBeginDocument{%
+  \AddToHook{cmd/FV@ListProcessLastLine/before}{%
+    \def\FV@Line{}%
+    \global\advance\FV@CodeLineNo\@ne
+    \FV@StepLineNo
+    \FV@ProcessLine{}%
+  }%
+  \renewcommand{\theFancyVerbLine}{%
+    \ttfamily\scriptsize\arabic{FancyVerbLine}%
+  }%
   \setmintedinline{%
     bgcolor=none,
     breaklines=false,
@@ -118,6 +128,7 @@
   %}%
   \renewmdenv[style=codebox]{shaded}%
 }
+\makeatother
 
 \newcommand*{\centerdotfill}{%
   \leavevmode
@@ -234,7 +245,7 @@ eqs-within-sections
 \papersides 1
 \paperpagestyle headings
 \tablestyle No_Borders
-\listings_params "style=friendly"
+\listings_params "style=friendly,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4,stripnl=true,linenos=true,numbersep=10pt"
 \bullet 1 0 9 -1
 \bullet 3 0 7 -1
 \tracking_changes false
