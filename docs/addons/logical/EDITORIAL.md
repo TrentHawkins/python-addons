@@ -1,8 +1,41 @@
 # Paper decisions and review notes
 
-Working record, 2026-11-09. The manuscript is `main.lyx`; the bibliography is
-`main.bib`. This record distinguishes the author's decisions from proposals.
-The manuscript and bibliography were not changed during this review.
+Working record, updated 2026-11-16. The manuscript is `main.lyx`; the bibliography
+is `main.bib`. This record distinguishes the author's decisions from proposals.
+
+## Current scope decisions, 2026-11-16
+
+- Retire the standalone `listings/` directory. Existing source excerpts come
+  directly from the library and use repository-relative paths.
+- Introduce further source excerpts progressively; do not include the remaining
+  material merely to complete an inventory.
+- Revise the agreed comparison defaults and their adjacent explanations.
+  Further listing inclusions and discussion of Algebra remain deferred.
+- Keep the sets-as-types correspondence as a loose representation convention,
+  not a literal identification or a type-theoretic development.
+- Remove `Extensible`, its custom `key` property, and the code illustration tied
+  to the axiom of extensionality. Retain the mathematical axiom itself.
+- `Equivalence` retains the `==` / `!=` cycle; either comparison suffices.
+  `__eq__` interprets equality of quotient values while Python instances remain
+  representatives. No normalization, canonical representative, or hashability is
+  required. Other relations on quotient values must respect the same equivalence.
+- Use a single `Partial` interface for orders evaluated through representatives;
+  remove the separate `Pre` class. The underlying partial order is on equivalence
+  classes. A reflexive, transitive representative relation must have mutual
+  comparison equivalent to the chosen equivalence, so the quotient order is
+  well-defined and antisymmetric. Arbitrary unrelated equivalence does not suffice.
+- `Partial` retains the small converse cycle between `<=` and `>=`; either weak
+  comparison suffices. Its default `==` is mutual weak comparison, and strict
+  comparisons exclude equivalent values. Ordinary partial orders are the case
+  where the equivalence is value equality.
+- `Total` retains that small cycle and adds negated weak comparisons as the strict
+  comparisons. Either `<=` or `>=` suffices; a strict comparison alone does not.
+  Totality is a law on the represented equivalence classes, not on object identity.
+- Do not validate sufficient comparison overrides yet: an ungrounded cycle may
+  raise `RecursionError`.
+
+Earlier review findings below are historical notes; check the current source
+before treating an item as still outstanding.
 
 ## Agreed direction
 
@@ -11,8 +44,9 @@ The manuscript and bibliography were not changed during this review.
   introduce the notation needed by later arguments.
 - Develop the mathematics independently of the current library implementation.
   Programming problems may motivate definitions without determining their form.
-- If Python illustrations are retained, use `typing.Protocol` contracts rather
-  than concrete implementations. Keep standard typing names qualified by `typing`.
+- The current comparison illustrations use default-bearing abstract base
+  classes, not a duplicated protocol layer. Keep standard typing names qualified
+  by `typing` when they are used.
 - The repository will accompany the paper and be referenced from it.
 - Seek one principal textbook as a consistent reference for foundational
   terminology, definitions, and presentation.
@@ -22,8 +56,8 @@ The manuscript and bibliography were not changed during this review.
 
 ## Open decisions
 
-- Whether to include code, and whether it belongs inline, at section ends, or in
-  an appendix. No existing listings have been removed or relocated.
+- Where further code belongs: inline, at section ends, or in an appendix.
+  The old standalone listings have been retired; new inclusions are deferred.
 - Which principal reference to adopt. The shortlist below is not yet an
   author-approved bibliographic choice; `main.bib` remains empty.
 - Membership versus typing notation: an earlier preference was `x : X`, whereas

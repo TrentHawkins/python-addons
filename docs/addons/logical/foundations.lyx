@@ -285,70 +285,12 @@ height "1pt"
 \end_layout
 
 \begin_layout Standard
-The axiom of extensionality requires a notion of distinction in 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-python
-\end_layout
-
-\end_inset
-
-,
- which is scoped by overloading 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-__hash__
-\end_layout
-
-\end_inset
-
- with it,
- for reason that will become apparent later about what 
-\begin_inset listings
-lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
-inline true
-status open
-
-\begin_layout Plain Layout
-__eq__
-\end_layout
-
-\end_inset
-
- shall stand for.
-\end_layout
-
-\begin_layout Standard
-\begin_inset CommandInset include
-LatexCommand inputminted
-filename "/home/terraformer/Documents/Research/python-addons/src/addons/typing/__init__.py"
-lstparams "language=Python,rangestartstringline={class Extensible}"
-literal "false"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-This attribute pairs with the notion of immutability in programming,
- that is not be outlined here.
-\end_layout
-
-\begin_layout Standard
-An element 
+As a representation convention,
+ membership 
 \begin_inset Formula $x:A$
 \end_inset
 
- is designated in
+ is expressed in
 \begin_inset space ~
 \end_inset
 
@@ -554,7 +496,7 @@ inline true
 status open
 
 \begin_layout Plain Layout
-class A(Extensible):
+class A:
  ...
 \end_layout
 
@@ -2407,7 +2349,7 @@ inline false
 status open
 
 \begin_layout Plain Layout
-class X(Extensible):
+class X:
 \end_layout
 
 \begin_layout Plain Layout
@@ -2822,7 +2764,7 @@ __ne__
 \begin_layout Standard
 \begin_inset CommandInset include
 LatexCommand inputminted
-filename "/home/terraformer/Documents/Research/python-addons/src/addons/typing/relation/__init__.py"
+filename "../../../src/addons/typing/relation/__init__.py"
 lstparams "language=Python,rangestartstringline={class Equivalence}"
 literal "false"
 
@@ -2832,8 +2774,46 @@ literal "false"
 \end_layout
 
 \begin_layout Standard
-The two methods are complementary in the context of equivalence,
- because equivalence is weaker than equity.
+The default methods are mutually recursive:
+ implementing either one determines the other by Boolean negation.
+ The implementation must satisfy reflexivity,
+ symmetry and transitivity;
+ the defaults do not enforce these laws.
+\end_layout
+
+\begin_layout Standard
+The method 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__eq__
+\end_layout
+
+\end_inset
+
+ interprets equality on the quotient:
+\begin_inset Formula 
+\[
+\forall a,b:X\mid a\sim b\Longleftrightarrow[a]=[b].
+\]
+
+\end_inset
+
+Instances remain representatives in 
+\begin_inset Formula $X$
+\end_inset
+
+,
+ but equality compares the values they represent in 
+\begin_inset Formula $X/\mathord{\sim}$
+\end_inset
+
+.
+ No canonical representative is required.
+ Other relations on these values must likewise be independent of the representatives.
 \end_layout
 
 \begin_layout Subsubsection
@@ -2845,81 +2825,6 @@ In mathematics,
  a partial order on a set is an arrangement such that,
  for certain pairs of elements,
  one precedes the other.
-\end_layout
-
-\begin_layout Definition
-A 
-\emph on
-preorder
-\emph default
- 
-\begin_inset Formula $\mathord{\lesssim}$
-\end_inset
-
- is a binary relation on a set 
-\begin_inset Formula $X$
-\end_inset
-
- that is:
-\end_layout
-
-\begin_deeper
-\begin_layout Description
-reflexive 
-\begin_inset Formula $\forall a:X\mid a\lesssim a,$
-\end_inset
-
- i.e.
- every element is related to itself,
-\end_layout
-
-\begin_layout Description
-transitive 
-\begin_inset Formula $\forall a,b,c:X\mid a\lesssim b\wedge b\lesssim c\Longrightarrow a\lesssim c.$
-\end_inset
-
- 
-\end_layout
-
-\end_deeper
-\begin_layout Definition
-A set that is equipped with a preorder is called a 
-\emph on
-preordered set
-\emph default
- (or 
-\emph on
-proset
-\emph default
-).
-\end_layout
-
-\begin_layout Standard
-Given a preorder 
-\begin_inset Formula $\lesssim$
-\end_inset
-
- on 
-\begin_inset Formula $X$
-\end_inset
-
- one may define an equivalence relation 
-\begin_inset Formula $\sim$
-\end_inset
-
- on 
-\begin_inset Formula $X$
-\end_inset
-
- by
-\begin_inset Formula 
-\[
-\forall a,b:X\mid a\lesssim b\wedge b\lesssim a\Longleftrightarrow a\sim b.
-\]
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Minisec
@@ -2943,17 +2848,33 @@ partial order
 \begin_inset Formula $\mathord{\leq}$
 \end_inset
 
- is a preorder on a set 
+ is a binary relation on a set 
 \begin_inset Formula $X$
 \end_inset
 
- that is also:
+ that is:
 \end_layout
 
 \begin_deeper
 \begin_layout Description
+reflexive 
+\begin_inset Formula $\forall a:X\mid a\leq a,$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Description
 antisymmetric 
-\begin_inset Formula $\forall a,b:X\mid a\leq b\wedge b\leq a\Longrightarrow a=b.$
+\begin_inset Formula $\forall a,b:X\mid a\leq b\wedge b\leq a\Longrightarrow a=b,$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Description
+transitive 
+\begin_inset Formula $\forall a,b,c:X\mid a\leq b\wedge b\leq c\Longrightarrow a\leq c.$
 \end_inset
 
 
@@ -2961,10 +2882,7 @@ antisymmetric
 
 \end_deeper
 \begin_layout Standard
-Formally,
- a partial order is a binary relation that is reflexive,
- antisymmetric and transitive.
- A 
+A 
 \emph on
 partially ordered set
 \emph default
@@ -2980,49 +2898,68 @@ poset
 \end_layout
 
 \begin_layout Standard
-Given a preorder 
+Let 
+\begin_inset Formula $R$
+\end_inset
+
+ be a set of representatives equipped with an equivalence relation 
+\begin_inset Formula $\sim$
+\end_inset
+
+.
+ A reflexive,
+ transitive relation 
 \begin_inset Formula $\lesssim$
 \end_inset
 
  on 
-\begin_inset Formula $X$
+\begin_inset Formula $R$
 \end_inset
 
- and the equivalence relation 
-\begin_inset Formula $\sim$
-\end_inset
-
- it implies,
- one may define a partial order 
+ induces a partial order 
 \begin_inset Formula $\leq$
 \end_inset
 
  on 
-\begin_inset Formula $X/\mathord{\sim}$
+\begin_inset Formula $X=R/\mathord{\sim}$
 \end_inset
 
- by
+ provided
 \begin_inset Formula 
 \[
-\forall a,b:X\mid[a]\leq[b]\Longleftrightarrow a\lesssim b.
+\forall a,b:R\mid a\sim b\Longleftrightarrow a\lesssim b\wedge b\lesssim a.
 \]
 
 \end_inset
 
-The induced equivalence relation trivializes to equality 
-\begin_inset Formula $=$
+The quotient order is defined by
+\begin_inset Formula 
+\[
+\forall a,b:R\mid[a]\leq[b]\Longleftrightarrow a\lesssim b.
+\]
+
+\end_inset
+
+This order is independent of representatives.
+ When 
+\begin_inset Formula $\sim$
+\end_inset
+
+ is equality on 
+\begin_inset Formula $R$
 \end_inset
 
 ,
- thanks to antisymmetry of a partial order.
+ the quotient identifies with 
+\begin_inset Formula $R$
+\end_inset
+
+ itself.
 \end_layout
 
 \begin_layout Standard
-If reflexivity is replaced with irreflexivity (while keeping transitivity) then we get the definition of a strict partial order on 
-\begin_inset Formula $X$
-\end_inset
-
-.
+We use one partial-order interface on representatives,
+ with equivalence as equality of the represented values.
 \end_layout
 
 \begin_layout Definition
@@ -3060,32 +2997,18 @@ transitive
 
 \end_deeper
 \begin_layout Standard
-Any preorder 
-\begin_inset Formula $\lesssim$
-\end_inset
-
- on a set 
-\begin_inset Formula $X$
-\end_inset
-
- gives rise to a strict partial order defined (using the induced equivalence relation 
-\begin_inset Formula $\sim$
-\end_inset
-
-) by
+For the quotient order above,
+ strict comparison is given by
 \begin_inset Formula 
 \[
-\forall a,b:X\mid a<b\Longleftrightarrow a\lesssim b\wedge a\nsim b.
+\forall a,b:R\mid[a]<[b]\Longleftrightarrow a\lesssim b\wedge a\nsim b.
 \]
 
 \end_inset
 
-A partial order on 
-\begin_inset Formula $X$
-\end_inset
-
- gives rise to the same strict partial order,
- hence using the same name.
+On representatives,
+ we use the same comparison symbols,
+ with equivalence in place of value equality.
 \end_layout
 
 \begin_layout Minisec
@@ -3141,7 +3064,7 @@ strict total order
 \begin_inset Formula $X$
 \end_inset
 
- in which any two elements are comparable,
+ in which any two distinct elements are comparable,
  or that is:
 \end_layout
 
@@ -3171,12 +3094,13 @@ A total order
  by
 \begin_inset Formula 
 \[
-\forall a,b:X\mid a<b\Longleftrightarrow a\leq b\wedge a\neq b.
+\forall a,b:X\mid a<b\Longleftrightarrow a\leq b\wedge a\neq b\Longleftrightarrow\neg(b\leq a).
 \]
 
 \end_inset
 
-
+The negated form relies on totality;
+ it is not valid for incomparable classes in a partial order.
 \end_layout
 
 \begin_layout Minisec

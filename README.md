@@ -175,10 +175,9 @@ uv run pytest
 uv build
 ```
 
-`docs/addons/logical/listings/` holds the code listings of the paper draft in
-`docs/addons/logical/main.lyx`, which includes them verbatim. They are checked
-by pyright and pylint together with the library, so the manuscript always shows
-code that type-checks.
+The paper draft in `docs/addons/logical/main.lyx` includes selected library
+source excerpts directly, using repository-relative paths. The Python source
+under `src/` and `docs/` is checked by Pyright and Pylint.
 
 The manuscript builds with LuaLaTeX through LyX, and its listings need `minted`
 with Pygments and shell escape. Code is set in Fira Code when that font is
