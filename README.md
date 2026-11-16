@@ -184,3 +184,13 @@ The manuscript builds with LuaLaTeX through LyX, and its listings need `minted`
 with Pygments and shell escape. Code is set in Fira Code when that font is
 installed on the system, so that programming ligatures render; without it the
 document still builds, falling back to TeX Live's Fira Mono.
+
+The custom Pygments style is kept in `docs/paperstyle.py`, independently of the
+library. From the repository root, install it into LyX's `latexminted` environment:
+
+```console
+uv tool install --force --python 3.15 --with-editable ./docs latexminted
+```
+
+The small `docs/pyproject.toml` registers `style=paper`. Editable installation
+lets subsequent palette edits take effect on the next uncached build.

@@ -1,0 +1,133 @@
+%\usepackage{bm}
+\usepackage{bbm}
+\usepackage{xcolor}
+\usepackage{cleveref}
+%\usepackage{csquotes}
+%\usepackage{textcomp}
+%\usepackage{textgreek}
+%\usepackage{pdflscape}
+
+\definecolor{red}{rgb}{0.8,0.0,0.0}
+\definecolor{green}{rgb}{0.2,0.6,0.0}
+\definecolor{blue}{rgb}{0.2,0.4,1.0}
+\definecolor{magenta}{rgb}{0.6,0.2,0.8}
+\addtokomafont{disposition}{\rmfamily}
+\addtokomafont{descriptionlabel}{\rmfamily}
+\setlength{\columnseprule}{0.4pt}
+\renewcommand{\arraystretch}{1.5}
+\relpenalty=10000
+\binoppenalty=10000
+% Float policy: at most one figure/table per text page, and avoid small float-only pages.
+\setcounter{topnumber}{1}
+\setcounter{bottomnumber}{0}
+\setcounter{totalnumber}{1}
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0}
+\renewcommand{\textfraction}{0.10}
+\renewcommand{\floatpagefraction}{0.75}
+
+% Typewriter font: Fira Code, for its programming ligatures, with graceful fallbacks.
+% Fira Code is not part of TeX Live, so it is taken from the system when installed
+% there, Retina weight preferred; otherwise TeX Live's own Fira Mono keeps the same
+% design without the ligatures. LyX loads fontspec before this preamble, so the test
+% is available here, and the choice made here overrides the document settings.
+\IfFontExistsTF{Fira Code}{%
+  \IfFontExistsTF{Fira Code Retina}
+    {\setmonofont{Fira Code}[UprightFont=* Retina, BoldFont=* Bold, Contextuals=Alternate, Scale=MatchLowercase]}
+    {\setmonofont{Fira Code}[Contextuals=Alternate, Scale=MatchLowercase]}%
+}{%
+  \IfFontExistsTF{Fira Mono}{\setmonofont{Fira Mono}[Scale=MatchLowercase]}{}%
+}
+
+\usepackage[framemethod=TikZ]{mdframed}
+
+\definecolor{code}{HTML}{EEEEEE}
+\definecolor{codeborder}{HTML}{CCCCCC}
+
+\mdfdefinestyle{codebox}{
+    backgroundcolor=code,
+    linecolor=codeborder,
+    linewidth=0.5pt,
+    roundcorner=5pt,
+    innerleftmargin=5pt,
+    innerrightmargin=5pt,
+    innertopmargin=5pt,
+    innerbottommargin=5pt
+}
+\mdfsetup{
+    skipabove=\glueexpr 3.75pt + \parskip\relax,
+    skipbelow=\glueexpr 6.25pt - \parskip\relax
+}
+\surroundwithmdframed[style=codebox]{minted}
+% Listings included from files arrive as \inputminted, a command rather than an
+% environment, so the hook above never sees them. Give them the same box. Deferred,
+% because LyX loads minted after this preamble.
+\AtBeginDocument{%
+  \let\PlainInputMinted\inputminted
+  \renewcommand{\inputminted}[3][]{%
+    \begin{mdframed}[style=codebox]\PlainInputMinted[#1]{#2}{#3}\end{mdframed}}%
+}
+% minted 3 boxes every hyphen, defining \PYGZhy as \mbox{-}, so that a line can never
+% break inside an operator such as ->. The box also hides the hyphen from the font's
+% shaper, so the arrow ligature never forms. Listings here never break at hyphens
+% anyway, fvextra forbids it, so the patch is switched off. Harmless with a minted
+% that does not define it.
+\makeatletter
+\AtBeginDocument{\let\minted@patch@PygmentsZhy\relax}
+\makeatother
+
+\usepackage{tcolorbox}
+%\usepackage{scalefnt}
+\usepackage{dsfont}
+
+%\newcommand{\InlineCodeScale}{ 1.0  }
+%\newcommand{\InlineCodeRaise}{-10.0em}
+
+\makeatletter
+\AtBeginDocument{%
+  \AddToHook{cmd/FV@ListProcessLastLine/before}{%
+    \def\FV@Line{}%
+    \global\advance\FV@CodeLineNo\@ne
+    \FV@StepLineNo
+    \FV@ProcessLine{}%
+  }%
+  \renewcommand{\theFancyVerbLine}{%
+    \ttfamily\scriptsize\arabic{FancyVerbLine}%
+  }%
+  \setmintedinline{%
+    bgcolor=none,
+    breaklines=false,
+    %fontsize={\scalefont{\InlineCodeScale}},
+    fontseries=auto,
+    fontshape=auto
+  }%
+  \renewcommand{\FancyVerbFormatInline}[1]{%
+    %\raisebox{\InlineCodeRaise}{%
+      \tcbox[
+        on line,
+        colback=code,
+        colframe=codeborder,
+        boxrule=0.5pt,
+        arc=1.75pt,
+        outer arc=2.25pt,
+        boxsep=0pt,
+        left=1.5pt,
+        right=1.5pt,
+        top=1.5pt,
+        bottom=0.5pt
+      ]{\strut\smash{#1}}%
+    }%
+  %}%
+  \renewmdenv[style=codebox]{shaded}%
+}
+\makeatother
+
+\newcommand*{\centerdotfill}{%
+  \leavevmode
+  \cleaders\hbox to \fontdimen2\font{\hss\(\cdot\)\hss}\hfill
+  \kern0pt
+}
+\DeclareTOCStyleEntries[
+  linefill = {\enspace\centerdotfill}
+]{tocline}{section,subsection,subsubsection}
+\PassOptionsToPackage{cache=false}{minted}

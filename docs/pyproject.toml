@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "addons-paperstyle"
+version = "0.1.0"
+description = "Pygments highlighting for the python-addons papers"
+requires-python = ">=3.15"
+dependencies = ["pygments"]
+
+[project.entry-points."pygments.styles"]
+paper = "paperstyle:PaperStyle"
+
+[tool.setuptools]
+py-modules = ["paperstyle"]

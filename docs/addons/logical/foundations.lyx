@@ -6,138 +6,7 @@
 \origin unavailable
 \textclass scrartcl
 \begin_preamble
-%\usepackage{bm}
-\usepackage{bbm}
-\usepackage{xcolor}
-\usepackage{cleveref}
-%\usepackage{csquotes}
-%\usepackage{textcomp}
-%\usepackage{textgreek}
-%\usepackage{pdflscape}
-
-\definecolor{red}{rgb}{0.8,0.0,0.0}
-\definecolor{green}{rgb}{0.2,0.6,0.0}
-\definecolor{blue}{rgb}{0.2,0.4,1.0}
-\definecolor{magenta}{rgb}{0.6,0.2,0.8}
-\addtokomafont{disposition}{\rmfamily}
-\addtokomafont{descriptionlabel}{\rmfamily}
-\setlength{\columnseprule}{0.4pt}
-\renewcommand{\arraystretch}{1.5}
-\relpenalty=10000
-\binoppenalty=10000
-% Float policy: at most one figure/table per text page, and avoid small float-only pages.
-\setcounter{topnumber}{1}
-\setcounter{bottomnumber}{0}
-\setcounter{totalnumber}{1}
-\renewcommand{\topfraction}{0.85}
-\renewcommand{\bottomfraction}{0}
-\renewcommand{\textfraction}{0.10}
-\renewcommand{\floatpagefraction}{0.75}
-
-% Typewriter font: Fira Code, for its programming ligatures, with graceful fallbacks.
-% Fira Code is not part of TeX Live, so it is taken from the system when installed
-% there, Retina weight preferred; otherwise TeX Live's own Fira Mono keeps the same
-% design without the ligatures. LyX loads fontspec before this preamble, so the test
-% is available here, and the choice made here overrides the document settings.
-\IfFontExistsTF{Fira Code}{%
-  \IfFontExistsTF{Fira Code Retina}
-    {\setmonofont{Fira Code}[UprightFont=* Retina, BoldFont=* Bold, Contextuals=Alternate, Scale=MatchLowercase]}
-    {\setmonofont{Fira Code}[Contextuals=Alternate, Scale=MatchLowercase]}%
-}{%
-  \IfFontExistsTF{Fira Mono}{\setmonofont{Fira Mono}[Scale=MatchLowercase]}{}%
-}
-
-\usepackage[framemethod=TikZ]{mdframed}
-
-\definecolor{code}{HTML}{EEEEEE}
-\definecolor{codeborder}{HTML}{DDDDDD}
-
-\mdfdefinestyle{codebox}{
-    backgroundcolor=code,
-    linecolor=codeborder,
-    linewidth=0.5pt,
-    roundcorner=5pt,
-    innerleftmargin=5pt,
-    innerrightmargin=5pt,
-    innertopmargin=5pt,
-    innerbottommargin=5pt
-}
-\mdfsetup{
-    skipabove=\glueexpr 3.75pt + \parskip\relax,
-    skipbelow=\glueexpr 6.25pt - \parskip\relax
-}
-\surroundwithmdframed[style=codebox]{minted}
-% Listings included from files arrive as \inputminted, a command rather than an
-% environment, so the hook above never sees them. Give them the same box. Deferred,
-% because LyX loads minted after this preamble.
-\AtBeginDocument{%
-  \let\PlainInputMinted\inputminted
-  \renewcommand{\inputminted}[3][]{%
-    \begin{mdframed}[style=codebox]\PlainInputMinted[#1]{#2}{#3}\end{mdframed}}%
-}
-% minted 3 boxes every hyphen, defining \PYGZhy as \mbox{-}, so that a line can never
-% break inside an operator such as ->. The box also hides the hyphen from the font's
-% shaper, so the arrow ligature never forms. Listings here never break at hyphens
-% anyway, fvextra forbids it, so the patch is switched off. Harmless with a minted
-% that does not define it.
-\makeatletter
-\AtBeginDocument{\let\minted@patch@PygmentsZhy\relax}
-\makeatother
-
-\usepackage{tcolorbox}
-%\usepackage{scalefnt}
-\usepackage{dsfont}
-
-%\newcommand{\InlineCodeScale}{ 1.0  }
-%\newcommand{\InlineCodeRaise}{-10.0em}
-
-\makeatletter
-\AtBeginDocument{%
-  \AddToHook{cmd/FV@ListProcessLastLine/before}{%
-    \def\FV@Line{}%
-    \global\advance\FV@CodeLineNo\@ne
-    \FV@StepLineNo
-    \FV@ProcessLine{}%
-  }%
-  \renewcommand{\theFancyVerbLine}{%
-    \ttfamily\scriptsize\arabic{FancyVerbLine}%
-  }%
-  \setmintedinline{%
-    bgcolor=none,
-    breaklines=false,
-    %fontsize={\scalefont{\InlineCodeScale}},
-    fontseries=auto,
-    fontshape=auto
-  }%
-  \renewcommand{\FancyVerbFormatInline}[1]{%
-    %\raisebox{\InlineCodeRaise}{%
-      \tcbox[
-        on line,
-        colback=code,
-        colframe=codeborder,
-        boxrule=0.5pt,
-        arc=1.75pt,
-        outer arc=2.25pt,
-        boxsep=0pt,
-        left=1.5pt,
-        right=1.5pt,
-        top=1.5pt,
-        bottom=0.5pt
-      ]{\strut\smash{#1}}%
-    }%
-  %}%
-  \renewmdenv[style=codebox]{shaded}%
-}
-\makeatother
-
-\newcommand*{\centerdotfill}{%
-  \leavevmode
-  \cleaders\hbox to \fontdimen2\font{\hss\(\cdot\)\hss}\hfill
-  \kern0pt
-}
-\DeclareTOCStyleEntries[
-  linefill = {\enspace\centerdotfill}
-]{tocline}{section,subsection,subsubsection}
+\input{preamble.tex}
 \end_preamble
 \use_default_options true
 \master main.lyx
@@ -245,7 +114,7 @@ eqs-within-sections
 \papersides 1
 \paperpagestyle headings
 \tablestyle No_Borders
-\listings_params "style=friendly,fontfamily=tt,fontsize={\scriptsize},breaklines=true,tabsize=4,stripnl=true,linenos=true,numbersep=10pt"
+\listings_params "style=colorful,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4,stripnl=true,linenos=true,numbersep=10pt"
 \bullet 1 0 9 -1
 \bullet 3 0 7 -1
 \tracking_changes false
@@ -469,6 +338,48 @@ literal "false"
 
 \end_layout
 
+\begin_layout Standard
+This attribute pairs with the notion of immutability in programming,
+ that is not be outlined here.
+\end_layout
+
+\begin_layout Standard
+An element 
+\begin_inset Formula $x:A$
+\end_inset
+
+ is designated in
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ by 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+isinstance(x,
+ A)
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
 \begin_layout Subsubsection
 Specifying a set
 \end_layout
@@ -491,7 +402,7 @@ Roster
 \emph on
 enumeration notation
 \emph default
- is a notation introduced by Ernst Zermelo in 1908 that specifies a set by listing its elements between braces,
+ specifies a set by listing its elements between braces,
  separated by commas.
 \end_layout
 
@@ -578,6 +489,78 @@ denotes the set of all
 such that
 \emph default
 .
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A set 
+\begin_inset Formula $A$
+\end_inset
+
+ as a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+type
+\end_layout
+
+\end_inset
+
+ in 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ is defined by a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+class
+\end_layout
+
+\end_inset
+
+ statement:
+\end_layout
+
+\begin_layout Quote
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+class A(Extensible):
+ ...
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -781,6 +764,66 @@ Containment is also transitive;
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Containement 
+\begin_inset Formula $A\subseteq B$
+\end_inset
+
+ as a sub–
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+type
+\end_layout
+
+\end_inset
+
+ retlation in 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ is designated by
+\end_layout
+
+\begin_layout Quote
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+issubclass(A,
+ B)
+\end_layout
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsubsection
@@ -1102,6 +1145,101 @@ A\bigtriangleup B=(A\setminus B)\cup(B\setminus A)=(A\cup B)\setminus(A\cap B).
 
 \end_layout
 
+\begin_layout Standard
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Union 
+\begin_inset Formula $A\cup B$
+\end_inset
+
+ as a combound 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+type
+\end_layout
+
+\end_inset
+
+ in 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ is supported as 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+A | B
+\end_layout
+
+\end_inset
+
+,
+ and
+\end_layout
+
+\begin_layout Quote
+\begin_inset Formula $\forall x:A\cup B$
+\end_inset
+
+ | 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+isinstance(x,
+ A | B)
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\Longleftrightarrow$
+\end_inset
+
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+isinstance(x,
+ A) or isinstance(x,
+ B)
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
 \begin_layout Subsection
 Functions
 \end_layout
@@ -1282,6 +1420,115 @@ bijective
 \end_layout
 
 \end_deeper
+\begin_layout Standard
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A function 
+\begin_inset Formula $f:A\to B:x\mapsto f(x)$
+\end_inset
+
+ in 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ is declared by a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+def
+\end_layout
+
+\end_inset
+
+ statement with type hint annotations:
+\end_layout
+
+\begin_layout Quote
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+def f(x:
+ A) -> B:
+ ...
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Alternatively,
+ it can be formulated as a method of 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+A
+\end_layout
+
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline false
+status open
+
+\begin_layout Plain Layout
+class A:
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+	def f(self) -> B:
+\end_layout
+
+\begin_layout Plain Layout
+		...
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Minisec
 Indexed family
 \end_layout
@@ -1365,6 +1612,75 @@ For intersection,
 .
 \end_layout
 
+\begin_layout Standard
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The closest to an indexed family of sets as types in 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ is expressed by a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+tuple
+\end_layout
+
+\end_inset
+
+ of types.
+ Specifically,
+ za set 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ and 
+\begin_inset Formula $I\subseteq\mathbb{N}$
+\end_inset
+
+,
+ 
+\begin_inset Formula $A^{I}$
+\end_inset
+
+ is represented by 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+tuple[A,
+ ...]
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
 \begin_layout Minisec
 Indicator function
 \end_layout
@@ -1395,6 +1711,74 @@ indicator function
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The indicator function 
+\begin_inset Formula $\mathds{1}_{A}$
+\end_inset
+
+ defined by a set 
+\begin_inset Formula $A$
+\end_inset
+
+ in 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ is the 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+isinstance(_ ,A)
+\end_layout
+
+\end_inset
+
+ function,
+ where the reference subset 
+\begin_inset Formula $A\subseteq B$
+\end_inset
+
+ must be passed as a secon argument.
+ Note that,
+ much like a type is devoid of a roster notion,
+ 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+isinstance
+\end_layout
+
+\end_inset
+
+ does not require a universe.
 \end_layout
 
 \begin_layout Subsubsection
@@ -1600,6 +1984,105 @@ is the set of all indexed families of elements
 
  such that 
 \begin_inset Formula $\forall i:I\mid a_{i}:A_{i}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The closest to an indexed cartesian product as a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+type
+\end_layout
+
+\end_inset
+
+ in 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ is expressed by a 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+tuple
+\end_layout
+
+\end_inset
+
+ of types.
+ Specifically,
+ for a set 
+\begin_inset Formula $A$
+\end_inset
+
+,
+ and 
+\begin_inset Formula $I\subseteq\mathbb{N}$
+\end_inset
+
+,
+ 
+\begin_inset Formula $A^{I}$
+\end_inset
+
+ is represented by 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+tuple[A,
+ ...]
+\end_layout
+
+\end_inset
+
+.
+ 
+\begin_inset Formula $A\times B$
+\end_inset
+
+ is simply 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+tuple[A,
+ B]
+\end_layout
+
 \end_inset
 
 .
@@ -1850,6 +2333,104 @@ Naturally
 \end_inset
 
 .
+\end_layout
+
+\begin_layout Standard
+Being a subset of 
+\begin_inset Formula $X\times X$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\varnothing$
+\end_inset
+
+ is equivalently identified by its corresponding indicator function 
+\begin_inset Formula $\mathds{1}_{\bigcirc}:X\times X\to\mathbb{B}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Declaration of a relation on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ in 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ takes the form of a method on 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+X
+\end_layout
+
+\end_inset
+
+ as the indicator function 
+\begin_inset Formula $\mathds{1}_{\bigcirc}$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline false
+status open
+
+\begin_layout Plain Layout
+class X(Extensible):
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+	def relate(self,
+ other:
+ X) -> bool:
+\end_layout
+
+\begin_layout Plain Layout
+		...
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsubsection
@@ -2176,6 +2757,83 @@ Equality
 \end_inset
 
  is an equivalence relation.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+An equivalence relation 
+\begin_inset Formula $\sim$
+\end_inset
+
+ on a set 
+\begin_inset Formula $X$
+\end_inset
+
+ is defined in 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+python
+\end_layout
+
+\end_inset
+
+ by 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__eq__
+\end_layout
+
+\end_inset
+
+ or 
+\begin_inset listings
+lstparams "language=Python,fontfamily=tt,fontsize={\small},breaklines=true,tabsize=4"
+inline true
+status open
+
+\begin_layout Plain Layout
+__ne__
+\end_layout
+
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand inputminted
+filename "/home/terraformer/Documents/Research/python-addons/src/addons/typing/relation/__init__.py"
+lstparams "language=Python,rangestartstringline={class Equivalence}"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The two methods are complementary in the context of equivalence,
+ because equivalence is weaker than equity.
 \end_layout
 
 \begin_layout Subsubsection
@@ -2765,18 +3423,6 @@ python
 \end_inset
 
 :
-\end_layout
-
-\begin_layout Standard
-\begin_inset CommandInset include
-LatexCommand inputminted
-filename "listings/dist.py"
-lstparams "language=Python,fontfamily=tt,fontsize={\\tiny},breaklines=true,tabsize=4"
-literal "false"
-
-\end_inset
-
-
 \end_layout
 
 \end_body
