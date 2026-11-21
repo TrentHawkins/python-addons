@@ -1,7 +1,44 @@
 # Paper decisions and review notes
 
-Working record, updated 2026-11-16. The manuscript is `main.lyx`; the bibliography
+Working record, updated 2026-11-17. The manuscript is `main.lyx`; the bibliography
 is `main.bib`. This record distinguishes the author's decisions from proposals.
+
+## Presentation decisions, 2026-11-17
+
+- Retire the introductory sets-as-types analogy, superseding the earlier loose
+  correspondence convention. Remove membership/`isinstance`, containment/
+  `issubclass`, union-type, and family/product-to-`tuple` explanations.
+- Remove the syntax-only class, function, and method declaration examples,
+  including the generic relation stub. The paper is not an introduction to Python
+  syntax or its type system.
+- Preserve the mathematical development: sets, functions, families, indicator
+  functions, relations, quotients, and orders remain independently meaningful.
+- Retain Python where the implementation contributes a mathematical design
+  choice: quotient equality through `__eq__`, comparison contracts, cyclic
+  defaults, and the subsequent concrete numeric development.
+- Call these retained mathematics-to-implementation passages bridges. Keep the
+  distinction between representatives and quotient values explicit. A total order
+  strengthens the laws of the comparison interface without adding operations;
+  describe its negated strict comparisons as a specialization, not a guaranteed
+  performance optimization.
+- The author has included source excerpts for `Equivalence`, `Partial`, and
+  `Total`; keep their file references repository-relative.
+- Keep a single fraction-equivalence relation: equality of cross products.
+  Its extended non-negative domain consists of natural-number pairs other than
+  `(0, 0)`. Remove the auxiliary normalization map and second equivalence relation;
+  do not identify `(0, 0)` with any value through cross-product equality.
+- The proposed `(0, 0)` to `(1, 1)` resolution is solely a constructor-input
+  convention, applied before a value is formed. Accepting such input does not make
+  it a representative in the quotient or modify the equivalence relation.
+- Fraction equivalence alone does not determine arithmetic on indeterminate
+  inputs. In particular, assigning `0 * infinity = 1` does not preserve ordinary
+  multiplication's associativity. Library alignment is a separate implementation
+  task; this paper edit does not change constructors or arithmetic methods.
+- Use inline code for identifiers in prose and proper display listings for
+  implementations. Mathematical equivalences remain mathematical displays;
+  do not create a separate category of quoted inline-listing pseudo-equations.
+- Preserve the existing listing styles and preamble. This cleanup changes the
+  manuscript and this record, not the library implementation or Algebra.
 
 ## Current scope decisions, 2026-11-16
 
@@ -11,8 +48,6 @@ is `main.bib`. This record distinguishes the author's decisions from proposals.
   material merely to complete an inventory.
 - Revise the agreed comparison defaults and their adjacent explanations.
   Further listing inclusions and discussion of Algebra remain deferred.
-- Keep the sets-as-types correspondence as a loose representation convention,
-  not a literal identification or a type-theoretic development.
 - Remove `Extensible`, its custom `key` property, and the code illustration tied
   to the axiom of extensionality. Retain the mathematical axiom itself.
 - `Equivalence` retains the `==` / `!=` cycle; either comparison suffices.
@@ -56,7 +91,8 @@ before treating an item as still outstanding.
 
 ## Open decisions
 
-- Where further code belongs: inline, at section ends, or in an appendix.
+- Where further code belongs: beside its mathematical context, at section ends,
+  or in an appendix.
   The old standalone listings have been retired; new inclusions are deferred.
 - Which principal reference to adopt. The shortlist below is not yet an
   author-approved bibliographic choice; `main.bib` remains empty.

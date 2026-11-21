@@ -86,10 +86,12 @@
 \makeatletter
 \AtBeginDocument{%
   \AddToHook{cmd/FV@ListProcessLastLine/before}{%
-    \def\FV@Line{}%
-    \global\advance\FV@CodeLineNo\@ne
-    \FV@StepLineNo
-    \FV@ProcessLine{}%
+    \unless\ifx\FV@ProcessLine\FV@ListProcessLine@ii
+      \def\FV@Line{}%
+      \global\advance\FV@CodeLineNo\@ne
+      \FV@StepLineNo
+      \FV@ProcessLine{}%
+    \fi
   }%
   \renewcommand{\theFancyVerbLine}{%
     \ttfamily\scriptsize\arabic{FancyVerbLine}%
